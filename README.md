@@ -95,6 +95,7 @@ There are sample overlays located in the `/layout/` directory. In OBS, add a Bro
 - Make sure to set the window size to 1920x1080 for the overlay samples.
 - Make sure to set the browser element to hide when inactive and reload on scene change, or else you will get a quick flicker when the scene is changed.
 - For the stage striking sample, experiment with different window sizes as the elements will adapt to it (i.e. 2000x2000, 1000x1000, 500x500, ...)
+- For the VS screen, please check out `index.js` to select which asset pack you want to use
 
 There's also instructions for editing those layouts in the `/layout/` directory.
 
