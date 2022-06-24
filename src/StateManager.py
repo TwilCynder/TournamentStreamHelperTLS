@@ -7,6 +7,7 @@ import shutil
 import threading
 import requests
 from PIL import Image
+from .translateForUST import translateForUST
 
 from .Helpers.TSHDictHelper import deep_get, deep_set, deep_unset
 
@@ -17,6 +18,8 @@ class StateManager:
     def SaveState():
         with open("./out/program_state.json", 'w', encoding='utf-8') as file:
             json.dump(StateManager.state, file, indent=4, sort_keys=False)
+        with open("./ultimate-stream-tool-tls/Stream Tool/Resources/Texts/ScoreboardInfo.json", "w", encoding='utf-8') as file:
+            json.dump(translateForUST(StateManager.state), file, indent = 2, sort_keys=False)
 
     def LoadState():
         try:
