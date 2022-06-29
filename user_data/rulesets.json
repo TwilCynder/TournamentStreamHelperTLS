@@ -1,7 +1,7 @@
 [
     {
         "banByMaxGames": {},
-        "banCount": 0,
+        "banCount": 2,
         "counterpickStages": [
             "Final Destination",
             "Kalos Pok\u00e9mon League",
@@ -15,7 +15,11 @@
             "Small Battlefield",
             "Town and City"
         ],
-        "strikeOrder": [],
+        "strikeOrder": [
+            1,
+            2,
+            1
+        ],
         "useDSR": false,
         "useMDSR": true,
         "videogame": "ssbu"
