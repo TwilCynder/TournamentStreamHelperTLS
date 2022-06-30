@@ -1,3 +1,12 @@
+def translateCharName(name):
+    if name == "Bowser Jr.":
+        name = "Bowser Jr"
+
+    print(name)
+    name = name.replace("-", " ")
+    print(name)
+    return name
+
 def translateForUST(state):
     USTState = {}
 
@@ -13,7 +22,7 @@ def translateForUST(state):
     try: USTState['p1NScore'] = state['score']['team']["1"]['score']["1"]
     except: USTState['p1NScore'] = "0"
     
-    try: USTState['p1Character'] = state['score']['team']["1"]['player']["1"]['character'][1]['name']
+    try: USTState['p1Character'] = translateCharName(state['score']['team']["1"]['player']["1"]['character'][1]['name'])
     except: USTState['p1Char'] = "Random"
     
     try: USTState['p1Skin'] = USTState['p1Character'] + ' (' + str(int(state['score']['team']["1"]['player']["1"]['character'][1]['skin']) + 1) + ')'
@@ -31,7 +40,7 @@ def translateForUST(state):
     try: USTState['p2NScore'] = state['score']['team']["2"]['score']["1"]
     except: USTState['p2NScore'] = "0"
     
-    try: USTState['p2Character'] = state['score']['team']["2"]['player']["1"]['character'][1]['name']
+    try: USTState['p2Character'] = translateCharName(state['score']['team']["2"]['player']["1"]['character'][1]['name'])
     except: USTState['p2Char'] = "Random"
 
     try: USTState['p2Skin'] = USTState['p2Character'] + ' (' + str(int(state['score']['team']["2"]['player']["1"]['character'][1]['skin']) + 1) + ')'
