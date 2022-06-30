@@ -17,6 +17,8 @@ layout_backup*
 layout_custom*
 .idea/
 
+build
+
 TSH.cflags
 
 TSH.config
