@@ -2,9 +2,7 @@ def translateCharName(name):
     if name == "Bowser Jr.":
         name = "Bowser Jr"
 
-    print(name)
     name = name.replace("-", " ")
-    print(name)
     return name
 
 def translateForUST(state):
@@ -19,7 +17,7 @@ def translateForUST(state):
     try: USTState['p1Team'] = state['score']['team']["1"]['player']["1"]['team']
     except: USTState['p1Team'] = ""
     
-    try: USTState['p1NScore'] = state['score']['team']["1"]['score']["1"]
+    try: USTState['p1NScore'] = state['score']['team']["1"]['score']
     except: USTState['p1NScore'] = "0"
     
     try: USTState['p1Character'] = translateCharName(state['score']['team']["1"]['player']["1"]['character'][1]['name'])
@@ -37,7 +35,7 @@ def translateForUST(state):
     try: USTState['p2Team'] = state['score']['team']["2"]['player']["1"]['team']
     except: USTState['p2Team'] = ""
     
-    try: USTState['p2NScore'] = state['score']['team']["2"]['score']["1"]
+    try: USTState['p2NScore'] = state['score']['team']["2"]['score']
     except: USTState['p2NScore'] = "0"
     
     try: USTState['p2Character'] = translateCharName(state['score']['team']["2"]['player']["1"]['character'][1]['name'])
