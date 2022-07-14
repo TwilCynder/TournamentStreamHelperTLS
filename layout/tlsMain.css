@@ -1,0 +1,8 @@
+.absol {
+    position: absolute;
+}
+
+:root {
+    --tls-purple: #3d0082;
+    --tls-yellow: #efd000;
+}
