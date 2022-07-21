@@ -1,0 +1,16 @@
+.logo{
+    width: 100%;
+    height: 100%;
+    position: absolute;
+    background-size: contain;
+    background-repeat: no-repeat;
+    background-position: center;
+}
+
+#logo-tls {
+    background-image: url("../../ultimate-stream-tool-tls/Stream\ Tool/ResourcesTLS/Overlay/Logo.png");
+}
+  
+#logo-soc {
+    background-image: url("../../ultimate-stream-tool-tls/Stream\ Tool/ResourcesSOC/Overlay/Logo.png");
+}
