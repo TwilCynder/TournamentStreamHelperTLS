@@ -237,11 +237,11 @@ body {
 }
 
 #logo-tls {
-  background-image: url("../../ultimate-stream-tool-tls/Stream\ Tool/ResourcesTLS/Overlay/Logo.png");
+  background-image: url("../../RessourcesTLS/common/Overlay/Logo.png");
 }
 
 #logo-soc {
-  background-image: url("../../ultimate-stream-tool-tls/Stream\ Tool/ResourcesSOC/Overlay/Logo.png");
+  background-image: url("../../RessourcesTLS/SOC/Overlay/Logo.png");
   width: 150px;
   height: 150px;
 }
