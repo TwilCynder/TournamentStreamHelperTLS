@@ -34,6 +34,26 @@ class RotatingElements extends Array{
         fadeIn(currentElement, 0);
       })
     }
+
+    startRotation(interval){
+      this.interval = setInterval(() => {
+          this.next();
+      }, interval);
+      return this;
+    }
+
+    stopRotation(){
+      console.log(this.interval);
+      if (this.interval) {
+        clearInterval(this.interval);
+        this.interval = undefined;
+      }
+    }
+
+    changeDelay(newDelay){
+      this.stopRotation();
+      this.startRotation(newDelay);
+    }
 }
 
 function getElements(...args){
@@ -44,10 +64,6 @@ function getElements(...args){
     return args;
 }
 
-let logoRotation = new RotatingElements(...getElements(
+var logoRotation = new RotatingElements(...getElements(
     "logo-tls", "logo-soc"
-))
-
-setInterval(() => {
-    logoRotation.next();
-  }, logoInterval);
+)).startRotation(logoInterval);
