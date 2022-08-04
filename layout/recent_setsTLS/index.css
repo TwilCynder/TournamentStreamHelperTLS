@@ -1,5 +1,20 @@
+:root {
+  --text-color: black;
+  --grotext: 
+}
+
+@font-face {
+  font-family: "Dosis";
+  src: url("../../RessourcesTLS/common/Fonts/dosis-semibold_[fr.allfont.net].ttf");
+}
+
+@font-face {
+  font-family: "Gobold";
+  src: url("../../RessourcesTLS/common/Fonts/Gobold\ Regular.otf");
+}
+
 body {
-  font-family: var(--font);
+  font-family: "Dosis";
   letter-spacing: 1.2px;
   font-weight: bold;
   opacity: 0;
@@ -9,11 +24,10 @@ body {
 
 .container {
   position: absolute;
-  color: var(--text-color);
+  color: black;
   display: flex;
   box-sizing: border-box;
   border-radius: var(--border-radius);
-  background: var(--bg-color);
   align-items: center;
   padding: 20px 40px;
   filter: drop-shadow(0 2px 2px rgba(0, 0, 0, 0.12))
@@ -51,8 +65,9 @@ body {
   text-align: center;
   flex-grow: 0;
   width: 100%;
-  font-size: 36px;
+  font-size: 60px;
   margin-bottom: 20px;
+  font-family: "Gobold";
 }
 
 /* Players Section */
@@ -62,17 +77,19 @@ body {
 
 .recent_sets_players {
   width: 100%;
+  height: 200px;
   display: flex;
   color: var(--text-color);
   align-content: center;
   justify-content: center;
-  font-size: 40px;
+  font-size: 50px;
   white-space: nowrap;
   overflow: hidden;
   align-items: center;
   flex-grow: 0;
   margin-left: 2px;
   margin-bottom: 20px;
+  font-family: "Gobold";
 }
 
 .player_1 {
@@ -90,11 +107,11 @@ body {
 }
 
 .player_1 .sponsor {
-  color: var(--tls-yellow);
+  color: var(--tls-purple);
 }
 
 .player_2 .sponsor {
-  color: var(--tls-yellow);
+  color: var(--tls-purple);
 }
 
 /* Recent Sets Section */
@@ -138,7 +155,7 @@ body {
   text-align: right;
   justify-content: right;
   overflow: hidden;
-  font-size: 28px;
+  font-size: 55px;
   padding-left: 20px;
   padding-right: 40px;
   color: var(--text-color);
@@ -150,7 +167,7 @@ body {
   text-align: left;
   justify-content: left;
   overflow: hidden;
-  font-size: 28px;
+  font-size: 55px;
   padding-right: 20px;
   padding-left: 40px;
   color: var(--text-color);
@@ -175,11 +192,11 @@ body {
 }
 
 .set_winner {
-  font-size: 42px;
-  width: 64px;
-  height: 64px;
+  font-size: 70px;
+  width: 96px;
+  height: 96px;
   text-align: center;
-  line-height: 64px;
+  line-height: 88px;
   border-radius: 100%;
   background: #29b548;
   color: var(--text-color);
@@ -187,11 +204,11 @@ body {
 }
 
 .set_loser {
-  font-size: 42px;
-  width: 64px;
-  height: 64px;
+  font-size: 70px;
+  width: 96px;
+  height: 96px;
   text-align: center;
-  line-height: 64px;
+  line-height: 88px;
   border-radius: 100%;
   background: #ff3837;
   color: var(--text-color);
