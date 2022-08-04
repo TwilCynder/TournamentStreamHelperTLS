@@ -1,8 +1,4 @@
 (($) => {
-  const logoInterval = 15000;
-  const fadeInTime = .3; //(seconds)
-  const fadeOutTime = .2;
-
   gsap.config({ nullTargetWarn: false, trialWarn: false });
 
   let startingAnimation = gsap

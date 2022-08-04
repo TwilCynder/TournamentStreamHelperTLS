@@ -1,8 +1,4 @@
 (($) => {
-  const logoInterval = 15000;
-  const fadeInTime = .3; //(seconds)
-  const fadeOutTime = .2;
-
   if (!window.config) {
     window.config = {
       size: "normal",
