@@ -12,7 +12,6 @@
 
   let oldCharacters = {};
 
-
   async function Update() {
     oldData = data;
     data = await getData();
