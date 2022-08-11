@@ -1,6 +1,11 @@
+<<<<<<< HEAD
 :root {
   --text-color: black;
   --grotext: 
+=======
+:root{
+  --text-color: black;
+>>>>>>> f690daa (soc 7)
 }
 
 @font-face {
@@ -65,7 +70,11 @@ body {
   text-align: center;
   flex-grow: 0;
   width: 100%;
+<<<<<<< HEAD
   font-size: 60px;
+=======
+  font-size: 50px;
+>>>>>>> f690daa (soc 7)
   margin-bottom: 20px;
   font-family: "Gobold";
 }
