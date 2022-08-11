@@ -3,4 +3,4 @@
 	url = https://gitlab.com/TwilCynder/ultimate-stream-tool-tls
 [submodule "Stats"]
 	path = Stats
-	url = ./Stats
+	url = https://gitlab.com/TwilCynder/ReframedStatsTLS
