@@ -15,7 +15,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: ["ubuntu-latest"]
+        os: ["ubuntu-20.04"]
 
     steps:
       - uses: actions/checkout@v2
@@ -29,6 +29,8 @@ jobs:
         id: extract_branch
 
       - run: |
+          sudo apt-get update
+          sudo apt-get install -y libgstreamer-plugins-base1.0-dev
           sudo apt install -y qtbase5-dev qtchooser qt5-qmake qtbase5-dev-tools qttools5-dev-tools
           lrelease -version
       - run: pip install -r dependencies/requirements.txt pyinstaller==4.10
