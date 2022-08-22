@@ -1,4 +1,8 @@
 (($) => {
+  const logoInterval = 15000;
+  const fadeInTime = .3; //(seconds)
+  const fadeOutTime = .2;
+
   if (!window.config) {
     window.config = {
       size: "normal",
@@ -43,7 +47,7 @@
       $(".container").html(html);
     }
 
-    array.forEach((commentator, index) => {
+    Object.values(data.commentary).forEach((commentator, index) => {
       if (commentator.name) {
         $(`.commentator${index}`).css("display", "");
         SetInnerHtml(

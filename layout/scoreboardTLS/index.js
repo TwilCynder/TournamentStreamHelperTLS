@@ -1,5 +1,4 @@
 (($) => {
-
   gsap.config({ nullTargetWarn: false, trialWarn: false });
 
   let startingAnimation = gsap

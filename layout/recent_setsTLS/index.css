@@ -1,6 +1,6 @@
-:root {
+
+:root{
   --text-color: black;
-  --grotext: 
 }
 
 @font-face {
@@ -65,9 +65,10 @@ body {
   text-align: center;
   flex-grow: 0;
   width: 100%;
-  font-size: 60px;
+  font-size: 50px;
   margin-bottom: 20px;
   font-family: "Gobold";
+  font-size: 80px;
 }
 
 /* Players Section */
@@ -83,8 +84,7 @@ body {
   align-content: center;
   justify-content: center;
   font-size: 50px;
-  white-space: nowrap;
-  overflow: hidden;
+  white-space: nowrap;  
   align-items: center;
   flex-grow: 0;
   margin-left: 2px;
