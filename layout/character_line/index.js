@@ -27,6 +27,7 @@
         if (character.assets) {
           if (character.assets.hasOwnProperty(assetToUse)) {
             let asset = character.assets[assetToUse];
+            console.log(asset)
             asset.img = new Image();
             asset.img.src = "../../" + asset.asset;
             characterAssets.push(asset);
