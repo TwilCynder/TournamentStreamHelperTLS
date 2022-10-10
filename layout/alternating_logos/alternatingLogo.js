@@ -1,4 +1,4 @@
-const logoInterval = 10000;
+const logoInterval = 15000;
 const fadeInTime = .3; //(seconds)
 const fadeOutTime = .2;
 
@@ -65,5 +65,5 @@ function getElements(...args){
 }
 
 var logoRotation = new RotatingElements(...getElements(
-    "logo-tls", "logo-soc"
+    "logo-tls", "logo-gaminglink", "logo-ogc"
 )).startRotation(logoInterval);
