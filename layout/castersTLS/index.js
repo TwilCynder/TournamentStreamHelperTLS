@@ -1,8 +1,4 @@
 (($) => {
-  const logoInterval = 15000;
-  const fadeInTime = .3; //(seconds)
-  const fadeOutTime = .2;
-
   if (!window.config) {
     window.config = {
       size: "normal",
@@ -14,7 +10,7 @@
   var data = {};
   var oldData = {};
 
-  let oldCharacters = {};
+  var logos = $("#logos");
 
   async function Update() {
     oldData = data;
@@ -26,7 +22,12 @@
         Object.keys(data.commentary).length
     ) {
       let html = "";
-      Object.values(data.commentary).forEach((commentator, index) => {
+
+      let casters = Object.values(data.commentary);
+
+      logos.hidden = casters.length != 2;
+
+      casters.forEach((commentator, index) => {
         html += `
               <div class="commentator_container commentator${index}">
                   <div class="name"></div>
