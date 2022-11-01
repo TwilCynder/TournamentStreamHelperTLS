@@ -1,4 +1,4 @@
-seul le common est nécessaire au bon fonctionnement de tout le bousin
+seul le common et FunkyStocks est nécessaire au bon fonctionnement de tout le bousin
 
 sinon à refaire y a : 
 shakespike (ici)

@@ -17,6 +17,9 @@ layout_backup*
 layout_custom*
 .idea/
 
+OBSDirs/
+RessourcesTLS/OBS assets/
+
 build
 
 TSH.cflags
