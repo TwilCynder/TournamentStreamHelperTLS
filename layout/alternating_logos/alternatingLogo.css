@@ -11,6 +11,10 @@
     background-image: url("../../RessourcesTLS/common/Overlay/Logo.png");
   }
   
+#logo-soc {
+  background-image: url("../../RessourcesTLS/SOC/Overlay/Logo.png");
+}
+
   #logo-gaminglink {
     background-image: url("../../RessourcesTLS/Images/gaminglink.png");
   }

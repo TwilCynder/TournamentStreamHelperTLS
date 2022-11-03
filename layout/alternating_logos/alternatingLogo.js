@@ -65,5 +65,5 @@ function getElements(...args){
 }
 
 var logoRotation = new RotatingElements(...getElements(
-    "logo-tls", "logo-gaminglink", "logo-ogc"
+    "logo-tls", "logo-soc"
 )).startRotation(logoInterval);

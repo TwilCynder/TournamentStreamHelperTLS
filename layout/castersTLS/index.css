@@ -105,3 +105,9 @@ body {
   width: 150px;
   height: 150px;
 }
+
+#logo-soc {
+  background-image: url("../../RessourcesTLS/SOC/Overlay/Logo.png");
+  width: 150px;
+  height: 150px;
+}
