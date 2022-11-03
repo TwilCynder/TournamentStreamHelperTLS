@@ -68,6 +68,19 @@
     oldData = data;
     data = await getData();
 
+
+    let casters = Object.values(data.commentary);
+
+    let html = ""
+
+    casters.forEach((commentator, index) => {
+      html += `
+        <span class = "caster_name">${commentator.name}</span>
+        `;
+    });
+
+    $("#caster_names_container").html(html);
+
     [data.score.team["1"], data.score.team["2"]].forEach((team, t) => {
       [team.player["1"]].forEach((player, p) => {
         if (player) {

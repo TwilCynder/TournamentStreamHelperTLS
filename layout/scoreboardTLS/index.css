@@ -33,6 +33,29 @@ body {
   letter-spacing: 1;
 }
 
+#casters_container {
+  position: absolute;
+  top: 15px;
+  left: 15px;
+  display: block;
+}
+
+#caster_names_container {
+  display: block;
+  height: 50px;
+}
+
+.caster_name {
+  display: block;
+  height: 50%;
+  font-size: 23px;
+  color: #717171;
+}
+
+.float_child {
+  float: left;
+}
+
 .anim_container_outer {
   position: absolute;
   overflow: hidden;
