@@ -65,10 +65,18 @@ body {
   text-align: center;
   flex-grow: 0;
   width: 100%;
-  font-size: 50px;
   margin-bottom: 20px;
   font-family: "Gobold";
   font-size: 80px;
+}
+
+.recent_sets_disclaimer {
+  text-align: center;
+  flex-grow: 0;
+  width: 100%;
+  margin-bottom: 20px;
+  font-family: "Gobold";
+  font-size: 40px;
 }
 
 /* Players Section */
