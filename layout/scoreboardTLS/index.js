@@ -68,7 +68,6 @@
     oldData = data;
     data = await getData();
 
-
     let casters = Object.values(data.commentary);
 
     let html = ""

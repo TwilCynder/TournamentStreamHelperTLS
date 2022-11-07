@@ -18,8 +18,8 @@
 
     if (
       Object.keys(oldData).length == 0 ||
-      Object.keys(oldData.commentary).length !=
-        Object.keys(data.commentary).length
+        Object.keys(oldData.commentary).length !=
+        Object.keys(data.commentary).length 
     ) {
       let html = "";
 
