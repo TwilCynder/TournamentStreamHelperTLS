@@ -5,4 +5,10 @@
 :root {
     --tls-purple: #3d0082;
     --tls-yellow: #efd000;
+    --tls-black:  #333333
 }
+
+@font-face {
+    font-family: "Gobold";
+    src: url("../RessourcesTLS/common/Fonts/Gobold\ Extra1.otf");
+  }

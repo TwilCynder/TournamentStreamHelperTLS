@@ -19,23 +19,26 @@ body {
   align-content: center;
   width: 100%;
   gap: 16px;
-  color: var(--text-color);
+  color: var(--tls-black);
   flex-wrap: wrap;
   position: absolute;
   bottom: 50px;
 }
 
 .commentator_container {
-  width: 300ox;
-  border-radius: var(--border-radius);
+  max-width: 400px;
+  /*border-radius: var(--border-radius);*/
   display: flex;
-  flex-direction: column;
+  flex-direction: column; 
   justify-content: center;
   padding: 10px 30px;
-  box-sizing: border-box;
+  /*box-sizing: border-box;*/
   overflow: hidden;
-  border-radius: 12px;
-  background: var(--bg-color);
+  /*border-radius: 12px;*/
+  background-image: url("../../RessourcesTLS/Images/BG-CDV.jpg");
+  border: 7px solid ;
+  border-color: var(--tls-yellow);
+  font-family: Gobold;
 }
 
 .mic_icon {
@@ -48,7 +51,9 @@ body {
 
 .name {
   font-size: 40px;
-  color: var(--tls-yellow)
+  color: var(--tls-purple);
+  font-weight: bolder;
+  
 }
 
 .team {
