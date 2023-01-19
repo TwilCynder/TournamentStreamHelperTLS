@@ -1,0 +1,46 @@
+@font-face {
+    font-family: "Smash";
+    src: url("../../RessourcesTLS/common/Fonts/Gobold\ Regular.otf");
+}
+
+body {
+    color: aliceblue;
+    padding: 5vh;
+    font-size: 10vh;
+    font-family: Smash;
+}
+
+.titel {
+    background-color: #601E81;
+    border-radius: 25px;
+    padding: 3vh;
+    font-size: 8vh;
+}
+
+.result {
+    background: linear-gradient(to right, #EFD000, #3D0082);
+    border-radius: 25px;
+    margin-left: 5vh;
+    margin-right: 5vh;
+    padding: 3vh;
+    display: flex;
+    justify-content: space-between;
+}
+
+.winner {
+    display: flex;
+    justify-content: flex-start;
+}
+
+.winner .score {
+    margin-right: 10vh;
+}
+
+.loser {
+    display: flex;
+    justify-content: flex-end;
+}
+
+.loser .score {
+    margin-left: 10vh;
+}
