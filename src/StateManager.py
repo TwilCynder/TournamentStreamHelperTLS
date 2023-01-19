@@ -15,15 +15,43 @@ from .Helpers.TSHDictHelper import deep_get, deep_set, deep_unset
 class StateManager:
     lastSavedState = {}
     state = {}
-    saveBlocked = False
+    saveBlocked = 0
+
+    lock = threading.Lock()
+    threads = []
+
+    def BlockSaving():
+        StateManager.saveBlocked += 1
+    
+    def ReleaseSaving():
+        StateManager.saveBlocked -= 1
+        if StateManager.saveBlocked == 0:
+            StateManager.SaveState()
 
     def SaveState():
-        with open("./out/program_state.json", 'w', encoding='utf-8') as file:
-            json.dump(StateManager.state, file, indent=4, sort_keys=False)
-        with open("./ultimate-stream-tool-tls/Stream Tool/Resources/Texts/ScoreboardInfo.json", "w+", encoding='utf-8') as file:
-            json.dump(translateForUST(StateManager.state), file, indent = 2, sort_keys=False)
-            StateManager.lastSavedState = copy.deepcopy(StateManager.state)
-            StateManager.ExportText(StateManager.lastSavedState)
+
+        if StateManager.saveBlocked == 0:
+            with StateManager.lock:
+                StateManager.threads = []
+
+                def ExportAll():
+                    with open("./out/program_state.json", 'w', encoding='utf-8') as file:
+                        # print("SaveState")
+                        json.dump(StateManager.state, file, indent=4, sort_keys=False)
+                    with open("./ultimate-stream-tool-tls/Stream Tool/Resources/Texts/ScoreboardInfo.json", "w+", encoding='utf-8') as file:
+                        json.dump(translateForUST(StateManager.state), file, indent = 2, sort_keys=False)
+                        StateManager.lastSavedState = copy.deepcopy(StateManager.state)
+                        StateManager.ExportText(StateManager.lastSavedState)
+
+                    StateManager.ExportText(StateManager.lastSavedState)
+                    StateManager.lastSavedState = copy.deepcopy(StateManager.state)
+
+                exportThread = threading.Thread(target=ExportAll)
+                StateManager.threads.append(exportThread)
+                exportThread.start()
+
+                for t in StateManager.threads:
+                    t.join()
 
     def LoadState():
         try:
@@ -34,19 +62,24 @@ class StateManager:
             StateManager.SaveState()
 
     def Set(key: str, value):
+        oldState = copy.deepcopy(StateManager.state)
         deep_set(StateManager.state, key, value)
-        if not StateManager.saveBlocked:
+        if StateManager.saveBlocked == 0:
             StateManager.SaveState()
+            # StateManager.ExportText(oldState)
 
     def Unset(key: str):
+        oldState = copy.deepcopy(StateManager.state)
         deep_unset(StateManager.state, key)
-        if not StateManager.saveBlocked:
+        if StateManager.saveBlocked == 0:
             StateManager.SaveState()
+            # StateManager.ExportText(oldState)
 
     def Get(key: str, default=None):
         return deep_get(StateManager.state, key, default)
 
     def ExportText(oldState):
+        # print("ExportState")
         diff = DeepDiff(oldState, StateManager.state)
         # print(diff)
 
@@ -109,31 +142,38 @@ class StateManager:
             # print("try to add: ", path)
             if type(di) == str and di.startswith("./"):
                 if os.path.exists(f"./out/{path}" + "." + di.rsplit(".", 1)[-1]):
-                    os.remove(f"./out/{path}" + "." + di.rsplit(".", 1)[-1])
+                    try:
+                        os.remove(f"./out/{path}" + "." + di.rsplit(".", 1)[-1])
+                    except Exception as e:
+                        print(traceback.format_exc())
                 if os.path.exists(di):
                     try:
-                        shutil.copyfile(
-                            di, f"./out/{path}" + "." + di.rsplit(".", 1)[-1])
+                        os.link(os.path.abspath(di), f"./out/{path}" + "." + di.rsplit(".", 1)[-1])
                     except Exception as e:
                         print(traceback.format_exc())
             elif type(di) == str and di.startswith("http") and (di.endswith(".png") or di.endswith(".jpg")):
                 try:
                     if os.path.exists(f"./out/{path}" + "." + di.rsplit(".", 1)[-1]):
-                        os.remove(f"./out/{path}" + "." +
-                                  di.rsplit(".", 1)[-1])
+                        try:
+                            os.remove(f"./out/{path}" + "." + di.rsplit(".", 1)[-1])
+                        except Exception as e:
+                            print(traceback.format_exc())
 
                     def downloadImage(url, dlpath):
-                        r = requests.get(url, stream=True)
-                        if r.status_code == 200:
-                            with open(dlpath, 'wb') as f:
-                                r.raw.decode_content = True
-                                shutil.copyfileobj(r.raw, f)
-                                f.flush()
-                        if url.endswith(".jpg"):
-                            original = Image.open(dlpath)
-                            original.save(dlpath.rsplit(
-                                ".", 1)[0]+".png", format="png")
-                            os.remove(dlpath)
+                        try:
+                            r = requests.get(url, stream=True)
+                            if r.status_code == 200:
+                                with open(dlpath, 'wb') as f:
+                                    r.raw.decode_content = True
+                                    shutil.copyfileobj(r.raw, f)
+                                    f.flush()
+                            if url.endswith(".jpg"):
+                                original = Image.open(dlpath)
+                                original.save(dlpath.rsplit(
+                                    ".", 1)[0]+".png", format="png")
+                                os.remove(dlpath)
+                        except Exception as e:
+                            print(traceback.format_exc())
 
                     t = threading.Thread(
                         target=downloadImage,
@@ -142,6 +182,7 @@ class StateManager:
                             f"./out/{path}" + "." + di.rsplit(".", 1)[-1]
                         ]
                     )
+                    StateManager.threads.append(t)
                     t.start()
                 except Exception as e:
                     print(traceback.format_exc())

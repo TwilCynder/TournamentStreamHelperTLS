@@ -1,0 +1,20 @@
+query TournamentHistoryDataQuery($playerID: ID!, $gameID: ID!) {
+  player(id: $playerID) {
+    recentStandings(videogameId: $gameID, limit: 10) {
+      placement
+      entrant {
+        event {
+          name
+          numEntrants
+          startAt
+          tournament {
+            name
+            images(type: "profile") {
+              url
+            }
+          }
+        }
+      }
+    }
+  }
+}

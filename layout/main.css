@@ -1,6 +1,11 @@
 @font-face {
-  font-family: "NotoSans";
-  src: url("./include/NotoSans-Regular.ttf") format("truetype");
+  font-family: 'NotoSans';
+  src: url('./include/NotoSans-Regular.ttf') format('truetype');
+}
+
+@font-face {
+  font-family: "RobotoCondensed";
+  src: url("./include/RobotoCondensed.ttf") format("truetype");
 }
 
 .text {
@@ -17,15 +22,11 @@
 
 /* Main theme -- Dark Gradient */
 :root {
-  --font: "NotoSans";
+  --font: 'RobotoCondensed';
   --border-radius: 16px;
   --text-color: white;
   --bg-color: #18181b;
-  --p1-score-bg-color: linear-gradient(
-    135deg,
-    rgba(189, 63, 50, 1) 0%,
-    rgba(203, 53, 107, 1) 100%
-  );
+  --p1-score-bg-color: linear-gradient(135deg, rgba(189, 63, 50, 1) 0%, rgba(203, 53, 107, 1) 100%);
   --p2-score-bg-color: linear-gradient(
     225deg,
     rgba(47, 128, 237, 1) 0%,
