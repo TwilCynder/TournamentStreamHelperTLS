@@ -5,10 +5,19 @@
 :root {
     --tls-purple: #3d0082;
     --tls-yellow: #efd000;
-    --tls-black:  #333333
+    --tls-black:  #333333;
+    --tls-p1-score: var(--tls-yellow);
+    --tls-p1-sponsor: var(--tls-yellow);
+    --tls-p2-score: var(--tls-purple);
+    --tls-p2-sponsor: var(--tls-purple);
 }
 
 @font-face {
     font-family: "Gobold";
     src: url("../RessourcesTLS/common/Fonts/Gobold\ Extra1.otf");
-  }
+}
+
+@font-face {
+    font-family: "DosisSmash";
+    src: url("../RessourcesTLS/common/Fonts/dosis-semibold_[fr.allfont.net].ttf")
+}
