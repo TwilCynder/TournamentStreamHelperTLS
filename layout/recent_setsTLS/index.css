@@ -39,7 +39,7 @@ body {
 .recent_sets {
   position: absolute;
   width: 100%;
-  height: 758px;
+  height: 718px;
   color: var(--text-color);
   font-size: 50px;
   place-content: flex-start;

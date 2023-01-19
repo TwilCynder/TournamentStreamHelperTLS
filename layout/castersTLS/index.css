@@ -95,24 +95,17 @@ body {
   z-index: 9;
 }
 
-#logo-tls {
-  background-image: url("../../RessourcesTLS/common/Overlay/Logo.png");
-}
-
 #logo-ogc {
-  background-image: url("../../RessourcesTLS/Images/occitania\ gaming\ convention.png");
   width: 150px;
   height: 150px;
 }
 
 #logo-gaminglink {
-  background-image: url("../../RessourcesTLS/Images/gaminglink.png");
   width: 150px;
   height: 150px;
 }
 
 #logo-soc {
-  background-image: url("../../RessourcesTLS/SOC/Overlay/Logo.png");
   width: 150px;
   height: 150px;
 }
