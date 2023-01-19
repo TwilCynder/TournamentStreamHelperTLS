@@ -31,32 +31,16 @@ $(() => {
 
     let res = "";
 
+    $("#R1").html('loading....');
 
-        $("#R1").html('loading....');
-
-        $.ajax({url: "https://cors-anywhere.herokuapp.com/https://api.start.gg/gql/alpha",
-           contentType: "application/json",type:'POST',
-           data: JSON.stringify({ query:`{
-              sayHello(name:"${res}")}`
-           }),
-           success: function(result) {
-              console.log(JSON.stringify(result));
-              $("#R1").html(JSON.stringify(result));
-           }
-        });
-
-    /*
-    fetch('https://api.start.gg/gql/alpha', {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json',
-            'Accept': 'application/json',
-        },
-        body: JSON.stringify({query: "{ hello }"})
-        })
-        .then(r => r.json())
-        .then(data => $("#R1").html(data))
-        .catch(err => {$("#R1").html(err) ; console.error(err)});
-        */
-    //$("#R1").html(res);
+    $.ajax({url: "https://cors-anywhere.herokuapp.com/https://api.start.gg/gql/alpha",
+        contentType: "application/json",type:'POST',
+        data: JSON.stringify({ query:`{
+            sayHello(name:"${res}")}`
+        }),
+        success: function(result) {
+            console.log(JSON.stringify(result));
+            $("#R1").html(JSON.stringify(result));
+        }
+    });
 })
