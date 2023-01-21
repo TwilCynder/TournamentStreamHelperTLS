@@ -73,7 +73,6 @@
     let html = ""
 
     casters.forEach((commentator, index) => {
-      console.log(commentator)
       html += `
         <span class = "caster_name">${commentator.name}</span>
         `;

@@ -1,4 +1,4 @@
-const logoInterval = 15000;
+const logoInterval = 2000;
 const fadeInTime = .3; //(seconds)
 const fadeOutTime = .2;
 
@@ -16,7 +16,7 @@ class RotatingElements extends Array{
     constructor(...args){
       super(...args);
       this.current = 0;
-      for (i = 1; i < args.length; i++){
+      for (let i = 1; i < args.length; i++){
         args[i].style.opacity = 0
       }
     }
@@ -64,6 +64,8 @@ function getElements(...args){
     return args;
 }
 
-var logoRotation = new RotatingElements(...getElements(
-    "logo-tls", "logo-soc"
-)).startRotation(logoInterval);
+function getElementsByClass(classname){
+  return document.getElementsByClassName(classname); 
+}
+
+var logoRotation = new RotatingElements(...getElementsByClass("logo")).startRotation(logoInterval);
