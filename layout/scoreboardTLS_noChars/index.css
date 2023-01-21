@@ -102,70 +102,29 @@ body {
 }
 
 .player.container {
-  width: 466px;
-  height: 50px;
-  top: 32px;
+  width: 200px;
+  height: 40px;
+  bottom: 42px;
 }
 
-.fgc .player.container {
-  top: 8px;
-  width: 652px;
-}
-
-.tekken7 .player.container {
-  width: 580px;
-}
-
-.fgc.thin .player.container {
-  top: 2px;
-  height: 48px;
-  width: 640px;
-}
-
-.fgc.thin.strive .player.container {
-  width: 580px;
-  top: 60px;
-}
 
 .p1.container {
   background-position: 100% 0;
-  left: 354px;
+  left: 520px;
   flex-direction: row;
 }
 
-.fgc .p1.container {
-  left: 154px;
-}
-
-.tekken7 .p1.container {
-  left: 226px;
-}
-
-.fgc.thin .p1.container {
-  left: 164px;
-}
 
 .p2.container {
   background-position: 0 0;
-  right: 370px;
+  right: 465px;
   flex-direction: row-reverse;
 }
 
-.fgc .p2.container {
-  right: 154px;
-}
-
-.tekken7 .p2.container {
-  right: 226px;
-}
-
-.fgc.thin .p2.container {
-  right: 164px;
-}
 
 .name_twitter {
   display: flex;
-  width: 345px;
+  width: 200px;
   flex-direction: column;
   overflow: hidden;
   justify-content: center;
@@ -178,41 +137,21 @@ body {
 
 .p1 .name_twitter {
   top: 5px;
-  left: 66px;
+  left: 0px;
 }
 
 .p2 .name_twitter {
   top: 5px;
-  left: 44px;
+  left: 0px;
 }
 
-.fgc .name_twitter {
-  flex-direction: row;
-  justify-content: space-between;
-}
-
-.fgc .p2 .name_twitter {
-  flex-direction: row-reverse;
-}
 
 .name {
-  color: var(--tls-yellow);
+  color: var(--tls-purple);
 }
 
 .name_twitter .name {
-  font-size: 28px;
-}
-
-.fgc .name_twitter .name {
-  width: 60%;
-}
-
-.fgc .p1 .name_twitter .name .text {
-  justify-content: flex-start;
-}
-
-.fgc .p2 .name_twitter .name .text {
-  justify-content: flex-end;
+  font-size: 20px;
 }
 
 .name_twitter .twitter {
@@ -248,7 +187,7 @@ body {
 
 .logo {
   position: absolute;
-  bottom: 40px;
+  top: 40px;
   left: 865;
   width: 138px;
   height: 138px;
@@ -263,7 +202,7 @@ body {
   background-image: url("../../RessourcesTLS/common/Overlay/Logo.png");
 }
 
-#logo-soc {
+#logo-casta {
   background-image: url("../../RessourcesTLS/Castanha/LOGOTYPE-CASTANHA.png");
   width: 150px;
 }
@@ -326,9 +265,9 @@ body {
 }
 
 .info.container.top {
-  bottom: 8px;
-  left: 774px;
-  width: 320px;
+  top: 5px;
+  left: 1600px;
+  width: 220px;
   display: flex;
   justify-content: space-between;
   flex-direction: column;
@@ -345,18 +284,9 @@ body {
   overflow: hidden;
 }
 
-.fgc .info.container.top {
-  top: 8px;
-  height: 34px;
-  width: 300px;
-  font-size: 16px;
-  padding: 8px 16px;
-}
-
-
 .info.container.bottom {
-  top: 10px;
-  left: 837px;
+  top: 30px;
+  left: 1600px;
   display: flex;
   justify-content: center;
   height: unset;
@@ -369,8 +299,8 @@ body {
 }
 
 #bestof {
-  top: 72px;
-  left: 837px;
+  top: 92px;
+  left: 1600px;
   width: 220px;
   justify-content: center;
   color: var(--tls-yellow); 
@@ -469,7 +399,7 @@ body {
 .score {
   width: 64px;
   height: 50px;
-  font-size: 45px;
+  font-size: 38px;
   color: var(--tls-purple);
   flex-grow: 0;
   flex-shrink: 0;
@@ -479,13 +409,13 @@ body {
 }
 
 .p1.score {
-  left: 763px;
-  top: 26px;
+  left: 725px;
+  bottom: 38px;
 }
 
 .p2.score {
-  right: 800px;
-  top: 26px;
+  right: 400px;
+  bottom: 38px;
 }
 
 .pronoun {
@@ -506,11 +436,11 @@ body {
 }
 
 .sponsor {
-  color: var(--text-color);
+  color: black;
 }
 
 .pronoun {
-  color: var(--text-color);
+  color: black;
 }
 
 .p2 .score {
