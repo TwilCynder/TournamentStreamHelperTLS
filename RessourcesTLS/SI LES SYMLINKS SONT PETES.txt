@@ -1,6 +1,6 @@
-seul le common et FunkyStocks est nécessaire au bon fonctionnement de tout le bousin
+Seul le common et FunkyStocks est nécessaire au bon fonctionnement de tout le bousin
 
-sinon à refaire y a : 
-shakespike (ici)
+Sinon à refaire y a : 
+Shakespike (ici)
 
-les trucs dans OBS Dirs (pas forcément très très utile non plus)
+Les trucs dans OBS Dirs (pas forcément très très utile non plus)
