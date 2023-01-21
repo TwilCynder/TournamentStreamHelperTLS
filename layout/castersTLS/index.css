@@ -35,7 +35,7 @@ body {
   /*box-sizing: border-box;*/
   overflow: hidden;
   /*border-radius: 12px;*/
-  background-image: url("../../RessourcesTLS/");
+  background-image: url("../../RessourcesTLS/Images/BG-CDV.jpg");
   border: 7px solid ;
   border-color: var(--tls-yellow);
   font-family: Gobold;

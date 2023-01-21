@@ -22,6 +22,7 @@
       JSON.stringify(oldData.score.recent_sets) !=
         JSON.stringify(data.score.recent_sets)
     ) {
+      console.log(data.score.recent_sets)
       playersRecentSets = data.score.recent_sets;
       console.log(playersRecentSets);
     }
@@ -33,9 +34,11 @@
       playersRecentSets == null ||
       (playersRecentSets.state == "done" && playersRecentSets.sets.length == 0)
     ) {
+      console.log(1);
       recentSetsHtml += ``;
       players += ``;
     } else if (playersRecentSets.state != "done") {
+      console.log(2);
       recentSetsHtml += `<div class="lds-ring"><div></div><div></div><div></div><div></div></div>`;
       players = "";
     } else {
@@ -54,8 +57,9 @@
           }
         });
       });
-
+      console.log("???");
       playersRecentSets.sets.slice(0, 5).forEach((_set) => {
+        console.log("ALO");
         recentSetsHtml += `
             <div class="set_container">
               <div class="${_set.winner == 0 ? "set_winner" : "set_loser"}">
