@@ -2,6 +2,8 @@ import os
 from time import sleep
 from PyQt5 import QtCore, QtGui, QtWidgets, QtWebEngineWidgets
 
+os.environ["QTWEBENGINE_DISABLE_SANDBOX"] = "1"
+
 class PageShotter(QtWebEngineWidgets.QWebEngineView):
     def __init__(self, parent=None):
         super(PageShotter, self).__init__(parent)
@@ -72,7 +74,7 @@ if __name__ == '__main__':
                 print(os.path.join(path, name))
                 in_out.append([
                     f"file:///{os.path.join(path, name).replace(os.path.sep, '/')}",
-                    "renders/"+path.rsplit(os.sep, 1)[1]+"_"+name.split(".")[0]+".png"
+                    path.replace(os.path.sep, '/')+"/"+name.split(".")[0]+"_preview.png"
                 ])
     print(in_out)
 
