@@ -4,6 +4,54 @@
   var data = {};
   var oldData = {};
 
+  function GetBannedStages(ruleset, state) {
+    let banList = [];
+
+    if (ruleset.useDSR) {
+      banList = state.stagesPicked;
+    } else if (ruleset.useMDSR && state.lastWinner !== -1) {
+      banList =
+        state.stagesWon && state.stagesWon.length > 0
+          ? state.stagesWon[(state.lastWinner + 1) % 2]
+          : [];
+    }
+
+    return banList;
+  }
+
+  function IsStageBanned(ruleset, state, stage) {
+    let banList = GetBannedStages(ruleset, state);
+
+    console.log("banList", banList)
+
+    let found = banList.findIndex((e) => e === stage);
+    if (found !== -1) {
+      return true;
+    }
+    return false;
+  }
+
+  function IsStageStriked(state, stage, previously = false) {
+    for (
+      let i = 0;
+      i < Object.values(state.strikedStages).length;
+      i += 1
+    ) {
+      if (
+        i === Object.values(state.strikedStages).length - 1 &&
+        previously
+      ) {
+        continue;
+      }
+      let round = Object.values(state.strikedStages)[i];
+      let found = round.findIndex((e) => e === stage);
+      if (found !== -1) {
+        return true;
+      }
+    }
+    return false;
+  }
+
   async function Update() {
     oldData = data;
     data = await getData();
@@ -11,9 +59,9 @@
     if (
       !oldData.score ||
       JSON.stringify(data.score.stage_strike) !=
-        JSON.stringify(oldData.score.stage_strike)
+        JSON.stringify(oldData.score.stage_strike) ||
+      JSON.stringify(oldData.score.team) != JSON.stringify(data.score.team)
     ) {
-      console.log(data.score.stage_strike);
       html = "";
 
       try {
@@ -34,45 +82,65 @@
             teamName = team.teamName;
           }
 
+          if(teamName == ""){
+            teamName = "P"+(t+1)
+          }
+
           teamNames.push(teamName);
         });
 
-        Object.keys(data.score.stage_strike.stages).forEach((stage) => {
-          let path = data.score.stage_strike.stages[stage].path;
+        console.log(data.score.teamsSwapped)
+
+        if(data.score.teamsSwapped == true){
+          teamNames = teamNames.reverse()
+        }
+
+        console.log(teamNames)
+
+        console.log(data.score.stage_strike)
+
+        let allStages = data.score.ruleset.neutralStages;
+
+        if(data.score.stage_strike.currGame > 0){
+          allStages = allStages.concat(data.score.ruleset.counterpickStages)
+        }
+
+        console.log(allStages)
+
+        allStages.forEach((stage) => {
+          let path = stage.path;
           html += `
               <div class="stage-container">
                   <div class="stage-icon" style="background-image: url('../../${path}')">
                       ${
-                        data.score.stage_strike.striked.includes(stage) &&
-                        !data.score.stage_strike.dsr.includes(stage)
+                        IsStageStriked(data.score.stage_strike, stage.codename)
                           ? `<div class="stage-striked stamp"></div>`
                           : ""
                       }
-                      ${
-                        data.score.stage_strike.dsr.includes(stage)
+                      ${IsStageBanned(data.score.ruleset, data.score.stage_strike, stage.codename)
                           ? `<div class="stage-dsr stamp"></div>`
                           : ""
                       }
                       ${
-                        data.score.stage_strike.selected &&
-                        data.score.stage_strike.selected.codename == stage
+                        data.score.stage_strike.selectedStage &&
+                        data.score.stage_strike.selectedStage == stage.codename
                           ? `<div class="stage-selected stamp"></div>`
                           : ""
                       }
                   </div>
                   <div class="stage-name">
                       <div class="text">
-                          ${data.score.stage_strike.stages[stage].name}
+                          ${stage.name}
                       </div>
                   </div>
                   ${
-                    data.score.stage_strike.striked.includes(stage) &&
-                    (data.score.stage_strike.strikedBy[0].includes(stage) ||
-                      data.score.stage_strike.strikedBy[1].includes(stage))
+                    IsStageStriked(data.score.stage_strike, stage.codename) &&
+                    (data.score.stage_strike.strikedBy[0].includes(stage.codename) ||
+                      data.score.stage_strike.strikedBy[1].includes(stage.codename))
                       ? `<div class="banned-by-name">
                         <div class="text">
                           ${
-                            data.score.stage_strike.strikedBy[0].includes(stage)
+                            data.score.stage_strike.strikedBy[0].includes(stage.codename)
                               ? teamNames[0]
                               : teamNames[1]
                           }
@@ -81,8 +149,8 @@
                       : ""
                   }
                   ${
-                    data.score.stage_strike.selected &&
-                    data.score.stage_strike.selected.codename == stage
+                    data.score.stage_strike.selectedStage &&
+                    data.score.stage_strike.selectedStage == stage.codename
                       ? `<div class="banned-by-name">
                         <div class="text">
                           ${teamNames[data.score.stage_strike.currPlayer]}
@@ -109,7 +177,7 @@
   $(window).on("load", () => {
     $("body").fadeTo(1000, 1, async () => {
       Start();
-      setInterval(Update, 32);
+      setInterval(Update, 64);
     });
   });
 })(jQuery);

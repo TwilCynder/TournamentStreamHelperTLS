@@ -338,11 +338,7 @@ body {
   background-position: center;
   width: 32px;
   height: 22px;
-  border-radius: 8px;
-}
-
-.flagstate .text div {
-  margin-left: 4px;
+  border-radius: 6px;
 }
 
 .sponsor_icon > div > div {
@@ -408,10 +404,23 @@ body {
 .pronoun {
   font-size: 12px;
   text-transform: uppercase;
-  margin-top: auto;
   margin-left: 6px;
+  margin-right: 6px;
   letter-spacing: normal;
-  line-height: 32px;
+  padding-left: 8px;
+  padding-right: 8px;
+  border-radius: 6px;
+  color: var(--bg-color);
+  place-self: flex-end;
+  transform: translateY(-50%);
+}
+
+.p1 .pronoun {
+  background: var(--p1-sponsor-color);
+}
+
+.p2 .pronoun {
+  background: var(--p2-sponsor-color);
 }
 
 .p1 .score {
@@ -427,19 +436,11 @@ body {
   color: var(--p1-sponsor-color);
 }
 
-.p1 .pronoun {
-  color: var(--p1-sponsor-color);
-}
-
 .p2 .score {
   color: var(--p2-sponsor-color);
 }
 
 .p2 .sponsor {
-  color: var(--p2-sponsor-color);
-}
-
-.p2 .pronoun {
   color: var(--p2-sponsor-color);
 }
 

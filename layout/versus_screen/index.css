@@ -68,6 +68,15 @@ body {
   padding-right: 40px;
   width: 340px;
   overflow: hidden;
+  align-items: flex-start;
+}
+
+.column > div {
+  max-width: 100%;
+}
+
+.player.container.p2 .column {
+  align-items: flex-end;
 }
 
 .player.container.p2 .column > div {
@@ -200,7 +209,7 @@ body {
   max-width: 100%;
 }
 
-.best_of .container {
+.container.best_of {
   top: 20px;
   right: 64px;
   width: 320px;
@@ -209,9 +218,14 @@ body {
   padding-left: 20px;
   padding-right: 20px;
   background-position: center;
+  opacity: 0;
 }
 
-.phase .container {
+.best_of {
+  max-width: 100%;
+}
+
+.container.phase {
   top: 20px;
   left: 64px;
   width: 320px;
@@ -220,6 +234,11 @@ body {
   padding-left: 20px;
   padding-right: 20px;
   background-position: center;
+  opacity: 0;
+}
+
+.phase {
+  max-width: 100%;
 }
 
 .flagscontainer {
@@ -386,4 +405,22 @@ body {
 
 .p2 .sponsor_logo {
   right: 5px;
+}
+
+.pronoun {
+  font-size: 20px;
+  text-transform: uppercase;
+  letter-spacing: 2px;
+  padding-left: 8px;
+  padding-right: 8px;
+  border-radius: 6px;
+  color: var(--bg-color);
+}
+
+.p1 .pronoun {
+  background: var(--p1-sponsor-color);
+}
+
+.p2 .pronoun {
+  background: var(--p2-sponsor-color);
 }

@@ -100,6 +100,11 @@
           let score = [data.score.score_left, data.score.score_right];
 
           SetInnerHtml($(`.p${t + 1}.container .score`), String(team.score));
+
+          SetInnerHtml(
+            $(`.p${t + 1} .sponsor-container`),
+            `<div class='sponsor-logo' style='background-image: url(../../${player.sponsor_logo})'></div>`
+          );
         }
       });
     });
@@ -113,7 +118,8 @@
 
     let phaseTexts = [];
     if (data.score.phase) phaseTexts.push(data.score.phase.toUpperCase());
-    if (data.score.best_of) phaseTexts.push(`BEST OF ${data.score.best_of}`);
+    if (data.score.best_of_text)
+      phaseTexts.push(`${data.score.best_of_text}`.toUpperCase());
 
     SetInnerHtml($(".phase"), phaseTexts.join(" - "));
 

@@ -6,6 +6,7 @@ from flask import Flask, send_from_directory, request
 from flask_cors import CORS, cross_origin
 import json
 from .StateManager import StateManager
+from .TSHStatsUtil import TSHStatsUtil
 
 
 class WebServer(QThread):
@@ -14,9 +15,10 @@ class WebServer(QThread):
     app.config['CORS_HEADERS'] = 'Content-Type'
     scoreboard = None
 
-    def __init__(self, parent=None, scoreboard=None) -> None:
+    def __init__(self, parent=None, scoreboard=None, stageWidget=None) -> None:
         super().__init__(parent)
         WebServer.scoreboard = scoreboard
+        WebServer.stageWidget = stageWidget
         self.host_name = "0.0.0.0"
         self.port = 5000
 
@@ -54,14 +56,42 @@ class WebServer(QThread):
             "best_of": StateManager.Get(f"score.best_of"),
             "match": StateManager.Get(f"score.match"),
             "phase": StateManager.Get(f"score.phase"),
-            "state": StateManager.Get(f"score.stage_strike.state", {})
+            "state": StateManager.Get(f"score.stage_strike", {})
         })
 
         return data
 
-    @app.route('/post', methods=['POST'])
-    def post_route():
-        StateManager.Set(f"score.stage_strike", json.loads(request.get_data()))
+    @app.route('/stage_clicked', methods=['POST'])
+    def stage_clicked():
+        WebServer.stageWidget.stageStrikeLogic.StageClicked(json.loads(request.get_data()))
+        return "OK"
+    
+    @app.route('/confirm_clicked', methods=['POST'])
+    def confirm_clicked():
+        WebServer.stageWidget.stageStrikeLogic.ConfirmClicked()
+        return "OK"
+    
+    @app.route('/rps_win', methods=['POST'])
+    def rps_win():
+        WebServer.stageWidget.stageStrikeLogic.RpsResult(int(json.loads(request.get_data()).get("winner")))
+        return "OK"
+    
+    @app.route('/match_win', methods=['POST'])
+    def match_win():
+        WebServer.stageWidget.stageStrikeLogic.MatchWinner(int(json.loads(request.get_data()).get("winner")))
+
+        teams = ["1", "2"]
+        if WebServer.scoreboard.teamsSwapped:
+            teams.reverse()
+        
+        WebServer.team_scoreup(teams[int(json.loads(request.get_data()).get("winner"))])
+        
+        return "OK"
+    
+    @app.route('/reset', methods=['POST'])
+    def reset():
+        WebServer.stageWidget.stageStrikeLogic.Initialize()
+        WebServer.reset_scores()
         return "OK"
 
     @app.route('/score', methods=['POST'])
@@ -165,6 +195,58 @@ class WebServer(QThread):
     @app.route('/swap-teams')
     def swap_teams():
         WebServer.scoreboard.SwapTeams()
+        return "OK"
+
+    # Opens Set Selector Window
+    @app.route('/open-set')
+    def open_sets():
+        WebServer.scoreboard.signals.SetSelection.emit()
+        return "OK"
+
+    # Pulls Current Stream Set
+    @app.route('/pull-stream')
+    def pull_stream_set():
+        WebServer.scoreboard.signals.StreamSetSelection.emit()
+        return "OK"
+
+    # Pulls Current User Set
+    @app.route('/pull-user')
+    def pull_user_set():
+        WebServer.scoreboard.signals.UserSetSelection.emit()
+        return "OK"
+
+    # Resubmits Call for Recent Sets
+    @app.route('/stats-recent-sets')
+    def stats_recent_sets():
+        TSHStatsUtil.instance.signals.RecentSetsSignal.emit()
+        return "OK"
+
+    # Resubmits Call for Last Sets
+    @app.route('/stats-last-sets-<player>')
+    def stats_last_sets(player):
+        if player == "1":
+            TSHStatsUtil.instance.signals.LastSetsP1Signal.emit()
+        elif player == "2":
+            TSHStatsUtil.instance.signals.LastSetsP2Signal.emit()
+        elif player == "both":
+            TSHStatsUtil.instance.signals.LastSetsP1Signal.emit()
+            TSHStatsUtil.instance.signals.LastSetsP2Signal.emit()
+        else:
+            print("[Last Sets] Unable to find player defined. Allowed values are: 1, 2, or both")
+        return "OK"
+
+   # Resubmits Call for History Sets
+    @app.route('/stats-history-sets-<player>')
+    def stats_history_sets(player):
+        if player == "1":
+            TSHStatsUtil.instance.signals.PlayerHistoryStandingsP1Signal.emit()
+        elif player == "2":
+            TSHStatsUtil.instance.signals.PlayerHistoryStandingsP2Signal.emit()
+        elif player == "both":
+            TSHStatsUtil.instance.signals.PlayerHistoryStandingsP1Signal.emit()
+            TSHStatsUtil.instance.signals.PlayerHistoryStandingsP2Signal.emit()
+        else:
+            print("[History Standings] Unable to find player defined. Allowed values are: 1, 2, or both")
         return "OK"
 
     # Resets scores
