@@ -1,6 +1,6 @@
 # TournamentStreamHelper
 
-A Stream helper for fighting game tournaments!
+A Stream helper for fighting game tournaments! Forked from [the original repository by joaorb64](https://github.com/joaorb64/TournamentStreamHelper)
 
 # REFER TO THE WIKI FOR SETUP AND USAGE
 
