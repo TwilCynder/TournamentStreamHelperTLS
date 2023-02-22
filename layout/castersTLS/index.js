@@ -10,7 +10,7 @@
   var data = {};
   var oldData = {};
 
-  var logos = $("#logos");
+  var logos = $("#logos-container");
 
   async function Update() {
     oldData = data;
@@ -24,8 +24,6 @@
       let html = "";
 
       let casters = Object.values(data.commentary);
-
-      logos.hidden = casters.length != 2;
 
       casters.forEach((commentator, index) => {
         html += `
@@ -48,7 +46,14 @@
       $(".container").html(html);
     }
 
-    Object.values(data.commentary).forEach((commentator, index) => {
+    let casters = Object.values(data.commentary);
+    if (casters.length < 1 || casters[1].name == ""){
+      logos.hide();
+    } else {
+      logos.show();
+    }
+
+    casters.forEach((commentator, index) => {
       if (commentator.name) {
         $(`.commentator${index}`).css("display", "");
         SetInnerHtml(
