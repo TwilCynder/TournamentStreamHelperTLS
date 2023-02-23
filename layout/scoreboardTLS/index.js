@@ -189,7 +189,12 @@
 
     SetInnerHtml($(".tournament_name"), data.tournamentInfo.tournamentName);
 
-    SetInnerHtml($(".match"), data.score.match);
+    if (data.score.match == "Tour 1 Loser") {
+      SetInnerHtml($(".match"), "Huitieme Loser");
+    } else {
+      SetInnerHtml($(".match"), data.score.match);
+    }
+    
 
     /*let phaseTexts = [];
     if (data.score.phase) phaseTexts.push(data.score.phase);

@@ -1,4 +1,4 @@
-const logoInterval = 2000;
+const logoInterval = 10000;
 const fadeInTime = .3; //(seconds)
 const fadeOutTime = .2;
 

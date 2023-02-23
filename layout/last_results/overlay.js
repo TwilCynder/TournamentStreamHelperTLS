@@ -1,3 +1,31 @@
+const api_key = 'd0206138a8ea04cf8e34f80ecc177663';
+
+const query = `         
+        query Query($slug: String, $setNum: Int) {
+            event(slug: $slug){
+                sets(page: 1, perPage: $setNum, sortType:RECENT, filters:{
+                    state: 3
+                }){
+                    nodes{
+                        slots {
+                            standing{
+                                stats{
+                                    score{
+                                        value
+                                    }
+                                }
+                            }
+                            entrant {
+                                id
+                                name
+                            }            
+                        }
+                    }
+                }
+            }
+        }    
+    ` 
+
 $(() => {
     let setsContainer = $("#sets");
 
@@ -27,20 +55,45 @@ $(() => {
         setsContainer.append(res);
     }
 
-    add_set("SnooSnoo", 2, "Nacy's Bitch", 1, 4);
+    //add_set("SnooSnoo", 2, "Nacy's Bitch", 1, 4);
+              
+    function load_sets(){
+        console.log("Load sets");
+        fetch('https://api.start.gg/gql/alpha', {         
+            method: 'POST',         
+            headers: {             
+                'Content-Type': 'application/json',             
+                'accept' : 'application/json',             
+                'Authorization' : `Bearer ${api_key}`         
+            },         
+            body: JSON.stringify({
+                'query': query,
+                'variables' : {
+                    "slug": "tournament/stock-o-clock-30/event/1v1-ultimate",
+                    "setNum": 6
+                } 
+            }),  
+            
+        })     
+        .then((response) => response.json())     
+        .then((data) => {  
+            $('#sets').empty();   
+            for (let i = 1; i < data.data.event.sets.nodes.length; i++){
+                let set = data.data.event.sets.nodes[i];
+                let p1 = set.slots[0].entrant.name;
+                let p1score = set.slots[0].standing.stats.score.value;
+                let p2 = set.slots[1].entrant.name;
+                let p2score = set.slots[1].standing.stats.score.value;
+                add_set(p1, p1score, p2, p2score, i);
+            }
+        })
+        .catch(err => {console.error(err)});
+    }
 
-    let res = "";
+    load_sets();
+    setTimeout(() => {
+        load_sets();
+    }, 10000);
 
-    $("#R1").html('loading....');
-
-    $.ajax({url: "https://cors-anywhere.herokuapp.com/https://api.start.gg/gql/alpha",
-        contentType: "application/json",type:'POST',
-        data: JSON.stringify({ query:`{
-            sayHello(name:"${res}")}`
-        }),
-        success: function(result) {
-            console.log(JSON.stringify(result));
-            $("#R1").html(JSON.stringify(result));
-        }
-    });
+    //$("#R1").html(res);
 })
