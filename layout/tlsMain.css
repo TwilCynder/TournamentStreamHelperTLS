@@ -4,12 +4,18 @@
 
 :root {
     --tls-purple: #3d0082;
+    --tls-purple2: #48278F;
+    --blue: #22278F;
     --tls-yellow: #efd000;
+    --tls-yellow2 : #FCaa21;
     --tls-black:  #333333;
     --tls-p1-score: var(--tls-yellow);
     --tls-p1-sponsor: var(--tls-yellow);
     --tls-p2-score: var(--tls-purple);
     --tls-p2-sponsor: var(--tls-purple);
+    --tls-yellow-gradient: linear-gradient(135deg, var(--tls-yellow) 0%, var(--tls-yellow2) 100%);
+    --tls-purple-gradient: linear-gradient(135deg, var(--tls-purple) 0%, var(--blue) 100%);
+    --tls-font: 'Gobold';
 }
 
 @font-face {

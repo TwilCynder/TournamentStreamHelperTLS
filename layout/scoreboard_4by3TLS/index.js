@@ -24,7 +24,7 @@
     )
     .from(
       [".container.top"],
-      { duration: 1, y: "-100%", ease: "power2.inOut" },
+      { duration: 1, y: "+100%", ease: "power2.inOut" },
       0
     )
     .from(
@@ -45,7 +45,7 @@
     data = await getData();
 
     Object.values(data.score.team).forEach((team, t) => {
-      console.log(team);
+      //console.log(team);
 
       let team_id = ["left", "right"][t];
 
@@ -129,6 +129,7 @@
                     $(e),
                     Object.values(player.character)[i].assets["full"].eyesight
                   );
+                  
                 });
               }
             );
