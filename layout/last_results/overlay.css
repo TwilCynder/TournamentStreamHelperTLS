@@ -11,7 +11,7 @@ body {
 }
 
 .titel {
-    background-color: black;
+    background-color: rgba(0, 0, 0, 0.85);
     border-radius: 25px;
     padding: 3vh;
     font-size: 8vh;
