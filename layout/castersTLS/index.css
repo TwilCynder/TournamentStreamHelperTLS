@@ -1,5 +1,4 @@
 body {
-  font-family: var(--font);
   color: var(--tls-yellow);
   font-weight: bold;
   opacity: 0;
@@ -93,19 +92,4 @@ body {
   background-position: center;
   border-radius: var(--border-radius);
   z-index: 9;
-}
-
-#logo-ogc {
-  width: 150px;
-  height: 150px;
-}
-
-#logo-gaminglink {
-  width: 150px;
-  height: 150px;
-}
-
-#logo-soc {
-  width: 150px;
-  height: 150px;
 }

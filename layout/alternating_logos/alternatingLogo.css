@@ -6,15 +6,3 @@
     background-repeat: no-repeat;
     background-position: center;
 }
-
-#logo-tls {
-    background-image: url("../../RessourcesTLS/common/Overlay/Logo.png");
-  }
-
-  #logo-gaminglink {
-    background-image: url("../../RessourcesTLS/common/Overlay/gaminglink.png");
-  }
-
-  #logo-ogc {
-    background-image: url("../../RessourcesTLS/common/Overlay/occitania\ gaming\ convention.png");
-  }

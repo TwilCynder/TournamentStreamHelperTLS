@@ -1,13 +1,3 @@
-.absol {
-    position: absolute;
-}
-
-:root {
-    --tls-purple: #3d0082;
-    --tls-yellow: #efd000;
-    --tls-black:  #333333
-}
-
 @font-face {
     font-family: "Gobold";
     src: url("../RessourcesTLS/common/Fonts/Gobold\ Extra1.otf");
@@ -18,6 +8,17 @@
     src: url("../RessourcesTLS/common/Fonts/dosis.ttf");
 }
 
+.absol {
+    position: absolute;
+}
+
+:root {
+    --tls-purple: #3d0082;
+    --tls-yellow: #efd000;
+    --tls-black:  #333333;
+    --tls-font: "Gobold";
+    --tls-font-2: "Dosis";
+}
 
 #logo-soc {
 background-image: url("../RessourcesTLS/SOC/Overlay/Logo.png");
