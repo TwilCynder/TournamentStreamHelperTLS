@@ -1,8 +1,0 @@
-- clone ou pull de ce repository (duh)
-- installation d'OBS
-	- importer TLS.json
-	- mettre en place les scripts countdown.lua et instant-replay.lua
-- installation des plugins OBS :
-	- transition matrix
-- installation des resources externes
-	- Animated Lower Thirds -> installer le dock
