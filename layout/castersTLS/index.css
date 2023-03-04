@@ -1,5 +1,4 @@
 body {
-  font-family: var(--font);
   color: var(--tls-yellow);
   font-weight: bold;
   opacity: 0;
@@ -35,7 +34,7 @@ body {
   /*box-sizing: border-box;*/
   overflow: hidden;
   /*border-radius: 12px;*/
-  background-image: url("../../RessourcesTLS/Images/BG-CDV.jpg");
+  background-image: url("../../RessourcesTLS/common/Overlay/BG-CDV.jpg");
   border: 7px solid ;
   border-color: var(--tls-yellow);
   font-family: Gobold;
@@ -93,26 +92,4 @@ body {
   background-position: center;
   border-radius: var(--border-radius);
   z-index: 9;
-}
-
-#logo-tls {
-  background-image: url("../../RessourcesTLS/common/Overlay/Logo.png");
-}
-
-#logo-ogc {
-  background-image: url("../../RessourcesTLS/Images/occitania\ gaming\ convention.png");
-  width: 150px;
-  height: 150px;
-}
-
-#logo-gaminglink {
-  background-image: url("../../RessourcesTLS/Images/gaminglink.png");
-  width: 150px;
-  height: 150px;
-}
-
-#logo-soc {
-  background-image: url("../../RessourcesTLS/SOC/Overlay/Logo.png");
-  width: 150px;
-  height: 150px;
 }
