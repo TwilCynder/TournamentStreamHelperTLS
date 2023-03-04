@@ -1,25 +1,5 @@
-@font-face {
-  font-family: "NotoSans";
-  src: url("../include/NotoSans-Regular.ttf") format("truetype");
-}
-
-@font-face {
-  font-family: "Smash";
-  src: url("../../ultimate-stream-tool-tls/Stream\ Tool/SmashInnResources/Fonts/Gobold\ Regular.otf");
-}
-
-@font-face {
-  font-family: "RobotoCondensed";
-  src: url("../include/RobotoCondensed.ttf") format("truetype");
-}
-
-@font-face {
-  font-family: "Roboto";
-  src: url("../include/Roboto-Regular.ttf") format("truetype");
-}
-
 body {
-  font-family: Smash;
+  font-family: Gobold;
   font-weight: bold;
   opacity: 0;
   overflow: hidden;

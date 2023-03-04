@@ -1,3 +1,13 @@
+@font-face {
+    font-family: "Gobold";
+    src: url("../RessourcesTLS/common/Fonts/Gobold\ Extra1.otf");
+}
+
+@font-face {
+    font-family: "Dosis";
+    src: url("../RessourcesTLS/common/Fonts/dosis.ttf");
+}
+
 .absol {
     position: absolute;
 }
@@ -18,11 +28,6 @@
     --tls-font: 'Gobold';
 }
 
-@font-face {
-    font-family: "Gobold";
-    src: url("../RessourcesTLS/common/Fonts/Gobold\ Extra1.otf");
-}
-
 #logo-soc {
 background-image: url("../RessourcesTLS/SOC/Overlay/Logo.png");
 }
@@ -32,9 +37,9 @@ background-image: url("../RessourcesTLS/SOC/Overlay/Logo.png");
 }
 
 #logo-ogc {
-    background-image: url("../RessourcesTLS/Images/occitania\ gaming\ convention.png");
+    background-image: url("../RessourcesTLS/common/Overlay/occitania\ gaming\ convention.png");
 }
 
 #logo-gaminglink {
-    background-image: url("../RessourcesTLS/Images/gaminglink.png");
+    background-image: url("../RessourcesTLS/common/Overlay/gaminglink.png");
 }

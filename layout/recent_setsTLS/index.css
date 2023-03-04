@@ -3,16 +3,6 @@
   --text-color: black;
 }
 
-@font-face {
-  font-family: "Dosis";
-  src: url("../../RessourcesTLS/common/Fonts/dosis-semibold_[fr.allfont.net].ttf");
-}
-
-@font-face {
-  font-family: "Gobold";
-  src: url("../../RessourcesTLS/common/Fonts/Gobold\ Regular.otf");
-}
-
 body {
   font-family: "Dosis";
   letter-spacing: 1.2px;
