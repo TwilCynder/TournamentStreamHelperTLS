@@ -6,12 +6,12 @@
 body {
     color: aliceblue;
     padding: 5vh;
-    font-size: 10vh;
+    font-size: 6vh;
     font-family: Smash;
 }
 
 .titel {
-    background-color: #601E81;
+    background-color: rgba(0, 0, 0, 0.85);
     border-radius: 25px;
     padding: 3vh;
     font-size: 8vh;
@@ -22,6 +22,7 @@ body {
     border-radius: 25px;
     margin-left: 5vh;
     margin-right: 5vh;
+    margin-top: 1.5vh;
     padding: 3vh;
     display: flex;
     justify-content: space-between;
