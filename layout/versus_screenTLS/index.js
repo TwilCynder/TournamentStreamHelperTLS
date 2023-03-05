@@ -102,7 +102,16 @@ function wrapChracter(html){
           `
           );
 
-          SetInnerHtml($(`.p${t + 1} .seed`), `Seed ${player.seed}`);
+          {
+            let html = "";
+            if (player.seed){
+              SetInnerHtml($(`.p${t + 1} .seed`), `Seed ${player.seed}`);
+            } else {
+              SetInnerHtml($(`.p${t + 1} .seed`), ``);
+            }
+          }
+          
+          
 
           SetInnerHtml(
             $(`.p${t + 1} .flagcountry`),
