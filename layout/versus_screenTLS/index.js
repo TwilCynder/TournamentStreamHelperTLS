@@ -1,7 +1,16 @@
+function wrapChracter(html){
+  return `
+    <div class = "character_container">
+      ${html}
+    </div>    
+`
+}
+
+
 (($) => {
   // Change this to the name of the assets pack you want to use
   // It's basically the folder name: user_data/games/game/ASSETPACK
-  var ASSET_TO_USE = "full";
+  var ASSET_TO_USE = "webm";
 
   // Change this to select wether to flip P2 character asset or not
   // Set it to true or false
@@ -77,7 +86,7 @@
               : ""
           );
 
-          SetInnerHtml($(`.p${t + 1} .real_name`), `${player.real_name}`);
+          //SetInnerHtml($(`.p${t + 1} .real_name`), `${player.real_name}`);
 
           SetInnerHtml(
             $(`.p${t + 1} .twitter`),
@@ -92,6 +101,8 @@
               }
           `
           );
+
+          SetInnerHtml($(`.p${t + 1} .seed`), `Seed ${player.seed}`);
 
           SetInnerHtml(
             $(`.p${t + 1} .flagcountry`),
@@ -131,6 +142,7 @@
             let zIndexMultiplyier = 1;
             if (t == 1) zIndexMultiplyier = -1;
             characters.forEach((character, c) => {
+              console.log("Char : ", ASSET_TO_USE, character.assets[ASSET_TO_USE]);
               if (
                 character &&
                 character.assets &&
@@ -138,40 +150,27 @@
               ) {
                 if (!character.assets[ASSET_TO_USE].asset.endsWith(".webm")) {
                   // if asset is a image, add a image element
-                  html += `
-                  <div class="bg char${
-                    t == 1 ? c : characters.length - 1 - c
-                  }" style="z-index: ${c * zIndexMultiplyier};">
-                      <div
-                        class="portrait ${
-                          !FLIP_P2_ASSET && t == 1 ? "invert_shadow" : ""
-                        }"
-                        style='
-                            background-image: url(../../${
-                              character.assets[ASSET_TO_USE].asset
-                            });
-                            ${
-                              t == 1 && FLIP_P2_ASSET
-                                ? "transform: scaleX(-1)"
-                                : ""
-                            }
-                        '>
-                        </div>
-                  </div>
-                    `;
+                  html += wrapChracter(`
+                    <img
+                      class="portrait ${
+                        !FLIP_P2_ASSET && t == 1 ? "invert_shadow flip" : ""
+                      }"
+                      src='
+                          ../../${
+                            character.assets[ASSET_TO_USE].asset
+                          }
+                          
+                    '/>
+                  `);
                 } else {
                   // if asset is a video, add a video element
-                  html += `
-                  <div class="bg char${
-                    t == 1 ? c : characters.length - 1 - c
-                  }" style="z-index: ${c * zIndexMultiplyier};">
+                  html += wrapChracter(`
                     <video id="video_${p}" class="video" width="auto" height="100%" autoplay muted>
                       <source src="../../${
                         character.assets[ASSET_TO_USE].asset
                       }">
                     </video>
-                  </div>
-                    `;
+                  `);
                 }
               }
             });
@@ -278,6 +277,8 @@
         SetInnerHtml($(`.p${t + 1} .real_name`), ``);
 
         SetInnerHtml($(`.p${t + 1} .twitter`), ``);
+
+        SetInnerHtml($(`.p${t + 1} .seed`), ``);
 
         SetInnerHtml($(`.p${t + 1} .flagcountry`), "");
 

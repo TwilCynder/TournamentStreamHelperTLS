@@ -26,6 +26,8 @@
     --tls-yellow-gradient: linear-gradient(135deg, var(--tls-yellow) 0%, var(--tls-yellow2) 100%);
     --tls-purple-gradient: linear-gradient(135deg, var(--tls-purple) 0%, var(--blue) 100%);
     --tls-font: 'Gobold';
+
+    --twitter-blue: #1DA1F2;
 }
 
 #logo-soc {
