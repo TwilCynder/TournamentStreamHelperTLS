@@ -3,6 +3,10 @@
   src: url("../include/RobotoCondensed.ttf") format("truetype");
 }
 
+:root {
+  --border-color: var(--tls-purple2);
+}
+
 body {
   font-family: Dosis;
   letter-spacing: 1.2px;
@@ -57,8 +61,8 @@ body {
   z-index: 9;
   /* box-shadow: 0px 0px 0px 10px yellow ; */
 
-  border-top: solid 8px var(--tls-purple2);
-  border-bottom: solid 8px var(--tls-purple2);
+  border-top: solid 8px var(--border-color);
+  border-bottom: solid 8px var(--border-color);
 }
 
 .p1.container:after {
@@ -73,9 +77,9 @@ body {
   -moz-transform: skewX(-10deg);
   -ms-transform: skewX(-10deg);
   transform: skewX(-10deg);
-  border-right: solid 8px var(--tls-purple2);
-  border-top: solid 8px var(--tls-purple2);
-  border-bottom: solid 8px var(--tls-purple2);
+  border-right: solid 8px var(--border-color);
+  border-top: solid 8px var(--border-color);
+  border-bottom: solid 8px var(--border-color);
 }
 
 .p2.container:before {
@@ -90,9 +94,9 @@ background-color: inherit;
 -moz-transform: skewX(10deg);
 -ms-transform: skewX(10deg);
 transform: skewX(10deg);
-border-left: solid 8px var(--tls-purple2);
-border-top: solid 8px var(--tls-purple2);
-border-bottom: solid 8px var(--tls-purple2);
+border-left: solid 8px var(--border-color);
+border-top: solid 8px var(--border-color);
+border-bottom: solid 8px var(--border-color);
 }
 
 .player.container.p2 {
@@ -231,6 +235,7 @@ border-bottom: solid 8px var(--tls-purple2);
   transform: translateX(-50%);
   width: 700px;
   position: absolute;
+  z-index: -10;
 }
 
 .flex_container.top{
@@ -253,9 +258,9 @@ border-bottom: solid 8px var(--tls-purple2);
     -moz-transform: skewX(10deg);
     -ms-transform: skewX(10deg);
     transform: skewX(10deg);
-    border-top: solid 10px var(--tls-purple2);
-    border-bottom: solid 10px var(--tls-purple2);
-    border-left: solid 10px var(--tls-purple2);
+    border-top: solid 10px var(--border-color);
+    border-bottom: solid 10px var(--border-color);
+    border-left: solid 10px var(--border-color);
 }
 
 .container.top:before{
@@ -271,9 +276,9 @@ border-bottom: solid 8px var(--tls-purple2);
   -moz-transform: skewX(-10deg);
   -ms-transform: skewX(-10deg);
   transform: skewX(-10deg);
-  border-top: solid 10px var(--tls-purple2);
-  border-bottom: solid 10px var(--tls-purple2);
-  border-right: solid 10px var(--tls-purple2);
+  border-top: solid 10px var(--border-color);
+  border-bottom: solid 10px var(--border-color);
+  border-right: solid 10px var(--border-color);
 }
 
 .tournament {
@@ -308,7 +313,7 @@ border-bottom: solid 8px var(--tls-purple2);
   -moz-transform: skewX(-10deg);
   -ms-transform: skewX(-10deg);
   transform: skewX(-10deg);
-  border: solid 8px var(--tls-purple2);
+  border: solid 8px var(--border-color);
 }
 
 .best_of {
@@ -333,7 +338,7 @@ border-bottom: solid 8px var(--tls-purple2);
   -moz-transform: skewX(10deg);
   -ms-transform: skewX(10deg);
   transform: skewX(10deg);
-  border: solid 8px var(--tls-purple2);
+  border: solid 8px var(--border-color);
 }
 
 .phase {
@@ -455,8 +460,8 @@ border-bottom: solid 8px var(--tls-purple2);
 }
 
 .character_container {
-  width: 1080px;
-  height: 960px;
+  width: 100%;
+  height: 100%;
   position: relative;
   top: 50%;
   transform: translateY(-50%);
