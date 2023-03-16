@@ -41,15 +41,55 @@ Enfin (truc chiant mais ça va changer, pas obligatoire mais nécesaire pour avo
 
 ## Utilisation (pendant le tournoi)
 
-**TSH** : 
+### Explication générales
+Voir section suivante pour avoir juste la liste des chose à faire step by step. Lisez juste au moins la partie "OBS" ici.
+
+**OBS** : 
+- On est en mode studio, donc quand on sélectionne une scène elle s'affiche à gauche, le stram voit ce qui s'affiche à droite, pour passer la scène sélectionnée à gauche vers le stream il faut faire une transition (cliquer sur le bouton transition ou appuyer sur Maj+>. Ca utilise la transition par défaut, voir juste en dessous)
+- On a différentes transitions entre les scènes, pour choisir la transition il y a un bouton par transition entre les 2 previews. En gros
+  - On évite de trop utiliser les scènes "stingers", trop de transition cool tue la transition cool, perso je me calque sur la règle "Pas plus d'un stinger par minute et en priorité en début de fin de game"
+  - Pour toutes passage d'une scène vers une scène qui a des éléments en commun, on peut utiliser la transition "Move".  
+  - Et pis sinon la transition "Fondu" c'est le dernier recours, quand la Move est pas pertinente mais qu'on a fait trop de Stinger récemment
+- Pour prendre un clip, Maj+!
+
+**Scène OBS** :  
+Je ne vais pas lister les scènes ici, si vous ne les connaissez pas bien le mieux c'est de toutes les regarder pour voir ce qu'elles affichent, ou de suivre le guide en section suivante ! QUelques scène spéciales : 
+- BracketTLS : affiche le bracket du top 8 uniquement, bien joli et tout, voir dans la partie TSH juste en dessous pour voir comment faire pour le bracket s'affiche bien
+- TLS Bracket : là c'est juste une page startgg avec le bracket mais en plus joli, on ouvre le bracket sur startgg et on copie l'URL pour la coller dans les propriétés de la source navigateur présente dans cette scène (elle met du temps à bien s'afficher) ; pour scroll sur le bracket on sélectionne la source navigateur, on clique sur le bouton "Interagir" juste au dessus des sources, et on scroll
+- Les scènes avec replay dans le nom affichent le dernier replay, pour prendre un replay on appuie sur "Maj+!"
+
+
+**Utilisation de TSH**
 - Pour chaque match, le sélectionner dans la liste des matchs du tournoi en cliquant sur `Load sets from xxx` en bas
-- Presque tout est mis à jour automatiquement, il faut juste remplir manuellement : 
+- Presque tout est alors mis à jour automatiquement, il faut juste remplir manuellement : 
   - Les persos
   - Le champ "Best of" au milieu, pour indiquer si on est en BO3 ou BO5
-  - Le score : des fois il se met à jour tout seul si les TOs le rentrent en temps réel sur smashgg, et des fois il refuse d'être changé manuellement, auquel cas cliquer sur la petite croix à droite de "Auto update" tout en bas le calmera
-  - Les commentateurs : pour ça il faut aller chercher dans l'onglet "Commentary"
+  - Les commentateurs : pour ça il faut aller chercher dans l'onglet "Commentary"  
+Le score s'update tout seul si vous le mettez à jour sur startgg  
+- Quand on veut afficher le bracket (Scène BracketTLS), déjà on se prépare à ce que ça fasse crash TSH, ça arrive c pas grave faut juste le relancer et remettre toutes les infos, on va dans l'onglet "arbre", dans le menu déroulant en haut à gauche on sélectionne "Top 8", on attend un peu (on ne touche surtout pas à TSH tant qu'il n'affiche pas le bracket), et normalement c'est bon
 
+### Guide concret
+**Entre les games**
+- on affiche une des scènes "multi", un peu comme on veut, avec les casters en grand le plus souvent, avec les joueurs en grand quand ils arrivent etc, perso j'ai une petite préférences pour les multi avec 2 sources (et la liste des derniers sets) mais c'est bien de changer  
+- une fois qu'on a le match sélectionné dans TSH on peut afficher la scène "Head2Head"
+- sinon le bracket des fois c'est bien (voir scènes BracketTLS et TLS BRacket dans section précédente)
+- dès qu'on sait qui joue on sélectionne le match dans TSH
+- si changement de caster on pense à changer le nom dans TSH
 
+**Début de match**
+- on lance le match sur startgg, on clique sur "report game data", on choisit les persos (faut bien être sur l'écran avec une liste des games, les persos et stages et tout)
+- on lance l'enregistrement
+- éventuellement on affiche la scène "VSScreenTLS" juste avant qu'ils lancent
+
+**Game**
+- Dans startgg on renseigne le stage choisi, si besoin on change les persos pour la game en cours
+- dès que la game commence on passe sur "TLS In-Game"
+- On pense à prendre des clips avec Maj+! (souvent la dernière stock mais des fois c'est pas le + intéressant)
+- Quand la game se termine, si on a pris un replay on passe sur une scène avec "replay" dans le nom, par contre en cas de popoff ça peut être bien de passer (en fondu carrément) sur une scène avec les joueurs en grand, puis ensuite de montrer le replay
+- On update le score en choisissant le vainqueur pour cette game, sur startgg
+
+**Fin de match**
+- On pense à valider le résultat du match sur startgg
 
 ## Première installation
 
