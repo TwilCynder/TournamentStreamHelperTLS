@@ -146,6 +146,15 @@ class StartGGDataProvider(TournamentDataProvider):
             )
             data = json.loads(data.text)
 
+            oldData = requests.get(
+                f"https://api.smash.gg/phase_group/{id}",
+                headers={
+                    "client-version": "20",
+                    'Content-Type': 'application/json'
+                }
+            )
+            oldData = json.loads(oldData.text)
+
             seeds = deep_get(data, "data.phaseGroup.seeds.nodes", [])
             seeds.sort(key=lambda s: s.get("seedNum"))
 
@@ -161,14 +170,15 @@ class StartGGDataProvider(TournamentDataProvider):
                 team = {}
                 participants = deep_get(seed, "entrant.participants")
 
-                if len(participants) > 1:
-                    team["name"] = deep_get(seed, "entrant.name")
+                if participants is not None:
+                    if len(participants) > 1:
+                        team["name"] = deep_get(seed, "entrant.name")
 
-                team["players"] = []
+                    team["players"] = []
 
-                for entrant in participants:
-                    team["players"].append(StartGGDataProvider.ProcessEntrantData(entrant, deep_get(seed, "entrant.paginatedSets.nodes")))
-                
+                    for entrant in participants:
+                        team["players"].append(StartGGDataProvider.ProcessEntrantData(entrant, deep_get(seed, "entrant.paginatedSets.nodes")))
+                    
                 teams.append(team)
             
             finalData["entrants"] = teams
@@ -179,12 +189,12 @@ class StartGGDataProvider(TournamentDataProvider):
             finalSets = {}
 
             for s in sets:
+                print(s)
+
                 round = int(s.get("round"))
                 
                 if not str(round) in finalSets:
                     finalSets[str(round)] = []
-
-                print(s)
 
                 finalSets[str(round)].append({
                     "score": [s.get("entrant1Score"), s.get("entrant2Score")],
@@ -199,13 +209,29 @@ class StartGGDataProvider(TournamentDataProvider):
                 originPhaseId = deep_get(s, "progressionSource.originPhaseGroup.id")
                 if originPhaseId:
                     finalData["progressionsIn"].append(originPhaseId)
+
+            finalData["winnersOnlyProgressions"] = deep_get(oldData, "entities.groups.hasCustomWinnerByes")
+
+            for s in sets:
+                if s.get("slots", []) and int(s.get("round")) == -2:
+                    for slot in s.get("slots", []):
+                        if slot.get("prereqType") == "seed":
+                            finalData["winnersOnlyProgressions"] = False
+
+                if finalData["winnersOnlyProgressions"] == False:
+                    break
             
-            if len(finalData["progressionsIn"]) > 0:
+            finalData["customSeeding"] = deep_get(oldData, "entities.groups.hasCustomWinnerByes")
+            
+            if len(finalData["progressionsIn"]) > 0 and not finalData["winnersOnlyProgressions"]:
                 originalKeys = list(finalData["sets"].keys())
                 originalKeys.reverse()
 
                 # If we have a non-power2 number of progressions in, we shift 2 rounds
                 shift = 1 if is_power_of_two(len(finalData["progressionsIn"])) else 2
+
+                if deep_get(oldData, "entities.groups.hasCustomWinnerByes"):
+                    shift = 1
 
                 for roundKey in originalKeys:
                     round = int(roundKey)
@@ -396,8 +422,10 @@ class StartGGDataProvider(TournamentDataProvider):
 
             if "Winners" in name:
                 return TSHLocaleHelper.matchNames.get("winners_round").format(roundNumber)
-            if "Losers" in name:
+            elif "Losers" in name:
                 return TSHLocaleHelper.matchNames.get("losers_round").format(roundNumber)
+            elif name.startswith("Round "):
+                return TSHLocaleHelper.matchNames.get("round").format(roundNumber)
         except:
             print(traceback.format_exc())
         

@@ -55,3 +55,5 @@ tmp/*
 layout_*/
 src/layout/ui_*.py
 layout_*/*
+
+TSH_old.exe
