@@ -44,9 +44,13 @@ jobs:
         run: |
           git config --local user.email "action@github.com"
           git config --local user.name "GitHub Action"
+          echo "0"
           git add *
+          echo "1"
           if ! git diff-index --quiet HEAD; then
+          echo "2"
             git commit -m "Update locale files" -a
+            echo "3"
           fi
 
       - name: push changes
