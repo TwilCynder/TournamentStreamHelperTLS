@@ -6,6 +6,7 @@ on:
       - main
       - locale/*
       - feature/*
+      - new-features
   workflow_dispatch:
 
 jobs:
