@@ -93,7 +93,7 @@ $(() => {
     load_sets();
     setTimeout(() => {
         load_sets();
-    }, 10000);
+    }, 15000);
 
     //$("#R1").html(res);
 })

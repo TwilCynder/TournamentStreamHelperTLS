@@ -218,7 +218,7 @@
   $(window).on("load", () => {
     $("body").fadeTo(1, 1, async () => {
       Start();
-      setInterval(Update, 500);
+      setInterval(Update, 1500);
     });
   });
 })(jQuery);

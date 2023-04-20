@@ -83,7 +83,7 @@
   $(window).on("load", () => {
     $("body").fadeTo(800, 1, async () => {
       Start();
-      setInterval(Update, 1000);
+      setInterval(Update, 2000);
     });
   });
 })(jQuery);

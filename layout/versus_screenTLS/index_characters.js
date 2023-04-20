@@ -501,7 +501,7 @@ function wrapChracter(html){
   $(window).on("load", () => {
     $("body").fadeTo(0, 1, async () => {
       Start();
-      setInterval(Update, 1000);
+      setInterval(Update, 2000);
     });
   });
 })(jQuery);
