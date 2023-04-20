@@ -10,7 +10,7 @@ function wrapChracter(html){
 (($) => {
   // Change this to the name of the assets pack you want to use
   // It's basically the folder name: user_data/games/game/ASSETPACK
-  var ASSET_TO_USE = "webm";
+  var ASSET_TO_USE = "mural_art";
 
   // Change this to select wether to flip P2 character asset or not
   // Set it to true or false
@@ -103,7 +103,6 @@ function wrapChracter(html){
           );
 
           {
-            let html = "";
             if (player.seed){
               SetInnerHtml($(`.p${t + 1} .seed`), `Seed ${player.seed}`);
             } else {
