@@ -243,6 +243,8 @@ class TSHScoreboardStageWidget(QDockWidget):
     def SetupOptions(self):
         self.rulesetsBox.clear()
 
+        self.ClearRuleset()
+
         self.LoadRulesets()
 
         self.stagesModel = QStandardItemModel()
@@ -286,7 +288,14 @@ class TSHScoreboardStageWidget(QDockWidget):
             item = QStandardItem(f'{stage[1].get("display_name")} / {stage[1].get("en_name")}' if stage[1].get(
                 "display_name") != stage[1].get("en_name") else stage[1].get("display_name"))
             item.setData(stage[1], Qt.ItemDataRole.UserRole)
-            item.setIcon(QIcon(stage[1].get("path")))
+            item.setIcon(
+                QIcon(QPixmap(stage[1].get("path")).scaled(
+                    64,
+                    64,
+                    Qt.AspectRatioMode.KeepAspectRatio,
+                    Qt.TransformationMode.SmoothTransformation
+                ))
+            )
             self.stagesModel.appendRow(item)
 
         self.stagesModel.sort(0)
@@ -414,7 +423,12 @@ class TSHScoreboardStageWidget(QDockWidget):
                 item = QStandardItem(f'{stage.get("display_name")} / {stage.get("en_name")}' if stage.get(
                     "display_name") != stage.get("en_name") else stage.get("display_name"))
                 item.setData(stage, Qt.ItemDataRole.UserRole)
-                item.setIcon(QIcon(stage.get("path")))
+                item.setIcon(QIcon(QPixmap(stage.get("path")).scaled(
+                    64,
+                    64,
+                    Qt.AspectRatioMode.KeepAspectRatio,
+                    Qt.TransformationMode.SmoothTransformation
+                )))
                 neutralModel.appendRow(item)
         self.stagesNeutral.setModel(neutralModel)
 
@@ -424,7 +438,12 @@ class TSHScoreboardStageWidget(QDockWidget):
                 item = QStandardItem(f'{stage.get("display_name")} / {stage.get("en_name")}' if stage.get(
                     "display_name") != stage.get("en_name") else stage.get("display_name"))
                 item.setData(stage, Qt.ItemDataRole.UserRole)
-                item.setIcon(QIcon(stage.get("path")))
+                item.setIcon(QIcon(QPixmap(stage.get("path")).scaled(
+                    64,
+                    64,
+                    Qt.AspectRatioMode.KeepAspectRatio,
+                    Qt.TransformationMode.SmoothTransformation
+                )))
                 counterpickModel.appendRow(item)
         self.stagesCounterpick.setModel(counterpickModel)
 
@@ -507,7 +526,7 @@ class TSHScoreboardStageWidget(QDockWidget):
                 traceback.print_exc()
 
         ruleset.strikeOrder = [
-            int(n.strip()) for n in self.strikeOrder.text().split(",") if n.strip() != ""
+            int(n.strip()) for n in (self.strikeOrder.text().split(",") if self.strikeOrder.text() != "" else "1,2,1".split(",")) if n.strip() != ""
         ]
 
         return ruleset

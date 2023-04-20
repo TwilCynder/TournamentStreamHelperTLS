@@ -14,6 +14,8 @@ import time
 import os
 import unicodedata
 import sys
+import atexit
+import time
 from PyQt5.QtGui import *
 from PyQt5.QtWidgets import *
 from PyQt5.QtCore import *
@@ -34,7 +36,9 @@ from .TSHBracketWidget import TSHBracketWidget
 from .TSHGameAssetManager import TSHGameAssetManager
 from .TSHCommentaryWidget import TSHCommentaryWidget
 from .TSHPlayerListWidget import TSHPlayerListWidget
+from .TSHHotkeys import TSHHotkeys
 from qdarkstyle import palette
+from .Settings.TSHSettingsWindow import TSHSettingsWindow
 
 
 if getattr(sys, 'frozen', False) and hasattr(sys, '_MEIPASS'):
@@ -50,6 +54,23 @@ def generate_restart_messagebox(main_txt):
     messagebox.finished.connect(QApplication.exit)
     return(messagebox)
 
+def ExtractUpdate():
+    tar = tarfile.open("update.tar.gz")
+
+    # backup layouts
+    os.rename(
+        "./layout", f"./layout_backup_{str(time.time())}")
+
+    # backup exe
+    os.rename("./TSH.exe", "./TSH_old.exe")
+
+    for m in tar.getmembers():
+        if "/" in m.name:
+            m.name = m.name.split("/", 1)[1]
+            tar.extract(m)
+
+    tar.close()
+    os.remove("update.tar.gz")
 
 def remove_accents_lower(input_str):
     nfkd_form = unicodedata.normalize('NFKD', input_str)
@@ -428,6 +449,13 @@ class Window(QMainWindow):
             help_messagebox.exec()
         ])
 
+        self.settingsWindow = TSHSettingsWindow(self)
+
+        action = self.optionsBt.menu().addAction(
+            QApplication.translate("Settings", "Settings"))
+        action.setIcon(QIcon('assets/icons/settings.svg'))
+        action.triggered.connect(lambda: self.settingsWindow.show())
+
         self.aboutWidget = TSHAboutWidget()
         action = self.optionsBt.menu().addAction(
             QApplication.translate("About", "About"))
@@ -477,10 +505,12 @@ class Window(QMainWindow):
         self.show()
 
         TSHCountryHelper.LoadCountries()
+        self.settingsWindow.UiMounted()
         TSHTournamentDataProvider.instance.UiMounted()
         TSHGameAssetManager.instance.UiMounted()
         TSHAlertNotification.instance.UiMounted()
         TSHAssetDownloader.instance.UiMounted()
+        TSHHotkeys.instance.UiMounted(self)
         TSHPlayerDB.LoadDB()
 
         StateManager.ReleaseSaving()
@@ -610,6 +640,7 @@ class Window(QMainWindow):
                     def Update():
                         db = QFontDatabase()
                         db.removeAllApplicationFonts()
+                        QFontDatabase.removeAllApplicationFonts()
                         self.downloadDialogue = QProgressDialog(
                             QApplication.translate("app", "Downloading update..."), QApplication.translate("app", "Cancel"), 0, 0, self)
                         self.downloadDialogue.setWindowModality(
@@ -644,29 +675,13 @@ class Window(QMainWindow):
 
                         def finished():
                             self.downloadDialogue.close()
-                            tar = tarfile.open("update.tar.gz")
-                            print(tar.getmembers())
 
-                            # backup layouts
-                            os.rename(
-                                "./layout", f"./layout_backup_{str(time.time())}")
-
-                            # backup exe
-                            os.rename("./TSH.exe", "./TSH_old.exe")
-
-                            for m in tar.getmembers():
-                                if "/" in m.name:
-                                    m.name = m.name.split("/", 1)[1]
-                                    tar.extract(m)
-                            tar.close()
-                            os.remove("update.tar.gz")
-
-                            with open('./assets/versions.json', 'w') as outfile:
-                                versions["program"] = currVersion
-                                json.dump(versions, outfile)
+                            # Register update extraction on program close
+                            atexit.register(ExtractUpdate)
 
                             messagebox = generate_restart_messagebox(
-                                QApplication.translate("app", "Update complete."))
+                                QApplication.translate("app", "Update download complete. The program will extract the update upon closing."))
+                                
                             messagebox.exec()
 
                         worker = Worker(worker)
@@ -738,7 +753,3 @@ class Window(QMainWindow):
         else:
             App.setStyleSheet(qdarkstyle.load_stylesheet(
                 palette=qdarkstyle.DarkPalette))
-
-
-window = Window()
-sys.exit(App.exec_())

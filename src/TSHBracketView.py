@@ -90,8 +90,8 @@ class BracketSetWidget(QWidget):
             
             self.score[0].blockSignals(True)
             self.score[1].blockSignals(True)
-            self.score[0].setValue(self.bracketSet.score[0])
-            self.score[1].setValue(self.bracketSet.score[1])
+            self.score[0].setValue(min(self.bracketSet.score[0], self.score[0].maximum()))
+            self.score[1].setValue(min(self.bracketSet.score[1], self.score[1].maximum()))
             self.score[0].blockSignals(False)
             self.score[1].blockSignals(False)
 
@@ -141,7 +141,7 @@ class BracketSetWidget(QWidget):
                 ((self.bracketSet.playerIds[0] == -1 and not self.bracketSet.playerIds[1] == -1) or \
                 (self.bracketSet.playerIds[1] == -1 and not self.bracketSet.playerIds[0] == -1))
 
-            if self.bracketSet.pos[0] < 0 and abs(self.bracketSet.pos[0]) < losersCutout[0]+2 and hasBye:
+            if self.bracketSet.pos[0] < 0 and hasBye:
                 self.hide()
             elif self.bracketSet.pos[0] > 0 and self.bracketSet.pos[0] == 1 and hasBye:
                 self.hide()
@@ -158,7 +158,7 @@ class BracketSetWidget(QWidget):
                     self.name[0].setStyleSheet("background-color: rgba(0, 0, 0, 0);")
                     self.name[1].setStyleSheet("background-color: rgba(0, 0, 0, 0);")
             elif self.bracketSet.pos[0] < 0:
-                if self.bracketSet.pos[0] + 2 + losersOffset >= 0:
+                if self.bracketSet.pos[0] + losersOffset >= 0:
                     self.name[0].setStyleSheet("background-color: rgba(0, 0, 0, 80);")
                     self.name[1].setStyleSheet("background-color: rgba(0, 0, 0, 80);")
                 else:
@@ -190,7 +190,7 @@ class TSHBracketView(QGraphicsView):
 
         self.bracketLines = []
     
-    def GetCutouts(self):
+    def GetCutouts(self, forExport=False):
         winnersRounds = [r for r in self.bracket.rounds.keys() if int(r) > 0]
         losersRounds = [r for r in self.bracket.rounds.keys() if int(r) < 0]
 
@@ -203,8 +203,8 @@ class TSHBracketView(QGraphicsView):
             winnersCutout[1] = len(winnersRounds) - (int(math.log2(progressionsWinners)) + 1)
     
         # Winners left side cutout
-        if self.progressionsIn > 0:
-            if not is_power_of_two(self.progressionsIn):
+        if self.progressionsIn > 0 and not self.bracket.winnersOnlyProgressions:
+            if not is_power_of_two(self.progressionsIn) and not self.bracket.customSeeding:
                 winnersCutout[0] = 2
             else:
                 winnersCutout[0] = 1
@@ -223,7 +223,7 @@ class TSHBracketView(QGraphicsView):
         # So this round is hidden
         validWR1Sets = self.bracket.originalPlayerNumber - self.bracket.playerNumber/2
 
-        if not self.bracketWidget.limitExport.isChecked() and self.bracketWidget.limitExportNumber.value() > 0:
+        if not (self.bracketWidget.limitExport.isChecked() and self.bracketWidget.limitExportNumber.value() > 0):
             if self.progressionsIn == 0 and validWR1Sets <= self.bracket.playerNumber/2/2:
                 losersCutout[0] += 1
 
@@ -236,10 +236,17 @@ class TSHBracketView(QGraphicsView):
         return (winnersCutout, losersCutout)
 
 
-    def SetBracket(self, bracket, progressionsIn=0, progressionsOut=0):
+    def SetBracket(self, bracket, progressionsIn=0, progressionsOut=0, winnersOnlyProgressions=False, customSeeding=False):
         self.bracket = bracket
 
         bracket.progressionsIn = progressionsIn
+
+        if bracket.progressionsIn > 0:
+            bracket.winnersOnlyProgressions = winnersOnlyProgressions
+        else:
+            bracket.winnersOnlyProgressions = True
+        
+        bracket.customSeeding = customSeeding
 
         self.bracketLines = []
         self._scene.clear()
@@ -367,13 +374,21 @@ class TSHBracketView(QGraphicsView):
 
         data = {}
 
+        StateManager.Set("bracket.bracket.progressionsIn", self.bracket.progressionsIn)
+        StateManager.Set("bracket.bracket.progressionsOut", self.bracketWidget.progressionsOut.value())
+
         limitExportNumber, winnersOffset, losersOffset = self.GetLimitedExportingBracketOffsets()
-        winnersCutout, losersCutout = self.GetCutouts()
+        winnersCutout, losersCutout = self.GetCutouts(forExport=True)
 
         winnersOffset += winnersCutout[0]
         losersOffset += losersCutout[0]
 
         StateManager.Set("bracket.bracket.limitExportNumber", limitExportNumber)
+
+        if limitExportNumber != -1 and limitExportNumber < self.bracket.playerNumber:
+            StateManager.Set("bracket.bracket.winnersOnlyProgressions", False)
+        else:
+            StateManager.Set("bracket.bracket.winnersOnlyProgressions", self.bracket.winnersOnlyProgressions)
 
         for roundKey, round in self.bracket.rounds.items():
             # Winners cutout
@@ -410,17 +425,23 @@ class TSHBracketView(QGraphicsView):
                 nextWin = bracketSet.winNext.pos.copy() if bracketSet.winNext else None
                 nextLose = bracketSet.loseNext.pos.copy() if bracketSet.loseNext else None
 
+                # print(f"Round pos {bracketSet.pos} W→ {nextWin}")
+                # print(f"Round pos {bracketSet.pos} L→ {nextLose}")
+
                 # Reassign rounds based on export number
                 if nextWin:
                     if nextWin[0] > 0:
                         nextWin[0] -= winnersOffset
                     else:
-                        nextWin[0] += losersOffset
+                        nextWin[0] += losersOffset - 2
                 if nextLose:
                     if nextLose[0] < 0:
-                        nextLose[0] += losersOffset
-                        if nextLose[0] == 0:
-                            nextLose[0] = -1
+                        nextLose[0] += losersOffset - 2
+
+                        """if self.bracket.progressionsIn <= 0:
+                            nextLose[0] -= 1
+                        else:
+                            nextLose[0] -= 2"""
                     # For grand finals into reset, nextLose is a positive round
                     else:
                         nextLose[0] -= winnersOffset
@@ -587,7 +608,7 @@ class TSHBracketView(QGraphicsView):
                         )
 
                     # Progression in
-                    if self.progressionsIn > 1 and i == 0:
+                    if self.progressionsIn > 1 and i == 0 and not self.bracket.winnersOnlyProgressions:
                         end = QPointF(setWidget.mapTo(self.bracketLayout, QPoint(0, 0)).x(), _set.mapTo(self.bracketLayout, QPoint(0, 0)).y()) + \
                             QPointF(0, _set.height()/2)
                         start = end - QPointF(50, 0)

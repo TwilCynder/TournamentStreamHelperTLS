@@ -11,10 +11,13 @@ from .TSHGameAssetManager import TSHGameAssetManager
 from .TSHPlayerDB import TSHPlayerDB
 from .TSHTournamentDataProvider import TSHTournamentDataProvider
 from .Helpers.TSHLocaleHelper import TSHLocaleHelper
-
+from .Workers import Worker
+import copy
+import time
+import math
+import random
 
 class TSHScoreboardPlayerWidgetSignals(QObject):
-    characters_changed = pyqtSignal()
     playerId_changed = pyqtSignal()
     player1Id_changed = pyqtSignal()
     player2Id_changed = pyqtSignal()
@@ -103,18 +106,12 @@ class TSHScoreboardPlayerWidget(QGroupBox):
 
         self.SetIndex(index, teamNumber)
 
-        self.findChild(QLineEdit, "name").textChanged.connect(
-            self.ExportMergedName)
-        self.findChild(QLineEdit, "team").textChanged.connect(
-            self.ExportMergedName)
+        self.lastExportedName = ""
 
-        self.findChild(QLineEdit, "name").textChanged.connect(
-            lambda: self.ExportPlayerImages())
-        self.findChild(QLineEdit, "team").textChanged.connect(
-            lambda: self.ExportPlayerImages())
-
-        self.findChild(QLineEdit, "name").textChanged.connect(
-            lambda: self.ExportPlayerId())
+        self.findChild(QLineEdit, "name").editingFinished.connect(
+            self.NameChanged)
+        self.findChild(QLineEdit, "team").editingFinished.connect(
+            self.NameChanged)
 
         for c in self.findChildren(QLineEdit):
             c.editingFinished.connect(
@@ -127,22 +124,18 @@ class TSHScoreboardPlayerWidget(QGroupBox):
         for c in self.findChildren(QComboBox):
             c.currentIndexChanged.connect(
                 lambda text, element=c: [
-                    StateManager.Set(
-                        f"{self.path}.{element.objectName()}", element.currentData()
-                    ),
-                    self.instanceSignals.dataChanged.emit()
+                    self.ComboBoxIndexChanged(element)
                 ]
             )
             c.currentIndexChanged.emit(0)
 
         self.SetCharactersPerPlayer(1)
 
-        TSHScoreboardPlayerWidget.signals.characters_changed.connect(
-            self.ReloadCharacters)
-
         TSHPlayerDB.signals.db_updated.connect(
             self.SetupAutocomplete)
         self.SetupAutocomplete()
+
+        TSHGameAssetManager.instance.signals.onLoad.connect(self.ReloadCharacters)
 
         self.pronoun_completer = QCompleter()
         self.findChild(QLineEdit, "pronoun").setCompleter(
@@ -161,21 +154,36 @@ class TSHScoreboardPlayerWidget(QGroupBox):
         self.pronoun_model = QStringListModel()
         self.pronoun_completer.setModel(self.pronoun_model)
         self.pronoun_model.setStringList(self.pronoun_list)
+    
+    def ComboBoxIndexChanged(self, element: QComboBox):
+        StateManager.Set(f"{self.path}.{element.objectName()}", element.currentData())
+        self.instanceSignals.dataChanged.emit()
 
     def CharactersChanged(self):
         characters = {}
 
         for i, (element, character, color) in enumerate(self.character_elements):
             data = character.currentData()
+
+            if data == None:
+                data = {}
+
             if character.currentData() == None:
                 data = {"name": character.currentText()}
+            
+            if color.currentData() and color.currentData().get("name", ""):
+                data["name"] = color.currentData().get("name", "")
+            
+            if color.currentData() and color.currentData().get("en_name", ""):
+                data["en_name"] = color.currentData().get("en_name", "")
 
-            data["assets"] = color.currentData()
+            if color.currentData() and character.currentData():
+                data["assets"] = color.currentData().get("assets", {})
 
-            if data["assets"] == None:
+            if data.get("assets") == None:
                 data["assets"] = {}
 
-            data["skin"] = color.currentText()
+            data["skin"] = color.currentIndex()
 
             characters[i+1] = data
 
@@ -185,6 +193,19 @@ class TSHScoreboardPlayerWidget(QGroupBox):
     def SetLosers(self, value):
         self.losers = value
         self.ExportMergedName()
+    
+    def NameChanged(self):
+        team = self.findChild(QLineEdit, "team").text()
+        name = self.findChild(QLineEdit, "name").text()
+        merged = team + " " + name
+
+        if merged != self.lastExportedName:
+            self.ExportMergedName()
+            self.ExportPlayerImages()
+            self.ExportPlayerId()
+            self.ExportPlayerSeed()
+
+        self.lastExportedName = merged
 
     def ExportMergedName(self):
         team = self.findChild(QLineEdit, "team").text()
@@ -249,6 +270,11 @@ class TSHScoreboardPlayerWidget(QGroupBox):
                 self.instanceSignals.player1Id_changed.emit()
             else:
                 self.instanceSignals.player2Id_changed.emit()
+    
+    def ExportPlayerSeed(self, seed=None):
+        if StateManager.Get(f"{self.path}.seed") != seed:
+            StateManager.Set(
+                f"{self.path}.seed", seed)
 
     def SwapWith(self, other: "TSHScoreboardPlayerWidget"):
         tmpData = []
@@ -265,6 +291,8 @@ class TSHScoreboardPlayerWidget(QGroupBox):
                 f"{w.path}.online_avatar")
             data["id"] = StateManager.Get(
                 f"{w.path}.id")
+            data["seed"] = StateManager.Get(
+                f"{w.path}.seed")
             tmpData.append(data)
 
         # Load state
@@ -280,6 +308,7 @@ class TSHScoreboardPlayerWidget(QGroupBox):
             QCoreApplication.processEvents()
             w.ExportPlayerImages(tmpData[i]["online_avatar"])
             w.ExportPlayerId(tmpData[i]["id"])
+            StateManager.Set(f"{w.path}.seed", tmpData[i]["seed"])
 
     def SetIndex(self, index: int, team: int):
         self.findChild(QWidget, "title").setText(
@@ -301,7 +330,7 @@ class TSHScoreboardPlayerWidget(QGroupBox):
             player_character.view().setMinimumWidth(60)
             player_character.completer().setCompletionMode(QCompleter.PopupCompletion)
             player_character.completer().popup().setMinimumWidth(250)
-            player_character.setModel(TSHScoreboardPlayerWidget.characterModel)
+            player_character.setModel(TSHGameAssetManager.instance.characterModel)
             player_character.setIconSize(QSize(24, 24))
             player_character.setFixedHeight(32)
             player_character.setFont(QFont(player_character.font().family(), 9))
@@ -315,7 +344,7 @@ class TSHScoreboardPlayerWidget(QGroupBox):
             player_character_color.setMaximumWidth(120)
             player_character_color.setFont(QFont(player_character_color.font().family(), 9))
             view = QListView()
-            view.setIconSize(QSize(64, 64))
+            view.setIconSize(QSize(128, 128))
             player_character_color.setView(view)
             # self.player_character_color.activated.connect(self.CharacterChanged)
             # self.CharacterChanged()
@@ -477,148 +506,17 @@ class TSHScoreboardPlayerWidget(QGroupBox):
         state.setModel(stateModel)
         state.setCurrentIndex(0)
 
-    def LoadCharacters():
-        class CharacterLoaderThread(QThread):
-            def run(self):
-                try:
-                    TSHScoreboardPlayerWidget.characterModel = QStandardItemModel()
-
-                    # Add one empty
-                    item = QStandardItem("")
-                    TSHScoreboardPlayerWidget.characterModel.appendRow(item)
-
-                    for c in TSHGameAssetManager.instance.characters.keys():
-                        item = QStandardItem()
-                        item.setData(c, Qt.ItemDataRole.EditRole)
-                        item.setIcon(
-                            QIcon(QPixmap.fromImage(TSHGameAssetManager.instance.stockIcons[c][0]).scaledToWidth(
-                                32, Qt.TransformationMode.SmoothTransformation))
-                        )
-
-                        # Load translations
-                        display_name = c
-                        export_name = c
-
-                        if TSHGameAssetManager.instance.characters[c].get("locale"):
-                            locale = TSHLocaleHelper.programLocale
-                            if locale.replace("-", "_") in TSHGameAssetManager.instance.characters[c]["locale"]:
-                                display_name = TSHGameAssetManager.instance.characters[
-                                    c]["locale"][locale.replace("-", "_")]
-                            elif re.split("-|_", locale)[0] in TSHGameAssetManager.instance.characters[c]["locale"]:
-                                display_name = TSHGameAssetManager.instance.characters[
-                                    c]["locale"][re.split("-|_", locale)[0]]
-                            elif TSHLocaleHelper.GetRemaps(TSHLocaleHelper.programLocale) in TSHGameAssetManager.instance.characters[c]["locale"]:
-                                display_name = TSHGameAssetManager.instance.characters[c]["locale"][TSHLocaleHelper.GetRemaps(
-                                    TSHLocaleHelper.programLocale)]
-
-                            locale = TSHLocaleHelper.exportLocale
-                            if locale.replace("-", "_") in TSHGameAssetManager.instance.characters[c]["locale"]:
-                                export_name = TSHGameAssetManager.instance.characters[
-                                    c]["locale"][locale.replace("-", "_")]
-                            elif re.split("-|_", locale)[0] in TSHGameAssetManager.instance.characters[c]["locale"]:
-                                export_name = TSHGameAssetManager.instance.characters[
-                                    c]["locale"][re.split("-|_", locale)[0]]
-                            elif TSHLocaleHelper.GetRemaps(TSHLocaleHelper.exportLocale) in TSHGameAssetManager.instance.characters[c]["locale"]:
-                                export_name = TSHGameAssetManager.instance.characters[c]["locale"][TSHLocaleHelper.GetRemaps(
-                                    TSHLocaleHelper.exportLocale)]
-
-                            if display_name != c:
-                                item.setData(
-                                    f"{display_name} / {c}", Qt.ItemDataRole.EditRole)
-
-                        data = {
-                            "name": export_name,
-                            "en_name": c,
-                            "display_name": display_name,
-                            "codename": TSHGameAssetManager.instance.characters[c].get("codename")
-                        }
-                        item.setData(data, Qt.ItemDataRole.UserRole)
-                        TSHScoreboardPlayerWidget.characterModel.appendRow(
-                            item)
-
-                    TSHScoreboardPlayerWidget.characterModel.sort(0)
-
-                    TSHScoreboardPlayerWidget.signals.characters_changed.emit()
-                except:
-                    print(traceback.format_exc())
-
-        characterLoaderThread = CharacterLoaderThread(
-            TSHGameAssetManager.instance)
-        characterLoaderThread.start()
-
     def LoadSkinOptions(self, element, target):
         characterData = element.currentData()
 
-        skins = {}
-
         if characterData:
-            skins = TSHGameAssetManager.instance.skins.get(
-                element.currentData().get("en_name"), {})
-
-        sortedSkins = [int(k) for k in skins.keys()]
-        sortedSkins.sort()
-
-        target.clear()
-
-        skinModel = QStandardItemModel()
-
-        for skin in sortedSkins:
-            assetData = TSHGameAssetManager.instance.GetCharacterAssets(
-                element.currentData().get("codename"), skin)
-            if assetData == None:
-                assetData = {}
-            item = QStandardItem()
-            item.setData(str(skin), Qt.ItemDataRole.EditRole)
-            item.setData(assetData, Qt.ItemDataRole.UserRole)
-
-            # Set to use first asset as a fallback
-            key = list(assetData.keys())[0]
-
-            for k, asset in list(assetData.items()):
-                if "portrait" in asset.get("type", []):
-                    key = k
-                    break
-                if "icon" in asset.get("type", []):
-                    key = k
-
-            pix = QPixmap.fromImage(QImage(assetData[key]["asset"]))
-
-            originalH = pix.height()
-
-            pix = pix.scaledToWidth(
-                64, Qt.TransformationMode.SmoothTransformation)
-
-            if asset.get("eyesight", {}).get("y", 0):
-                newImg = QImage(QSize(64, 48), QImage.Format.Format_RGBA64)
-                newImg.fill(QColor(0, 0, 0, 0))
-                painter = QPainter()
-                painter.begin(newImg)
-
-                moveY = int(32/2 -
-                            float(asset.get("eyesight").get("y", 0)) /
-                            originalH*pix.height())
-                moveY = min(moveY, 16)
-                moveY = max(moveY, -16)
-
-                painter.drawPixmap(
-                    0,
-                    moveY,
-                    pix
-                )
-                painter.end()
-
-                pix = QPixmap.fromImage(newImg)
-
-            item.setIcon(
-                QIcon(pix)
-            )
-            skinModel.appendRow(item)
-
-        target.setModel(skinModel)
+            target.setModel(TSHGameAssetManager.instance.skinModels.get(characterData.get("en_name")))
+        else:
+            target.setModel(QStandardItemModel())
 
     def ReloadCharacters(self):
         for c in self.character_elements:
-            c[1].setModel(TSHScoreboardPlayerWidget.characterModel)
+            c[1].setModel(TSHGameAssetManager.instance.characterModel)
             c[1].setIconSize(QSize(24, 24))
             c[1].setFixedHeight(32)
 
@@ -655,35 +553,44 @@ class TSHScoreboardPlayerWidget(QGroupBox):
                     "prefix")+" "+item.get("gamerTag") if item.get("prefix") else item.get("gamerTag")
 
                 if tag == dbTag:
-                    self.SetData(item, dontLoadFromDB=True)
+                    self.SetData(item, dontLoadFromDB=True, clear=False)
+                    break
 
-        if data.get("gamerTag"):
-            self.findChild(QWidget, "name").setText(f'{data.get("gamerTag")}')
-            self.findChild(QWidget, "name").editingFinished.emit()
+        name = self.findChild(QWidget, "name")
+        if data.get("gamerTag") and data.get("gamerTag") != name.text():
+            name.setText(f'{data.get("gamerTag")}')
+            name.editingFinished.emit()
 
-        if data.get("prefix"):
-            self.findChild(QWidget, "team").setText(f'{data.get("prefix")}')
-            self.findChild(QWidget, "team").editingFinished.emit()
+        team = self.findChild(QWidget, "team")
+        if data.get("prefix") and data.get("prefix") != team.text():
+            team.setText(f'{data.get("prefix")}')
+            team.editingFinished.emit()
 
-        if data.get("name"):
-            self.findChild(QWidget, "real_name").setText(f'{data.get("name")}')
-            self.findChild(QWidget, "real_name").editingFinished.emit()
+        real_name = self.findChild(QWidget, "real_name")
+        if data.get("name") and data.get("name") != real_name.text():
+            real_name.setText(f'{data.get("name")}')
+            real_name.editingFinished.emit()
 
         if data.get("avatar"):
             self.ExportPlayerImages(data.get("avatar"))
 
         if data.get("id"):
             self.ExportPlayerId(data.get("id"))
+        
+        if data.get("seed"):
+            self.ExportPlayerSeed(data.get("seed"))
 
-        if data.get("twitter"):
-            self.findChild(QWidget, "twitter").setText(
+        twitter = self.findChild(QWidget, "twitter")
+        if data.get("twitter") and data.get("twitter") != twitter.text():
+            twitter.setText(
                 f'{data.get("twitter")}')
-            self.findChild(QWidget, "twitter").editingFinished.emit()
+            twitter.editingFinished.emit()
 
-        if data.get("pronoun"):
-            self.findChild(QWidget, "pronoun").setText(
+        pronoun = self.findChild(QWidget, "pronoun")
+        if data.get("pronoun") and data.get("pronoun") != pronoun.text():
+            pronoun.setText(
                 f'{data.get("pronoun")}')
-            self.findChild(QWidget, "pronoun").editingFinished.emit()
+            pronoun.editingFinished.emit()
 
         if data.get("country_code"):
             countryElement: QComboBox = self.findChild(
@@ -828,12 +735,9 @@ class TSHScoreboardPlayerWidget(QGroupBox):
 
     def Clear(self):
         for c in self.findChildren(QLineEdit):
-            c.setText("")
-            c.editingFinished.emit()
+            if c.text() != "":
+                c.setText("")
+                c.editingFinished.emit()
 
         for c in self.findChildren(QComboBox):
             c.setCurrentIndex(0)
-
-
-TSHGameAssetManager.instance.signals.onLoad.connect(
-    TSHScoreboardPlayerWidget.LoadCharacters)
