@@ -1,4 +1,4 @@
-const api_key = 'd0206138a8ea04cf8e34f80ecc177663';
+const api_key = 'aaf87de047c2449475ebf9ae83bb0e97';
 
 const query = `         
         query Query($slug: String, $setNum: Int) {
@@ -69,7 +69,7 @@ $(() => {
             body: JSON.stringify({
                 'query': query,
                 'variables' : {
-                    "slug": "tournament/stock-o-clock-32/event/1v1-ultimate",
+                    "slug": "tournament/stock-o-clock-37/event/1v1-ultimate",
                     "setNum": 6
                 } 
             }),  
