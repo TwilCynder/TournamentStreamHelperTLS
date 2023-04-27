@@ -1,0 +1,21 @@
+stages:
+  - build_locale
+  - build
+
+build-locale-job:
+  stage: build_locale
+  script: 
+    - pip install -r dependencies/requirements.txt pyinstaller==4.10
+    - python3 src/i18n/gen_translation_files.py
+    - python3 src/i18n/gen_translation_binaries.py
+
+build-job:
+  stage: build
+  script:
+    - pip install -r dependencies/requirements.txt pyinstaller==4.10
+    - set PYTHONUTF8=1
+    - chcp 65001
+    - set PYTHONIOENCODING=utf-8
+    - python scripts/gen_contributors.py
+    - pyinstaller main.py --onefile -w --icon assets\icons\icon.ico
+    - copy dist\main.exe TSH.exe
