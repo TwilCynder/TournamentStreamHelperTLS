@@ -69,7 +69,7 @@ $(() => {
             body: JSON.stringify({
                 'query': query,
                 'variables' : {
-                    "slug": "tournament/stock-o-clock-37/event/1v1-ultimate",
+                    "slug": "tournament/stock-o-clock-38/event/1v1-ultimate",
                     "setNum": 6
                 } 
             }),  
