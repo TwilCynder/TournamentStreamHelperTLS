@@ -104,6 +104,11 @@ body {
   padding: 10px;
 }
 
+#set_count {
+  color: var(--tls-purple);
+  font-size: 65px;
+}
+
 .player_1 .sponsor {
   color: var(--tls-purple);
 }
