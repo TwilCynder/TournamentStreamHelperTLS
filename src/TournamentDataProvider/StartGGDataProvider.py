@@ -55,7 +55,6 @@ class StartGGDataProvider(TournamentDataProvider):
                     },
                     "query": StartGGDataProvider.TournamentDataQuery
                 }
-
             )
 
             data = json.loads(data.text)
@@ -81,6 +80,46 @@ class StartGGDataProvider(TournamentDataProvider):
             traceback.print_exc()
 
         return finalData
+
+    def GetIconURL(self):
+        url = None
+
+        try:
+            data = requests.post(
+                "https://www.start.gg/api/-/gql",
+                headers={
+                    "client-version": "20",
+                    'Content-Type': 'application/json'
+                },
+                json={
+                    "operationName": "TournamentIconQuery",
+                    "variables": {
+                        "eventSlug": self.url.split("start.gg/")[1]
+                    },
+                    "query": '''
+                        query TournamentIconQuery($eventSlug: String!) {
+                            event(slug: $eventSlug) {
+                                tournament{
+                                    images(type: "profile") {
+                                        type
+                                        url
+                                    }
+                                }
+                            }
+                        }
+                    '''
+                }
+            )
+            data = json.loads(data.text)
+
+            images = deep_get(data, "data.event.tournament.images", [])
+
+            if len(images) > 0:
+                url = images[0]["url"]
+        except:
+            traceback.print_exc()
+        
+        return url
     
     def GetTournamentPhases(self, progress_callback=None):
         phases = []
@@ -511,9 +550,10 @@ class StartGGDataProvider(TournamentDataProvider):
                         playerData["startggMain"] = main[0][0]
 
                 if user:
-                    if len(user.get("authorizations", [])) > 0:
-                        playerData["twitter"] = user.get("authorizations", [])[
-                            0].get("externalUsername")
+                    if user.get("authorizations"):
+                        if len(user.get("authorizations", [])) > 0:
+                            playerData["twitter"] = user.get("authorizations", [])[
+                                0].get("externalUsername")
 
                     if user.get("genderPronoun"):
                         playerData["pronoun"] = user.get(
@@ -1317,9 +1357,10 @@ class StartGGDataProvider(TournamentDataProvider):
                 user.get("id")
             ]
 
-            if len(user.get("authorizations", [])) > 0:
-                playerData["twitter"] = user.get("authorizations", [])[
-                    0].get("externalUsername")
+            if user.get("authorizations"):
+                if len(user.get("authorizations", [])) > 0:
+                    playerData["twitter"] = user.get("authorizations", [])[
+                        0].get("externalUsername")
 
             if user.get("genderPronoun"):
                 playerData["pronoun"] = user.get(
