@@ -114,6 +114,31 @@ class ChallongeDataProvider(TournamentDataProvider):
             traceback.print_exc()
 
         return finalData
+    
+    def GetIconURL(self):
+        url = None
+
+        try:
+            slug = self.GetSlug()
+
+            data = requests.get(
+                f"https://challonge.com/en/search/tournaments.json?filters%5B&page=1&per=1&q={slug}",
+                headers={
+                    "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.9",
+                    "User-Agent": "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/96.0.4664.45 Safari/537.36",
+                    "sec-ch-ua": 'Not A;Brand";v="99", "Chromium";v="96", "Google Chrome";v="96"',
+                    "Accept-Encoding": "gzip, deflate, br"
+                }
+            )
+
+            data = json.loads(data.text)
+            collection = deep_get(data, "collection", [{}])[0]
+            
+            url = collection.get("organizer")
+        except:
+            traceback.print_exc()
+
+        return url
 
     def GetMatch(self, setId, progress_callback):
         finalData = {}
@@ -286,6 +311,9 @@ class ChallongeDataProvider(TournamentDataProvider):
             # If split_participants==True, half players start in losers
             # Force progressions
             isSplit = deep_get(data, "tournament.split_participants", False)
+
+            if isSplit == False:
+                finalData["winnersOnlyProgressions"] = True
 
             if not isPoolsPhase and isSplit and len(finalData.get("progressionsIn", [])) == 0:
                 finalData["progressionsIn"] = [{}] * len(entrants)
@@ -713,6 +741,17 @@ class ChallongeDataProvider(TournamentDataProvider):
                 if not winner.get("id") in added_list:
                     final_data.append(self.ParseEntrant(winner))
                     added_list.append(winner.get("id"))
+            
+            # Get players that didn't win any matches
+            for m in all_matches:
+                loser = m.get("player2")
+
+                if m.get("winner_id") == m.get("player2").get("id"):
+                    loser = m.get("player1")
+                
+                if not loser.get("id") in added_list:
+                    final_data.append(self.ParseEntrant(loser))
+                    added_list.append(loser.get("id"))
 
             return final_data
         except Exception as e:

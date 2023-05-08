@@ -107,14 +107,20 @@ class TSHBracketWidget(QDockWidget):
         self.phaseGroupSelection: QComboBox = self.findChild(QComboBox, "phaseGroupSelection")
         self.phaseGroupSelection.currentIndexChanged.connect(self.PhaseGroupChanged)
 
-        self.btRefresh: QPushButton = self.findChild(QPushButton, "btRefresh")
+        self.btRefreshPhase: QPushButton = self.findChild(QPushButton, "btRefreshPhase")
         updateIcon = QImage("./assets/icons/undo.svg").scaled(24, 24)
-        self.btRefresh.setIcon(QIcon(QPixmap.fromImage(updateIcon)))
-        self.btRefresh.clicked.connect(self.PhaseGroupChanged)
+        self.btRefreshPhase.setIcon(QIcon(QPixmap.fromImage(updateIcon)))
+        self.btRefreshPhase.clicked.connect(lambda: [
+            TSHTournamentDataProvider.instance.GetTournamentPhases()
+        ])
+
+        self.btRefreshPhaseGroup: QPushButton = self.findChild(QPushButton, "btRefreshPhaseGroup")
+        updateIcon = QImage("./assets/icons/undo.svg").scaled(24, 24)
+        self.btRefreshPhaseGroup.setIcon(QIcon(QPixmap.fromImage(updateIcon)))
+        self.btRefreshPhaseGroup.clicked.connect(self.PhaseGroupChanged)
 
         self.progressionsIn: QSpinBox = self.findChild(QSpinBox, "progressionsIn")
         self.progressionsIn.valueChanged.connect(lambda val: [
-            StateManager.Set("bracket.bracket.progressionsIn", val),
             self.bracketView.SetBracket(
                 self.bracket,
                 progressionsIn=self.progressionsIn.value(),
@@ -128,7 +134,6 @@ class TSHBracketWidget(QDockWidget):
 
         self.winnersOnly: QCheckBox = self.findChild(QCheckBox, "winnersOnly")
         self.winnersOnly.toggled.connect(lambda newVal: [
-            StateManager.Set("bracket.bracket.winnersOnlyProgressions", self.winnersOnly.isChecked()),
             self.bracketView.SetBracket(
                 self.bracket,
                 progressionsIn=self.progressionsIn.value(),
@@ -138,25 +143,42 @@ class TSHBracketWidget(QDockWidget):
             ),
             self.bracketView.Update()
         ])
-        StateManager.Set("bracket.bracket.winnersOnly", False)
+        StateManager.Set("bracket.bracket.winnersOnly", True)
 
         self.progressionsOut: QSpinBox = self.findChild(QSpinBox, "progressionsOut")
         self.progressionsOut.valueChanged.connect(lambda val: [
-            StateManager.Set("bracket.bracket.progressionsOut", val),
             self.bracketView.SetBracket(
                 self.bracket,
                 progressionsIn=self.progressionsIn.value(),
-                progressionsOut=self.progressionsOut.value()
+                progressionsOut=self.progressionsOut.value(),
+                winnersOnlyProgressions=self.winnersOnly.isChecked(),
+                customSeeding=self.bracket.customSeeding
             ),
             self.bracketView.Update()
         ])
         StateManager.Set("bracket.bracket.progressionsOut", 0)
 
         self.limitExport: QCheckBox = self.findChild(QCheckBox, "limitExport")
-        self.limitExport.stateChanged.connect(self.bracketView.Update)
+        self.limitExport.stateChanged.connect(lambda newVal:[
+            self.bracketView.SetBracket(
+                self.bracket,
+                progressionsIn=self.progressionsIn.value(),
+                progressionsOut=self.progressionsOut.value(),
+                winnersOnlyProgressions=self.winnersOnly.isChecked(),
+                customSeeding=self.bracket.customSeeding
+            ),
+            self.bracketView.Update()
+        ])
 
         self.limitExportNumber: QSpinBox = self.findChild(QSpinBox, "limitExportNumber")
         self.limitExportNumber.valueChanged.connect(lambda val: [
+            self.bracketView.SetBracket(
+                self.bracket,
+                progressionsIn=self.progressionsIn.value(),
+                progressionsOut=self.progressionsOut.value(),
+                winnersOnlyProgressions=self.winnersOnly.isChecked(),
+                customSeeding=self.bracket.customSeeding
+            ),
             self.bracketView.Update()
         ])
 
@@ -260,6 +282,9 @@ class TSHBracketWidget(QDockWidget):
             QGuiApplication.processEvents()
 
             self.playerList.LoadFromStandings(phaseGroupData.get("entrants"))
+
+            # Wait for the player list to update
+            QGuiApplication.processEvents()
 
             self.slotNumber.blockSignals(True)
             self.slotNumber.setValue(len(self.playerList.slotWidgets))

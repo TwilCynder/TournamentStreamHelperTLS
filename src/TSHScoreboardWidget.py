@@ -14,6 +14,7 @@ from .StateManager import *
 from .TSHTournamentDataProvider import TSHTournamentDataProvider
 from .TSHScoreboardStageWidget import TSHScoreboardStageWidget
 from .TSHStatsUtil import TSHStatsUtil
+from .TSHHotkeys import TSHHotkeys
 
 from .thumbnail import main_generate_thumbnail as thumbnail
 from .TSHThumbnailSettingsWidget import *
@@ -25,6 +26,8 @@ class TSHScoreboardWidgetSignals(QObject):
     SetSelection = pyqtSignal()
     StreamSetSelection = pyqtSignal()
     UserSetSelection = pyqtSignal()
+    CommandScoreChange = pyqtSignal(int, int)
+    SwapTeams = pyqtSignal()
 
 
 class TSHScoreboardWidget(QDockWidget):
@@ -41,8 +44,32 @@ class TSHScoreboardWidget(QDockWidget):
         self.signals.UpdateSetData.connect(self.UpdateSetData)
         self.signals.NewSetSelected.connect(self.NewSetSelected)
         self.signals.SetSelection.connect(self.LoadSetClicked)
+        TSHHotkeys.signals.load_set.connect(self.LoadSetClicked)
         self.signals.StreamSetSelection.connect(self.LoadStreamSetClicked)
         self.signals.UserSetSelection.connect(self.LoadUserSetClicked)
+
+        TSHHotkeys.signals.load_set.connect(self.LoadSetClicked)
+        TSHHotkeys.signals.swap_teams.connect(self.SwapTeams)
+        TSHHotkeys.signals.reset_scores.connect(self.ResetScore)
+
+        TSHHotkeys.signals.team1_score_up.connect(lambda: [
+            self.CommandScoreChange(0, 1)
+        ])
+
+        TSHHotkeys.signals.team1_score_down.connect(lambda: [
+            self.CommandScoreChange(0, -1)
+        ])
+
+        TSHHotkeys.signals.team2_score_up.connect(lambda: [
+            self.CommandScoreChange(1, 1)
+        ])
+
+        TSHHotkeys.signals.team2_score_down.connect(lambda: [
+            self.CommandScoreChange(1, -1)
+        ])
+
+        self.signals.CommandScoreChange.connect(self.CommandScoreChange)
+        self.signals.SwapTeams.connect(self.SwapTeams)
 
         TSHStatsUtil.instance.scoreboard = self
 
@@ -327,7 +354,7 @@ class TSHScoreboardWidget(QDockWidget):
         self.scoreColumn.findChild(QSpinBox, "best_of").valueChanged.connect(
             lambda value: [
                 StateManager.Set(f"score.best_of", value),
-                StateManager.Set(f"score.best_of_text", TSHLocaleHelper.matchNames.get("best_of").format(value)) if value > 0 else "",
+                StateManager.Set(f"score.best_of_text", TSHLocaleHelper.matchNames.get("best_of").format(value) if value > 0 else ""),
             ]
         )
         self.scoreColumn.findChild(QSpinBox, "best_of").valueChanged.emit(0)
@@ -719,6 +746,16 @@ class TSHScoreboardWidget(QDockWidget):
 
     def LoadUserSetOptionsClicked(self):
         TSHTournamentDataProvider.instance.SetUserAccount(self)
+    
+    # Used for score change commands
+    # Change <team>(0, 1) score by <change>(+X, -X)
+    def CommandScoreChange(self, team: int, change: int):
+        if team in (0, 1):
+            scoreContainers = [
+                self.scoreColumn.findChild(QSpinBox, "score_left"),
+                self.scoreColumn.findChild(QSpinBox, "score_right")
+            ]
+            scoreContainers[team].setValue(scoreContainers[team].value()+change)
 
     def ClearScore(self):
         for c in self.scoreColumn.findChildren(QComboBox):
@@ -732,6 +769,13 @@ class TSHScoreboardWidget(QDockWidget):
         self.team2column.findChild(QCheckBox, "losers").setChecked(False)
 
     def UpdateSetData(self, data):
+        # If you switched sets and it was still finishing an async update call
+        # Avoid loading data from the previous set
+        if data.get("id") != None and data.get("id") != self.lastSetSelected:
+            return
+        
+        StateManager.BlockSaving()
+
         if data.get("round_name"):
             self.scoreColumn.findChild(
                 QComboBox, "match").setCurrentText(data.get("round_name"))
@@ -809,3 +853,5 @@ class TSHScoreboardWidget(QDockWidget):
         if data.get("stage_strike"):
             StateManager.Set(f"score.stage_strike", data.get("stage_strike"))
             StateManager.Set(f"score.ruleset", data.get("ruleset"))
+        
+        StateManager.ReleaseSaving()
