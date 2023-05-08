@@ -15,6 +15,7 @@ import os
 import unicodedata
 import sys
 import atexit
+import time
 from PyQt5.QtGui import *
 from PyQt5.QtWidgets import *
 from PyQt5.QtCore import *
@@ -35,7 +36,9 @@ from .TSHBracketWidget import TSHBracketWidget
 from .TSHGameAssetManager import TSHGameAssetManager
 from .TSHCommentaryWidget import TSHCommentaryWidget
 from .TSHPlayerListWidget import TSHPlayerListWidget
+from .TSHHotkeys import TSHHotkeys
 from qdarkstyle import palette
+from .Settings.TSHSettingsWindow import TSHSettingsWindow
 
 
 if getattr(sys, 'frozen', False) and hasattr(sys, '_MEIPASS'):
@@ -226,11 +229,23 @@ class Window(QMainWindow):
             QSizePolicy.Minimum, QSizePolicy.Maximum)
         base_layout.layout().addWidget(group_box)
 
+        # Set tournament
+        hbox = QHBoxLayout()
+        group_box.layout().addLayout(hbox)
+
         self.setTournamentBt = QPushButton(
             QApplication.translate("app", "Set tournament"))
-        group_box.layout().addWidget(self.setTournamentBt)
+        hbox.addWidget(self.setTournamentBt)
         self.setTournamentBt.clicked.connect(
             lambda bt, s=self: TSHTournamentDataProvider.instance.SetStartggEventSlug(s))
+
+        self.unsetTournamentBt = QPushButton()
+        self.unsetTournamentBt.setSizePolicy(QSizePolicy.Maximum, QSizePolicy.Maximum)
+        self.unsetTournamentBt.setIcon(QIcon("./assets/icons/cancel.svg"))
+        self.unsetTournamentBt.clicked.connect(lambda: [
+            TSHTournamentDataProvider.instance.SetTournament(None)
+        ])
+        hbox.addWidget(self.unsetTournamentBt)
 
         # Follow startgg user
         hbox = QHBoxLayout()
@@ -239,15 +254,12 @@ class Window(QMainWindow):
         self.btLoadPlayerSet = QPushButton(
             QApplication.translate("app", "Load tournament and sets from StartGG user"))
         self.btLoadPlayerSet.setIcon(QIcon("./assets/icons/startgg.svg"))
-        self.btLoadPlayerSet.setEnabled(False)
         self.btLoadPlayerSet.clicked.connect(self.LoadUserSetClicked)
         self.btLoadPlayerSet.setIcon(QIcon("./assets/icons/startgg.svg"))
         hbox.addWidget(self.btLoadPlayerSet)
+
         TSHTournamentDataProvider.instance.signals.user_updated.connect(
             self.UpdateUserSetButton)
-        TSHTournamentDataProvider.instance.signals.tournament_changed.connect(
-            self.UpdateUserSetButton)
-
         TSHTournamentDataProvider.instance.signals.tournament_changed.connect(
             self.UpdateUserSetButton)
 
@@ -259,6 +271,8 @@ class Window(QMainWindow):
         self.btLoadPlayerSetOptions.clicked.connect(
             self.LoadUserSetOptionsClicked)
         hbox.addWidget(self.btLoadPlayerSetOptions)
+
+        self.UpdateUserSetButton()
 
         # Settings
         menu_margin = " "*6
@@ -446,6 +460,13 @@ class Window(QMainWindow):
             help_messagebox.exec()
         ])
 
+        self.settingsWindow = TSHSettingsWindow(self)
+
+        action = self.optionsBt.menu().addAction(
+            QApplication.translate("Settings", "Settings"))
+        action.setIcon(QIcon('assets/icons/settings.svg'))
+        action.triggered.connect(lambda: self.settingsWindow.show())
+
         self.aboutWidget = TSHAboutWidget()
         action = self.optionsBt.menu().addAction(
             QApplication.translate("About", "About"))
@@ -495,10 +516,12 @@ class Window(QMainWindow):
         self.show()
 
         TSHCountryHelper.LoadCountries()
+        self.settingsWindow.UiMounted()
         TSHTournamentDataProvider.instance.UiMounted()
         TSHGameAssetManager.instance.UiMounted()
         TSHAlertNotification.instance.UiMounted()
         TSHAssetDownloader.instance.UiMounted()
+        TSHHotkeys.instance.UiMounted(self)
         TSHPlayerDB.LoadDB()
 
         StateManager.ReleaseSaving()
@@ -741,8 +764,3 @@ class Window(QMainWindow):
         else:
             App.setStyleSheet(qdarkstyle.load_stylesheet(
                 palette=qdarkstyle.DarkPalette))
-
-
-
-window = Window()
-sys.exit(App.exec_())

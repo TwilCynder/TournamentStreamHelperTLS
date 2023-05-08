@@ -35,7 +35,7 @@ class StateManager:
                 StateManager.threads = []
 
                 def ExportAll():
-                    with open("./out/program_state.json", 'w', encoding='utf-8') as file:
+                    with open("./out/program_state.json", 'w', encoding='utf-8', buffering=8192) as file:
                         # print("SaveState")
                         json.dump(StateManager.state, file, indent=4, sort_keys=False)
                     with open("./ultimate-stream-tool-tls/Stream Tool/Resources/Texts/ScoreboardInfo.json", "w+", encoding='utf-8') as file:
@@ -63,7 +63,9 @@ class StateManager:
 
     def Set(key: str, value):
         oldState = copy.deepcopy(StateManager.state)
+
         deep_set(StateManager.state, key, value)
+
         if StateManager.saveBlocked == 0:
             StateManager.SaveState()
             # StateManager.ExportText(oldState)

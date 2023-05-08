@@ -55,7 +55,6 @@ class StartGGDataProvider(TournamentDataProvider):
                     },
                     "query": StartGGDataProvider.TournamentDataQuery
                 }
-
             )
 
             data = json.loads(data.text)
@@ -81,6 +80,46 @@ class StartGGDataProvider(TournamentDataProvider):
             traceback.print_exc()
 
         return finalData
+
+    def GetIconURL(self):
+        url = None
+
+        try:
+            data = requests.post(
+                "https://www.start.gg/api/-/gql",
+                headers={
+                    "client-version": "20",
+                    'Content-Type': 'application/json'
+                },
+                json={
+                    "operationName": "TournamentIconQuery",
+                    "variables": {
+                        "eventSlug": self.url.split("start.gg/")[1]
+                    },
+                    "query": '''
+                        query TournamentIconQuery($eventSlug: String!) {
+                            event(slug: $eventSlug) {
+                                tournament{
+                                    images(type: "profile") {
+                                        type
+                                        url
+                                    }
+                                }
+                            }
+                        }
+                    '''
+                }
+            )
+            data = json.loads(data.text)
+
+            images = deep_get(data, "data.event.tournament.images", [])
+
+            if len(images) > 0:
+                url = images[0]["url"]
+        except:
+            traceback.print_exc()
+        
+        return url
     
     def GetTournamentPhases(self, progress_callback=None):
         phases = []
@@ -184,8 +223,17 @@ class StartGGDataProvider(TournamentDataProvider):
             finalData["entrants"] = teams
 
             sets = deep_get(data, "data.phaseGroup.sets.nodes", [])
-            sets.sort(key=lambda s: (abs(int(s.get("round"))), s.get("id")))
 
+            # Preview IDs cannot be sorted normally
+            # They follow the format: preview_2004442_1_5
+            # Where ( preview_2004442_1_1 < preview_2004442_1_11 < preview_2004442_1_2 )
+            isPreview = any("preview" in str(s.get("id")) for s in sets)
+
+            if not isPreview:
+                sets.sort(key=lambda s: (abs(int(s.get("round"))), s.get("id")))
+            else:
+                sets.sort(key=lambda s: (abs(int(s.get("round"))), int(s.get("id").split("_")[-1])))
+            
             finalSets = {}
 
             for s in sets:
@@ -502,9 +550,10 @@ class StartGGDataProvider(TournamentDataProvider):
                         playerData["startggMain"] = main[0][0]
 
                 if user:
-                    if len(user.get("authorizations", [])) > 0:
-                        playerData["twitter"] = user.get("authorizations", [])[
-                            0].get("externalUsername")
+                    if user.get("authorizations"):
+                        if len(user.get("authorizations", [])) > 0:
+                            playerData["twitter"] = user.get("authorizations", [])[
+                                0].get("externalUsername")
 
                     if user.get("genderPronoun"):
                         playerData["pronoun"] = user.get(
@@ -1308,9 +1357,10 @@ class StartGGDataProvider(TournamentDataProvider):
                 user.get("id")
             ]
 
-            if len(user.get("authorizations", [])) > 0:
-                playerData["twitter"] = user.get("authorizations", [])[
-                    0].get("externalUsername")
+            if user.get("authorizations"):
+                if len(user.get("authorizations", [])) > 0:
+                    playerData["twitter"] = user.get("authorizations", [])[
+                        0].get("externalUsername")
 
             if user.get("genderPronoun"):
                 playerData["pronoun"] = user.get(
