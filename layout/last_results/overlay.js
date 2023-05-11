@@ -26,6 +26,8 @@ const query = `
         }    
     ` 
 
+var tournament = ""
+
 $(() => {
     let setsContainer = $("#sets");
 
@@ -69,7 +71,7 @@ $(() => {
             body: JSON.stringify({
                 'query': query,
                 'variables' : {
-                    "slug": "tournament/stock-o-clock-38/event/1v1-ultimate",
+                    "slug": tournament,
                     "setNum": 6
                 } 
             }),  
@@ -78,6 +80,9 @@ $(() => {
         .then((response) => response.json())     
         .then((data) => {  
             $('#sets').empty();   
+            if (!data.data || !data.data.event){
+                throw "Invalid response from the startgg API (check the tournament URL)"
+            }
             for (let i = 1; i < data.data.event.sets.nodes.length; i++){
                 let set = data.data.event.sets.nodes[i];
                 let p1 = set.slots[0].entrant.name;
@@ -90,10 +95,18 @@ $(() => {
         .catch(err => {console.error(err)});
     }
 
-    load_sets();
-    setTimeout(() => {
-        load_sets();
-    }, 15000);
+    fetch('./tournament.json')
+        .then((response) => response.json())
+        .then((json) => {
+            tournament = json.tournament
+        
+            load_sets();
+            setTimeout(() => {
+                load_sets();
+            }, 15000);
+        });
+
+
 
     //$("#R1").html(res);
 })
