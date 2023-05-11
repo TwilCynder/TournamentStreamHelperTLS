@@ -1,4 +1,6 @@
-LoadEverything().then(() => {
+update_delay = 1000;
+
+LoadEverything().then((triggerUpdate) => {
   if (!window.config) {
     window.config = {
       size: "normal",
@@ -75,4 +77,5 @@ LoadEverything().then(() => {
       }
     }
   };
+  triggerUpdate();
 });
