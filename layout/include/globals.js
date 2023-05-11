@@ -20,6 +20,8 @@ var Update = async (event) => {
   console.log("Update(): Implement me");
 };
 
+var update_delay = 64
+
 // Wrapper for the update call
 async function UpdateWrapper(event) {
   await Update(event);
@@ -109,7 +111,7 @@ async function InitAll() {
 
   setInterval(async () => {
     await UpdateData();
-  }, 64);
+  }, update_delay);
 
   console.log("== Init complete ==");
   document.dispatchEvent(new CustomEvent("tsh_init"));

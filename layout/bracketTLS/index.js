@@ -111,6 +111,8 @@ LoadEverything().then(() => {
     return null;
   }
 
+  update_delay = 5000;
+
   Update = async (event) => {
     let data = event.data;
     let oldData = event.oldData;
