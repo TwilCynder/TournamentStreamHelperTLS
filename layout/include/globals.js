@@ -50,7 +50,6 @@ async function UpdateData() {
     let event = new CustomEvent("tsh_update");
     event.data = data;
     event.oldData = oldData;
-
     if (JSON.stringify(data) != JSON.stringify(oldData)) {
       console.log(data);
       document.dispatchEvent(event);
@@ -96,7 +95,7 @@ async function LoadEverything() {
 
   console.log("== Loading complete ==");
 
-  await InitAll();
+  return await InitAll();
 }
 
 // Initialize libraries
@@ -118,6 +117,10 @@ async function InitAll() {
 
   document.addEventListener("tsh_update", UpdateWrapper);
   gsap.globalTimeline.timeScale(0);
+
+  return function(){
+    UpdateData();
+  }
 }
 
 // Read program_state.json
