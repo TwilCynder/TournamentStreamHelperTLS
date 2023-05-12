@@ -61,7 +61,7 @@ async function UpdateData() {
 
 // Load libraries sequentially (to respect dependencies)
 // Then call InitAll
-async function LoadEverything() {
+async function LoadEverything(callback) {
   let libPath = "../include/";
   let scripts = [
     "jquery-3.6.0.min.js",
@@ -95,11 +95,11 @@ async function LoadEverything() {
 
   console.log("== Loading complete ==");
 
-  return await InitAll();
+  return await InitAll(callback);
 }
 
 // Initialize libraries
-async function InitAll() {
+async function InitAll(callback) {
   await LoadSettings();
 
   if (tsh_settings.automatic_theme) {
@@ -108,6 +108,11 @@ async function InitAll() {
 
   await LoadKuroshiro();
 
+  callback();
+  
+  document.addEventListener("tsh_update", UpdateWrapper);
+
+  UpdateData();
   setInterval(async () => {
     await UpdateData();
   }, update_delay);
@@ -115,12 +120,7 @@ async function InitAll() {
   console.log("== Init complete ==");
   document.dispatchEvent(new CustomEvent("tsh_init"));
 
-  document.addEventListener("tsh_update", UpdateWrapper);
   gsap.globalTimeline.timeScale(0);
-
-  return function(){
-    UpdateData();
-  }
 }
 
 // Read program_state.json
