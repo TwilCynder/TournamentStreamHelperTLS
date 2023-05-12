@@ -1,6 +1,6 @@
 update_delay = 4000;
 
-LoadEverything().then((triggerUpdate) => {
+LoadEverything(() => {
   let startingAnimation = gsap
     .timeline({ paused: true })
     .from($(".recent_sets"), { autoAlpha: 0 });
@@ -128,5 +128,4 @@ LoadEverything().then((triggerUpdate) => {
     SetInnerHtml($(`.recent_sets_content`), recentSetsHtml);
   };
 
-  triggerUpdate();
 });

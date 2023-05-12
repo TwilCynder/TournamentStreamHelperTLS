@@ -108,7 +108,7 @@ async function InitAll(callback) {
 
   await LoadKuroshiro();
 
-  callback();
+  if (callback) callback();
   
   document.addEventListener("tsh_update", UpdateWrapper);
 

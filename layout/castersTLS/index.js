@@ -1,4 +1,4 @@
-update_delay = 5000;
+update_delay = 2000;
 
 LoadEverything(() => {
   if (!window.config) {

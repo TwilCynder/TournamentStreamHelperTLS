@@ -1,6 +1,6 @@
 update_delay = 5000;
 
-LoadEverything().then((triggerUpdate) => {
+LoadEverything(() => {
   gsap.config({ nullTargetWarn: false, trialWarn: false });
 
   let startingAnimation = gsap.timeline({ paused: true });
@@ -711,5 +711,4 @@ LoadEverything().then((triggerUpdate) => {
       SetInnerHtml($(`.pool_name`), data.bracket.phaseGroup);
     }
   };
-  triggerUpdate()
 });
