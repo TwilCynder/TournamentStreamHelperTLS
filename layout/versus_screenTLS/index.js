@@ -6,22 +6,22 @@ function wrapChracter(html){
 `
 }
 
+update_delay = 5000;
 
-
-(($) => {
+LoadEverything(() => {
   // Change this to the name of the assets pack you want to use
   // It's basically the folder name: user_data/games/game/ASSETPACK
-  var ASSET_TO_USE = "mural_art";
+  let ASSET_TO_USE = tsh_settings.asset_key;
 
   // Change this to select wether to flip P2 character asset or not
   // Set it to true or false
-  var FLIP_P2_ASSET = true;
+  let FLIP_P2_ASSET = tsh_settings.flip_p2_asset;
 
   // Amount of zoom to use on the assets. Use 1 for 100%, 1.5 for 150%, etc.
-  var zoom = 1;
+  let zoom = tsh_settings.zoom;
 
   // Where to center character eyesights. [ 0.0 - 1.0 ]
-  var EYESIGHT_CENTERING = { x: 0.5, y: 0.4 };
+  let EYESIGHT_CENTERING = tsh_settings.eyesight_centering;
 
   let startingAnimation = gsap
     .timeline({ paused: true })
@@ -45,22 +45,21 @@ function wrapChracter(html){
     .from([".p1.container"], { duration: 1, x: "-100px", ease: "out" }, 0)
     .from([".p2.container"], { duration: 1, x: "100px", ease: "out" }, 0);
 
-  async function Start() {
+  Start = async (event) => {
     startingAnimation.restart();
   }
 
-  var data = {};
-  var oldData = {};
+  Update = async (event) => {
+    let data = event.data;
+    let oldData = event.oldData;
 
-  async function Update() {
-    oldData = data;
-    data = await getData();
+    let isTeams = Object.keys(data.score.team["1"].player).length > 1;
 
-    let isDoubles = Object.keys(data.score.team["1"].player).length == 2;
-
-    if (!isDoubles) {
-      Object.values(data.score.team).forEach((team, t) => {
-        Object.values(team.player).forEach((player, p) => {
+    if (!isTeams) {
+      const teams = Object.values(data.score.team);
+      for (const [t, team] of teams.entries()) {
+        const players = Object.values(team.player);
+        for (const [p, player] of players.entries()) {
           SetInnerHtml(
             $(`.p${t + 1} .name`),
             `
@@ -259,19 +258,20 @@ function wrapChracter(html){
               }
             });
           }
-        });
-      });
+        };
+      }
     } else {
-      Object.values(data.score.team).forEach((team, t) => {
+      const teams = Object.values(data.score.team);
+      for (const [t, team] of teams.entries()) {
         let teamName = "";
 
         if (!team.teamName || team.teamName == "") {
           let names = [];
-          Object.values(team.player).forEach((player, p) => {
-            if (player) {
+          for (const [p, player] of Object.values(team.player).entries()) {
+            if (player && player.name) {
               names.push(player.name);
             }
-          });
+          };
           teamName = names.join(" / ");
         } else {
           teamName = team.teamName;
@@ -448,7 +448,7 @@ function wrapChracter(html){
             }
           });
         }
-      });
+      };
     }
 
     SetInnerHtml($(`.p1 .score`), String(data.score.team["1"].score));
@@ -495,14 +495,4 @@ function wrapChracter(html){
       });
     }
   }
-
-  // Using update here to set images as soon as possible
-  // so that on window.load they are already preloaded
-  Update();
-  $(window).on("load", () => {
-    $("body").fadeTo(0, 1, async () => {
-      Start();
-      setInterval(Update, 2000);
-    });
-  });
-})(jQuery);
+});

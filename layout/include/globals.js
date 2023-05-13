@@ -160,7 +160,6 @@ async function LoadSettings() {
   }
 
   tsh_settings = _.defaultsDeep(file_settings, global_settings);
-  console.log(tsh_settings);
 }
 
 // Registers element for content fitting inside div if the div is resized
