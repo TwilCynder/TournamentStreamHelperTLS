@@ -7,6 +7,7 @@ function wrapChracter(html){
 }
 
 
+
 (($) => {
   // Change this to the name of the assets pack you want to use
   // It's basically the folder name: user_data/games/game/ASSETPACK
