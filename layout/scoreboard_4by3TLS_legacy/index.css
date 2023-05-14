@@ -1,5 +1,5 @@
 body {
-  font-family: var(--font);
+  font-family: var(--tls-font);
   font-weight: bold;
   opacity: 0;
   overflow: hidden;
@@ -19,8 +19,9 @@ body {
   align-items: center;
   gap: 32px;
   overflow: hidden;
-  box-shadow: 0 0 2px 2px rgb(0 0 0 / 12%), 0 0 3px 1px rgb(0 0 0 / 14%),
-    0 0 1px 5px rgb(0 0 0 / 12%), 0 0 1px 2px rgb(0 0 0 / 10%);
+  box-shadow: 0 0 2px 2px var(--tls-yellow), 0 0 3px 1px rgb(0 0 0 / 14%),
+    0 0 1px 5px var(--tls-purple), 0 0 1px 2px rgb(0 0 0 / 10%);
+  background-image: url("../../RessourcesTLS/common/Overlay/BG-CDV.jpg");
 }
 
 .smash64 .bg {
@@ -47,19 +48,18 @@ body {
     drop-shadow(0 3px 1px rgba(0, 0, 0, 0.14))
     drop-shadow(0 1px 5px rgba(0, 0, 0, 0.12))
     drop-shadow(0 -1px 2px rgba(0, 0, 0, 0.1));
-  border-radius: 0;
+  /*border-radius: var(--border-radius);*/
   background-color: var(--bg-color);
 }
 
 .player.container {
   top: 236px;
   width: 100%;
+  height: 420px;
   background-size: cover;
   background-repeat: no-repeat;
   color: var(--text-color);
   overflow: hidden;
-  flex-direction: column;
-  gap: 0px;
 }
 
 .player.container.cameras {
@@ -77,7 +77,7 @@ body {
 }
 
 .container .name {
-  position: relative;
+  position: absolute;
   padding-left: 16;
   padding-right: 16;
   width: 100%;
@@ -90,7 +90,7 @@ body {
 }
 
 .container .twitter {
-  position: relative;
+  position: absolute;
   padding-left: 16px;
   padding-right: 16px;
   width: 100%;
@@ -98,19 +98,8 @@ body {
   height: 47px;
   font-size: 25px;
   box-sizing: border-box;
-
+  background-color: var(--bg-color);
   overflow: hidden;
-}
-
-.left .twitter,
-.left .name {
-  background-color: var(--tls-purple);
-}
-
-.right .twitter ,
-.right .name {
-  background-color: var(--tls-yellow);
-  color: var(--tls-black);
 }
 
 .twitter_logo {
@@ -124,23 +113,19 @@ body {
   margin-right: 6px;
 }
 
-.right .twitter_logo {
-  background: var(--tls-black);
-}
-
 .info.container {
   position: absolute;
-  left: 50%;
-  transform: translateX(-50%);
+  /*left: 50%;*/
   width: 600px;
   height: 30px;
   color: var(--text-color);
-  padding-left: 16px;
-  padding-right: 16px;
+  padding-left: 30px;
+  padding-right: 30px;
   background-position: center;
   text-transform: uppercase;
   box-sizing: border-box;
   font-size: 22px;
+  z-index: 10;
 }
 
 .info.container_inner {
@@ -157,24 +142,29 @@ body {
 }
 
 .info.container.top {
-  top: 4px;
+  bottom: 55px;
   height: 50px;
-  font-size: 26px;
+  font-size: 24px;
+  width: 240px;
+  border-radius: 10px;
+  right: 30px;
+  color: var(--tls-yellow);
 }
 
 .info.container.bottom {
-  top: 116px;
+  color: var(--tls-yellow);
   display: flex;
   justify-content: space-around;
   height: unset;
   flex-direction: column;
-  width: 600px;
-  font-size: 20px;
+  width: 240px;
+  font-size: 30px;
   padding: 4px 10px;
   top: unset;
-  bottom: 4px;
+  bottom: 55px;
   padding: 8px 16px;
-  gap: 2px;
+  left: 30px;
+  border-radius: 10px;
 }
 
 .phase {
@@ -184,7 +174,7 @@ body {
 }
 
 .match {
-  font-size: 24px;
+  font-size: 25px;
   letter-spacing: 2px;
   width: 100%;
 }
@@ -214,12 +204,13 @@ body {
   width: 38px;
   height: 26px;
   border: 2px solid white;
-  border-radius: 8px;
+  border-radius: 10px;
 }
 
 .character_container {
-  position: relative;
+  position: absolute;
   overflow: hidden;
+  top: 70px;
   height: 304px;
   width: 100%;
   display: flex;
@@ -227,11 +218,11 @@ body {
 }
 
 .left .character_container {
-  background: var(--p1-score-bg-color);
+  background: var(--tls-yellow-gradient);
 }
 
 .right .character_container {
-  background: var(--p2-score-bg-color);
+  background: var(--tls-purple-gradient);
   transform: scaleX(-1);
 }
 
@@ -240,8 +231,8 @@ body {
 }
 
 .character {
-  width: 100%;
-  height: 100%;
+  width: 170%;
+  height: 170%;
   background-size: cover;
   background-position: center;
 }
@@ -256,16 +247,34 @@ body {
 
 .score {
   top: 14px;
-  width: 100%;
+  width: 92px;
   height: 92px;
   font-size: 64px;
   color: white;
+  border-radius: 100%;
   flex-grow: 0;
   flex-shrink: 0;
   filter: drop-shadow(0 2px 2px rgba(0, 0, 0, 0.12))
     drop-shadow(0 3px 1px rgba(0, 0, 0, 0.14))
     drop-shadow(0 1px 5px rgba(0, 0, 0, 0.12))
     drop-shadow(0 -1px 2px rgba(0, 0, 0, 0.1));
+}
+
+.left .score {
+  background: var(--tls-yellow-gradient);
+  color: black;
+}
+
+.left .sponsor {
+  color: var(--tls-yellow);
+}
+
+.right .score {
+  background: var(--tls-purple-gradient);
+}
+
+.right .sponsor {
+  color: var(--tls-purple2);
 }
 
 .sponsor_logo {
@@ -285,58 +294,4 @@ body {
 
 .right .sponsor_logo {
   right: 0;
-}
-
-.pronoun {
-  font-size: 16px;
-  text-transform: uppercase;
-  letter-spacing: normal;
-  padding-left: 8px;
-  padding-right: 8px;
-  border-radius: 6px;
-  color: var(--bg-color);
-  place-self: flex-end;
-  position: absolute;
-  top: 78px;
-  z-index: 9;
-}
-
-.left .pronoun {
-  background: white;
-  right: 4px;
-}
-
-.right .pronoun {
-  background: white;
-  left: 4px;
-}
-
-.name {
-  color: white;
-  font-family: Gobold;
-}
-
-.left .name {
-  color: var(--tls-yellow)
-}
-
-.right .name {
-  color: var(--tls-purple);
-}
-
-.left .score {
-  background: var(--tls-purple-gradient);
-}
-
-.left .sponsor {
-  color: white;
-}
-
-.right .score {
-  background: var(--tls-yellow-gradient);
-  color: var(--tls-black)
-}
-
-.right .sponsor {
-  color: var(--tls-black);
 }

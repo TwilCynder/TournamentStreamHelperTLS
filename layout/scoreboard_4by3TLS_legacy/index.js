@@ -1,4 +1,4 @@
-LoadEverything().then(() => {
+(($) => {
   let startingAnimation = gsap
     .timeline({ paused: true })
     .from(
@@ -24,7 +24,7 @@ LoadEverything().then(() => {
     )
     .from(
       [".container.top"],
-      { duration: 1, y: "-100%", ease: "power2.inOut" },
+      { duration: 1, y: "+100%", ease: "power2.inOut" },
       0
     )
     .from(
@@ -33,19 +33,19 @@ LoadEverything().then(() => {
       0
     );
 
-  Start = async () => {
+  function Start() {
     startingAnimation.restart();
-  };
+  }
 
-  Update = async (event) => {
-    let data = event.data;
-    let oldData = event.oldData;
+  var data = {};
+  var oldData = {};
 
-    for (const [t, team] of [
-      data.score.team["1"],
-      data.score.team["2"],
-    ].entries()) {
-      console.log(team);
+  async function Update() {
+    oldData = data;
+    data = await getData();
+
+    Object.values(data.score.team).forEach((team, t) => {
+      //console.log(team);
 
       let team_id = ["left", "right"][t];
 
@@ -68,21 +68,14 @@ LoadEverything().then(() => {
         });
       }
 
-      for (const [p, player] of Object.values(team.player).entries()) {
+      Object.values(team.player).forEach((player, p) => {
         if (player) {
           SetInnerHtml(
             $(`.${team_id} .p${p + 1} .name`),
             `
               <span class="sponsor">${
                 player.team ? player.team + "&nbsp;" : ""
-              }</span>${await Transcript(player.name)}
-            `
-          );
-
-          SetInnerHtml(
-            $(`.${team_id} .p${p + 1} .pronoun`),
-            `
-              ${player.pronoun}
+              }</span>${String(player.name)}
             `
           );
 
@@ -106,13 +99,39 @@ LoadEverything().then(() => {
               : ""
           );
 
-          if ($(".cameras").length == 0) {
-            await CharacterDisplay(
+          let charactersHtml = "";
+
+          if (
+            $(".cameras").length == 0 &&
+            (!oldData.score ||
+              JSON.stringify(
+                oldData.score.team[`${t + 1}`].player[`${p + 1}`].character
+              ) != JSON.stringify(player.character))
+          ) {
+            Object.values(player.character).forEach((character) => {
+              if (character.assets["full"]) {
+                charactersHtml += `
+                <div class='character' style='background-image: url(../../${character.assets["full"].asset})'></div>
+              `;
+              }
+            });
+
+            SetInnerHtml(
               $(`.${team_id} .p${p + 1} .character_container`),
-              {
-                source: `score.team.${t + 1}.player.${p + 1}`,
-              },
-              event
+              charactersHtml,
+              undefined,
+              0.5,
+              () => {
+                $(
+                  `.${team_id} .p${p + 1} .character_container .character`
+                ).each((i, e) => {
+                  CenterImage(
+                    $(e),
+                    Object.values(player.character)[i].assets["full"].eyesight
+                  );
+                  
+                });
+              }
             );
           }
 
@@ -130,17 +149,29 @@ LoadEverything().then(() => {
             )})'></div>`
           );
         }
-      }
-    }
+      });
+    });
 
-    SetInnerHtml($(".info.top"), data.tournamentInfo.tournamentName);
+    SetInnerHtml($(".info.container.top"), data.tournamentInfo.tournamentName);
 
     SetInnerHtml($(".match"), data.score.match);
 
     let phaseTexts = [];
     if (data.score.phase) phaseTexts.push(data.score.phase);
-    if (data.score.best_of_text) phaseTexts.push(data.score.best_of_text);
+    if (data.score.best_of) phaseTexts.push(`Best of ${data.score.best_of}`);
 
     SetInnerHtml($(".phase"), phaseTexts.join(" - "));
-  };
-});
+
+    $(".text").each(function (e) {
+      FitText($($(this)[0].parentNode));
+    });
+  }
+
+  Update();
+  $(window).on("load", () => {
+    $("body").fadeTo(500, 1, async () => {
+      Start();
+      setInterval(Update, 500);
+    });
+  });
+})(jQuery);
