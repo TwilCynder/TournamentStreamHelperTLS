@@ -26,6 +26,8 @@ const query = `
         }    
     ` 
 
+var eventSlug = ""
+
 $(() => {
     let setsContainer = $("#sets");
 
@@ -69,7 +71,7 @@ $(() => {
             body: JSON.stringify({
                 'query': query,
                 'variables' : {
-                    "slug": "tournament/stock-o-clock-38/event/1v1-ultimate",
+                    "slug": eventSlug,
                     "setNum": 6
                 } 
             }),  
@@ -90,10 +92,16 @@ $(() => {
         .catch(err => {console.error(err)});
     }
 
-    load_sets();
-    setTimeout(() => {
+fetch("./config.json")
+    .then(response => response.json())
+    .then(json => {
+        eventSlug = json.event;
+        console.log(eventSlug)
         load_sets();
-    }, 15000);
+        setTimeout(() => {
+            load_sets();
+        }, 15000);
+    });
 
     //$("#R1").html(res);
 })
