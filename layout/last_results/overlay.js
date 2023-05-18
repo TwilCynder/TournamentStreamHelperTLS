@@ -80,6 +80,9 @@ $(() => {
         .then((response) => response.json())     
         .then((data) => {  
             $('#sets').empty();   
+            if (!data.data || !data.data.event){
+                throw "Invalid response from the startgg API (check the tournament URL)"
+            }
             for (let i = 1; i < data.data.event.sets.nodes.length; i++){
                 let set = data.data.event.sets.nodes[i];
                 let p1 = set.slots[0].entrant.name;

@@ -24,11 +24,48 @@ local function clear_playlist()
 end
 
 local function add_to_playlist(path)
-	print(path)
+	local source = obs.obs_get_source_by_name(source_name)
+	if source ~= nil then
+		local settings = obs.obs_source_get_settings(source)
+		local playlist = obs.obs_data_get_array(settings, "playlist")
+		local item = obs.obs_data_create()
+		obs.obs_data_set_string(item, "value", path)
+		obs.obs_data_array_push_back(playlist, item)
+		obs.obs_data_set_array(settings, "playlist", playlist)
+
+		--obs.obs_data_set_bool(settings, "loop", false)
+		--obs.obs_data_set_bool(settings, "shuffle", false)
+		--obs.obs_data_set_string(settings, "playback_behavior", stop_restart)
+
+		obs.obs_source_update(source, settings)
+		obs.script_log(obs.LOG_INFO, "In the try_add to path to source. About to release!")
+		obs.obs_data_release(item)
+		obs.obs_data_array_release(playlist)
+		obs.obs_data_release(settings)
+		obs.obs_source_release(source)
+	end
 end
 
 local function instant_play(path)
+	local source = obs.obs_get_source_by_name(source_name)
+	if source ~= nil then
+		local settings = obs.obs_data_create()
+		local source_id = obs.obs_source_get_id(source)
 
+		local array = obs.obs_data_array_create()
+		local item = obs.obs_data_create()
+		obs.obs_data_set_string(item, "value", path)
+		obs.obs_data_array_push_back(array, item)
+		obs.obs_data_set_array(settings, "playlist", array)
+
+		-- updating will automatically cause the source to
+		-- refresh if the source is currently active
+		obs.obs_source_update(source, settings)
+		obs.obs_data_release(item)
+		obs.obs_data_array_release(array)
+		obs.obs_data_release(settings)
+		obs.obs_source_release(source)
+	end
 end
 
 local function get_last_replay_path()
@@ -133,7 +170,6 @@ local function instant_replay_hotkey(pressed)
 		return
 	end
 
-    print("Save & clear !")
     save(try_instant_replay)
 end
 

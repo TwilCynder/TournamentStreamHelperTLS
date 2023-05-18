@@ -20,6 +20,8 @@ var Update = async (event) => {
   console.log("Update(): Implement me");
 };
 
+var update_delay = 64
+
 // Wrapper for the update call
 async function UpdateWrapper(event) {
   await Update(event);
@@ -48,7 +50,6 @@ async function UpdateData() {
     let event = new CustomEvent("tsh_update");
     event.data = data;
     event.oldData = oldData;
-
     if (JSON.stringify(data) != JSON.stringify(oldData)) {
       console.log(data);
       document.dispatchEvent(event);
@@ -60,7 +61,7 @@ async function UpdateData() {
 
 // Load libraries sequentially (to respect dependencies)
 // Then call InitAll
-async function LoadEverything() {
+async function LoadEverything(callback) {
   let libPath = "../include/";
   let scripts = [
     "jquery-3.6.0.min.js",
@@ -94,11 +95,11 @@ async function LoadEverything() {
 
   console.log("== Loading complete ==");
 
-  await InitAll();
+  return await InitAll(callback);
 }
 
 // Initialize libraries
-async function InitAll() {
+async function InitAll(callback) {
   await LoadSettings();
 
   if (tsh_settings.automatic_theme) {
@@ -107,14 +108,18 @@ async function InitAll() {
 
   await LoadKuroshiro();
 
+  if (callback) callback();
+  
+  document.addEventListener("tsh_update", UpdateWrapper);
+
+  UpdateData();
   setInterval(async () => {
     await UpdateData();
-  }, 64);
+  }, update_delay);
 
   console.log("== Init complete ==");
   document.dispatchEvent(new CustomEvent("tsh_init"));
 
-  document.addEventListener("tsh_update", UpdateWrapper);
   gsap.globalTimeline.timeScale(0);
 }
 
@@ -155,7 +160,6 @@ async function LoadSettings() {
   }
 
   tsh_settings = _.defaultsDeep(file_settings, global_settings);
-  console.log(tsh_settings);
 }
 
 // Registers element for content fitting inside div if the div is resized
