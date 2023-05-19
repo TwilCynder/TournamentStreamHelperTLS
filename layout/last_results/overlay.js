@@ -95,11 +95,13 @@ $(() => {
         .catch(err => {console.error(err)});
     }
 
-fetch("./config.json")
+fetch("./tournament.json")
     .then(response => response.json())
     .then(json => {
         eventSlug = json.event;
         console.log(eventSlug)
+    })
+    .finally(() => {
         load_sets();
         setTimeout(() => {
             load_sets();
