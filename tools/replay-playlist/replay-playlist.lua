@@ -88,7 +88,7 @@ local function get_last_replay_path()
 end
 
 local last_replay_path = ""
-local attemps = 0
+local attempts = 0
 local function try_obtain_replay_callback(callback)
 	--get the path of the last replay
 	local path = get_last_replay_path()
@@ -102,7 +102,7 @@ local function try_obtain_replay_callback(callback)
 	end
 
 	if not path then
-		attemps = attemps + 1
+		attempts = attempts + 1
 		if attempts >= 10 then
 			obs.remove_current_callback()
 		end
@@ -122,7 +122,7 @@ local function try_add_to_playlist()
 end
 
 local function start_timer(callback)
-	attemps = 0
+	attempts = 0
 	obs.timer_add(callback, 2000)
 end
 
