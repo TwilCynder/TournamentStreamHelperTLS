@@ -1,4 +1,6 @@
-LoadEverything().then(() => {
+update_delay = 2000;
+
+LoadEverything(() => {
   gsap.config({ nullTargetWarn: false, trialWarn: false });
 
   let startingAnimation = gsap
