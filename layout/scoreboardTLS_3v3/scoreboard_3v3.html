@@ -6,7 +6,11 @@
         <link rel="stylesheet" href="./index.css" />
     </head>
     <body class="ssbu">
-        <img class="absol" src="../../RessourcesTLS/common/Overlay/Scoreboard.png">
+        <img class="absol" id= "scoreboard" src="../../RessourcesTLS/common/Overlay/Scoreboard-center.png">
+
+
+        <div class="logo" id = "logo-tls"></div>
+        <div class="logo" id = "logo-soc"></div>
 
         <div class="info bottom container">
             <!--<div class="phase"></div>-->
@@ -28,38 +32,30 @@
                 </div>
 
                 <div class="p1 player container">
-                    <!--<div class="icon avatar"></div>
-                    <div class="icon online_avatar"></div>
-                    <div class="flags_container">
-                        <div class="flagcountry"></div>
-                        <div class="flagstate"></div>
-                    </div>-->
-                    <div class="sponsor_icon"></div>
-                    <div class="name_twitter">
-                        <div class="name"></div>
-                        <!--<div class="twitter"></div>-->
+                    <div class="player_inner" >
+                        <div class="singleplayer pp3"></div>
+                        <div class="singleplayer pp2"></div>
+                        <div class="singleplayer pp1"></div>
+                        <div class="character_container"></div>
                     </div>
-                    <div class="character_container"></div>
+                    <div class="team_name" id = "team_name_1"></div>
                 </div>
                 <div class="p1 score"></div>
+
                 <div class="p2 player container">
-                    <!--<div class="icon avatar"></div>
-                    <div class="icon online_avatar"></div>
-                    <div class="flags_container">
-                        <div class="flagcountry"></div>
-                        <div class="flagstate"></div>
-                    </div>-->
-                    <div class="sponsor_icon"></div>
-                    <div class="name_twitter">
-                        <div class="name"></div>
-                        <!--<div class="twitter"></div>-->
+                    <div class="player_inner" >
+                        <div class="singleplayer pp3"></div>
+                        <div class="singleplayer pp2"></div>
+                        <div class="singleplayer pp1"></div>
+                        <div class="character_container"></div>
                     </div>
-                    <div class="character_container"></div>
+                    <div class="team_name" id = "team_name_2" ></div>
                 </div>
                 <div class="p2 score"></div>
             </div>
         </div>
         
+        <script src="../alternating_logos/alternatingLogo.js"></script>
         <script src="index.js"></script>
     </body>
 </html>
