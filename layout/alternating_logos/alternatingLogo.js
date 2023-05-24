@@ -29,6 +29,7 @@ class RotatingElements extends Array{
       if (this.current >= this.length) this.current = 0;
   
       let currentElement = this[this.current];
+      currentElement.style.visibility = 'inherit';
 
       fadeOut(previousElement, () => {
         fadeIn(currentElement, 0);

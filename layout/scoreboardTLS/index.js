@@ -1,4 +1,6 @@
-LoadEverything().then(() => {
+update_delay = 2000;
+
+LoadEverything(() => {
   gsap.config({ nullTargetWarn: false, trialWarn: false });
 
   let startingAnimation = gsap
@@ -162,7 +164,7 @@ LoadEverything().then(() => {
               player.seed ? `Seed ${player.seed}` : ""
             );
 
-            SetInnerHtml($(`.p${t + 1}.score`), String(team.score));
+            console.log(team.score)
 
             SetInnerHtml(
               $(`.p${t + 1}.container .sponsor-container`),
@@ -198,9 +200,11 @@ LoadEverything().then(() => {
           `
         );
 
+        /*
         SetInnerHtml($(`.p${t + 1} .flagcountry`), "");
 
         SetInnerHtml($(`.p${t + 1} .flagstate`), "");
+        
 
         await CharacterDisplay(
           $(`.p${t + 1}.container .character_container`),
@@ -211,7 +215,9 @@ LoadEverything().then(() => {
           },
           event
         );
+        */
 
+        /*
         SetInnerHtml($(`.p${t + 1}.container .sponsor_icon`), "");
 
         SetInnerHtml($(`.p${t + 1}.container .avatar`), "");
@@ -219,10 +225,13 @@ LoadEverything().then(() => {
         SetInnerHtml($(`.p${t + 1}.container .online_avatar`), "");
 
         SetInnerHtml($(`.p${t + 1} .twitter`), "");
-
+        
         SetInnerHtml($(`.p${t + 1}.container .score`), String(team.score));
 
         SetInnerHtml($(`.p${t + 1}.container .sponsor-container`), "");
+        */
+
+        SetInnerHtml($(`.p${t + 1}.score`), String(team.score));
       }
     }
 
