@@ -8,36 +8,41 @@
 - On branche
   - sur le PC obligatoirement : carte capture, cam logitech
   - sur le PC ou le HUB peu importe : la carte son, le casque régie, la souris, le clavier, la cam casters
-- On branche le cable ethernet au PC
-- On place le PC portable qui va servir aux cams joueurs, on branche les 2 cams joueur, on lance OBS dessus, on se met sur la scène avec les cams joueur (SUITE A VENIR)
+- On branche 6 HDMIs : deux entre les écrans régie et le PC, un entre la switche et le IN de la carte capture, un entre le OUT de la carte capture et le IN du splitter, deux entre les sorties du splitter HDMI et les écrans joueurs. 
+- On branche les casques à la carte son : il faut trouver le splitter jack dans le sac des câbles, c'est un splitter normal mais avec des grosses prises jack, et on le branche sur la prise en bas à droite de la carte son. Puis, pour chaque casque, on branche son bros embout jack au splitter, et l'autre embout à la prise correspondante sur l'avant de la carte son.
+- On branche le cable ethernet de la box (sous la table des casters) au PC.
+- On sort aussi l'ampli jack (le truc sur lequel les joueurs doivent brancher leurs casques) : on n'oublie pas son bloc chargeur, et on met le jack sur un des deux écrans. 
+- On place le PC portable qui va servir aux cams joueurs, on y branche les 2 cams joueur, dessus on ouvre [VDO Ninja](https://VDO.ninja) dans un navigateur. Une fois ouvert on clique sur "Add your camera to OBS", on sélectionne une des 2 cams, pour le son "No Audio", on clique sur "START", *et on répète le process pour la 2ème cam*. Pour les deux cams, on copie l'URL qui s'affiche maintenant en vert en haut (pas dans la barre d'URL du navigateur, juste en dessous) et on l'envoie sur le serveur discord "en général dans le channel #régie-stream".  
 
 ### Logicielle
 Si tout n'est pas déjà installé, voir section "Première installation" plus bas
 
-On commence par lancer Logi Capture sur le PC, puis OBS.
+On commence par lancer OBS.
 
 Dans OBS : 
-- On commence par passer par toutes les sources caméra, double clic sur la source et on choisit la bonne cam
-- Pour les cams joueur, c'est une source NDI, il faut simplement sélectionner le nom qui est indiqué dans le menu NDI sur le pc portable 
+
+- On commence par vérifier les caméras (à savoir : les "cam joueurs" c'est les cams devant eux, la "cam joueurs 2" c'est la cam en contre-plongée).
+  - Pour la cam joueurs 2, cam casters, et puis le jeu (la carte de capture compte comme une cam), si y en a une qui marche pas on va dans une scène qui les contient (respectivement, "Cam Joueurs 2", "Casters", "TLS In Game"), dans la liste des sources on double-clique sur la source vidéo (c'est celle qui a une icône d'appareil photo), et on fait "désactiver" puis "activer". Si ça marche toujours pas, dans la liste déroulante en haut des propriétés, on choisit un autre périphérique puis on remet l'ancien.
+  - Pour les cam joueurs, on va dans les scènes "Cam Joueur Face x only", double clic sur la source navigateur, et on colle l'URL qu'on avait envoyé sur discord quand on a setup VDO Ninja.
 - Ensuite IMPORTANT on vérifie le son
-  - Dans les paramètres de son, dans "périphérique de monitoring" on choisit bien le casque de régie
+  - Dans les paramèrtres, partie Audio, dans "périphérique de monitoring" on choisit bien le casque de régie (CORSAIR machin là)
   - Ensuite on regarde le panneau de contrôle du son (en bas de l'écran de base d'OBS)
-  - On vérifie qu'OBS entend bien les casters = quand ils parlent la barre verte correspondant à "Casque casters" s'anime. Si ce n'est pas le cas on clic droit dessus -> propriétés, dans la liste déroulante on choisir celui qui contient "Scarlett" et/ou "2i2"
+  - On vérifie qu'OBS entend bien les casters = quand ils parlent la barre verte o grise correspondant à "Casque casters" s'anime. Si ce n'est pas le cas on clic droit dessus -> propriétés, dans la liste déroulante on choisir celui qui contient "Scarlett" et/ou "2i2"
   - Pareil pour le casque régie
   - Si le casque régie n'entend pas le jeu et/ou les casters : clic droit dans la partie vide du panneau de contrôle du son, Propriétés Audio Avancées, pour les 2 sources "Casque Casters" et "Switch" on change "Monitoring et Sortie" en "Monitoring Désactivé" PUIS on remet à "Monitoring et Sortie"
-
+  - ENSUITE on s'assure que OBS entend bien la switch et que le son du jeu le sort pas des écrans. Dans le cas contraire on branche le jack de l'ampli jack à l'autre écran et ça devrait être bon. 
 
 On ouvre ensuite le dossier TLSStream qui se trouve sur le bureau.
 
-Pour obtenir la dernière version de l'environement de stream (optionel donc):
+Pour obtenir la dernière version de l'environement de stream (optionel donc, genre ce soir ne le faites aps):
 - clic droit sur le dossier "TournamentStreamHelperTLS" > `Git Bash here`
 - dans le terminal on tape `git checkout main` puis `git pull origin main`. En cas de message d'erreur, on demande à une personne qui s'y connait en git et si pas dispo tant pis on oublie
 
 On ouvre le dossier TournamentStreamHelperTLS et on lance TSH (TSH.exe) : 
 
-Au chaque début de tournoi, dans TSH, cliquer sur "Set tournament", et entrer l'URL du bracket, qui sera toujours de forme `https://start.gg/tournament/.../events/...` (most likely `https://start.gg/tournament/stock-o-clock-x/events/1v1-ultimate`). 
+Dans TSH, cliquer sur "Set tournament", et entrer l'URL du bracket, qui sera toujours de forme `https://start.gg/tournament/.../events/...` (most likely `https://start.gg/tournament/stock-o-clock-x/events/1v1-ultimate`). 
 
-Enfin (truc chiant mais ça va changer, pas obligatoire mais nécesaire pour avoir le truc qui affiche les derniers sets), on va voir dans le dossier "TOurnamentStreamHelperTLS/layout/last_results/", on ouvre "overlay.js", et dans le code on cherche une URL de tournoi, on la remplace par l'URL du tournoi actuel
+Enfin (truc chiant mais ça va changer, pas obligatoire mais nécesaire pour avoir le truc qui affiche les derniers sets), on va voir dans le dossier "TournamentStreamHelperTLS/layout/last_results/", on ouvre "config.json", et on remplace l'URL de tournoi déjà présente par l'URL qu'on avait déjà mis dans TSH. 
 
 ## Utilisation (pendant le tournoi)
 
