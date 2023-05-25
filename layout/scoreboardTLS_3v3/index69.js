@@ -297,6 +297,7 @@ let TSHPromise = LoadEverything(() => {
       text = data.score.best_of_text;
     }
 
-    SetInnerHtml($("#bestof"), text);
+    SetInnerHtml($("#bestof"), "Crew Battle")
+
   };
 }, jsonPromise);
