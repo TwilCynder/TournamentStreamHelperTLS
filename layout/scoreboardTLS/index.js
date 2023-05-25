@@ -85,6 +85,8 @@ LoadEverything(() => {
         data.score.team["1"],
         data.score.team["2"],
       ].entries()) {
+        SetInnerHtml($(`.p${t + 1}.score`), String(team.score));
+
         for (const [p, player] of [team.player["1"]].entries()) {
           if (player) {
             SetInnerHtml(
@@ -100,6 +102,7 @@ LoadEverything(() => {
                 ${team.losers ? "<span class='losers'>L</span>" : ""}
               `
             );
+
 
             SetInnerHtml(
               $(`.p${t + 1} .flagcountry`),
@@ -164,8 +167,6 @@ LoadEverything(() => {
               player.seed ? `Seed ${player.seed}` : ""
             );
 
-            console.log(team.score)
-
             SetInnerHtml(
               $(`.p${t + 1}.container .sponsor-container`),
               `<div class='sponsor-logo' style='background-image: url(../../${player.sponsor_logo})'></div>`
@@ -200,6 +201,8 @@ LoadEverything(() => {
           `
         );
 
+        SetInnerHtml($(`.p${t + 1}.score`), String(team.score));
+
         /*
         SetInnerHtml($(`.p${t + 1} .flagcountry`), "");
 
@@ -231,13 +234,28 @@ LoadEverything(() => {
         SetInnerHtml($(`.p${t + 1}.container .sponsor-container`), "");
         */
 
-        SetInnerHtml($(`.p${t + 1}.score`), String(team.score));
       }
     }
 
     SetInnerHtml($(".tournament_name"), data.tournamentInfo.tournamentName);
 
     SetInnerHtml($(".match"), data.score.match);
+
+    try {
+      let nextMatch = data.streamQueue && data.streamQueue.toulouselaststock["1"];
+      if (nextMatch){
+        let text = 
+          `Prochain match : ${nextMatch.team["1"].player["1"].name} VS ${nextMatch.team["2"].player["1"].name}`;
+
+        $("#next_set").show()
+        SetInnerHtml($("#next_set"), text);
+      } else {
+        $("#next_set").hide()
+      }
+    } catch (e) {
+      //pas de stream queue
+      $("#next_set").hide()
+    }
 
     let phaseTexts = [];
     if (data.score.phase) phaseTexts.push(data.score.phase);
