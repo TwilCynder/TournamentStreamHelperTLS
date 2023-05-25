@@ -1,5 +1,3 @@
-const api_key = 'aaf87de047c2449475ebf9ae83bb0e97';
-
 const query = `         
         query Query($slug: String, $setNum: Int) {
             event(slug: $slug){
@@ -26,7 +24,7 @@ const query = `
         }    
     ` 
 
-var eventSlug = ""
+var config = {};
 
 $(() => {
     let setsContainer = $("#sets");
@@ -66,13 +64,13 @@ $(() => {
             headers: {             
                 'Content-Type': 'application/json',             
                 'accept' : 'application/json',             
-                'Authorization' : `Bearer ${api_key}`         
+                'Authorization' : `Bearer ${config.token}`         
             },         
             body: JSON.stringify({
                 'query': query,
                 'variables' : {
-                    "slug": eventSlug,
-                    "setNum": 6
+                    "slug": config.event,
+                    "setNum": config.sets
                 } 
             }),  
             
@@ -81,9 +79,9 @@ $(() => {
         .then((data) => {  
             $('#sets').empty();   
             if (!data.data || !data.data.event){
-                throw "Invalid response from the startgg API (check the tournament URL)"
+                throw "Invalid response from the startgg API (check the tournament URL or API key)"
             }
-            for (let i = 1; i < data.data.event.sets.nodes.length; i++){
+            for (let i = 0; i < data.data.event.sets.nodes.length; i++){
                 let set = data.data.event.sets.nodes[i];
                 let p1 = set.slots[0].entrant.name;
                 let p1score = set.slots[0].standing.stats.score.value;
@@ -95,13 +93,12 @@ $(() => {
         .catch(err => {console.error(err)});
     }
 
-fetch("./tournament.json")
+fetch("./config.json")
     .then(response => response.json())
     .then(json => {
-        eventSlug = json.event;
-        console.log(eventSlug)
+        config = json;
     })
-    .finally(() => {
+    .then(() => {
         load_sets();
         setTimeout(() => {
             load_sets();
