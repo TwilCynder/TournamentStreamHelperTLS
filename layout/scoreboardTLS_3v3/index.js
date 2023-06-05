@@ -31,9 +31,7 @@ let jsonPromise = fetch("./teamNames.json")
     teams = data;
   });
 
-let TSHPromise = LoadEverything()
-
-Promise.all([jsonPromise, TSHPromise]).then(() => {
+let TSHPromise = LoadEverything(() => {
   gsap.config({ nullTargetWarn: false, trialWarn: false });
 
   let startingAnimation = gsap
@@ -100,7 +98,8 @@ Promise.all([jsonPromise, TSHPromise]).then(() => {
   Update = async (event) => {
     let data = event.data;
     let oldData = event.oldData;
-
+    
+    console.log("MY UPDATE")
 
     let casters = Object.values(data.commentary);
     let html = ""
@@ -112,7 +111,7 @@ Promise.all([jsonPromise, TSHPromise]).then(() => {
     $("#caster_names_container").html(html);
 
     let isTeams = Object.keys(data.score.team["1"].player).length > 1;
-
+    console.log(isTeams)
     let totalScore = 0
 
     if (!isTeams) {
@@ -213,9 +212,7 @@ Promise.all([jsonPromise, TSHPromise]).then(() => {
         data.score.team["1"],
         data.score.team["2"],
       ].entries()) {
-        let teamName = "";
-
-        if (!team.teamName || team.teamName == "") {
+          let teamName = ""
           let names = [];
           for (const [p, player] of Object.values(team.player).entries()) {
             if (player && player.name) {
@@ -234,9 +231,6 @@ Promise.all([jsonPromise, TSHPromise]).then(() => {
             document.getElementById(`team_name_${t + 1}`).style.visibility = "hidden";
           }
           //teamName = names.join(" / ");
-        } else {
-          teamName = team.teamName;
-        }
 
         /*
         SetInnerHtml(
@@ -305,4 +299,4 @@ Promise.all([jsonPromise, TSHPromise]).then(() => {
 
     SetInnerHtml($("#bestof"), text);
   };
-});
+}, jsonPromise);
