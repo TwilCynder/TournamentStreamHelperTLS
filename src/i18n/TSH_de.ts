@@ -1346,14 +1346,14 @@ p, li { white-space: pre-wrap; }
     <message>
         <location filename="../TournamentStreamHelper.py" line="538"/>
         <location filename="../TSHSelectSetWindow.py" line="111"/>
-        <location filename="../TSHScoreboardWidget.py" line="719"/>
+        <location filename="../TSHScoreboardWidget.py" line="718"/>
         <source>(</source>
         <translation></translation>
     </message>
     <message>
         <location filename="../TournamentStreamHelper.py" line="538"/>
         <location filename="../TSHSelectSetWindow.py" line="112"/>
-        <location filename="../TSHScoreboardWidget.py" line="719"/>
+        <location filename="../TSHScoreboardWidget.py" line="718"/>
         <source>)</source>
         <translation></translation>
     </message>
