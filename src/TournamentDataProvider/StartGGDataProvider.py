@@ -33,6 +33,8 @@ class StartGGDataProvider(TournamentDataProvider):
     TournamentPhaseGroupQuery = None
     StreamQueueQuery = None
 
+    player_seeds = {}
+
     def __init__(self, url, threadpool, parent) -> None:
         super().__init__(url, threadpool, parent)
         self.name = "StartGG"
@@ -488,6 +490,8 @@ class StartGGDataProvider(TournamentDataProvider):
         # Add Pool identifier if phase has multiple Pools
         phase_name = deep_get(_set, "phaseGroup.phase.name")
 
+        bracket_type = deep_get(_set, "phaseGroup.phase.bracketType", "")
+
         if deep_get(_set, "phaseGroup.phase.groupCount") > 1:
             phase_name += " - " + TSHLocaleHelper.phaseNames.get("group").format(deep_get(_set, "phaseGroup.displayIdentifier"))
 
@@ -495,6 +499,7 @@ class StartGGDataProvider(TournamentDataProvider):
             "id": _set.get("id"),
             "round_name": StartGGDataProvider.TranslateRoundName(_set.get("fullRoundText")),
             "tournament_phase": phase_name,
+            "bracket_type": bracket_type,
             "p1_name": p1.get("entrant", {}).get("name", "") if p1 and p1.get("entrant", {}) != None else "",
             "p2_name": p2.get("entrant", {}).get("name", "") if p2 and p2.get("entrant", {}) != None else "",
             "stream": _set.get("stream", {}).get("streamName", "") if _set.get("stream", {}) != None else "",
@@ -604,9 +609,9 @@ class StartGGDataProvider(TournamentDataProvider):
                         player.get("id"),
                         0
                     ]
-                if deep_get(_set, "slots", [])[i].get("entrant", {}).get("seeds", []) != []:
-                    playerData["seed"] = deep_get(_set, "slots", [])[i].get(
-                    "entrant", {}).get("seeds", [])[0].get("seedNum", 0)
+                if playerData["id"][0] is not None:
+                    playerData["seed"] = self.player_seeds[playerData["id"][0]]
+                
                 players[i].append(playerData)
 
         setData["entrants"] = players
@@ -808,7 +813,7 @@ class StartGGDataProvider(TournamentDataProvider):
                 "useMDSR": mdsr,
             }
         except:
-            print(traceback.format_exc())
+            print("No Stage Strike Info Found")
             allStages = None
             strikedStages = None
             strikedBy = [[], []]
@@ -851,7 +856,6 @@ class StartGGDataProvider(TournamentDataProvider):
         })
 
     def GetStreamQueue(self, progress_callback=None):
-        print("========================================")
 
         try:
             data = requests.post(
@@ -882,11 +886,14 @@ class StartGGDataProvider(TournamentDataProvider):
                         phase_name += " - " + TSHLocaleHelper.phaseNames.get("group").format(deep_get(_set, "phaseGroup.displayIdentifier"))
 
                     frt = _set.get("fullRoundText", "")
+                    total_games = _set.get("totalGames", 0)
 
                     setData = {
                         "id": _set.get("id"),
                         "match": StartGGDataProvider.TranslateRoundName(frt),
                         "phase": phase_name,
+                        "best_of" : total_games,
+                        "best_of_text" : TSHLocaleHelper.matchNames.get("best_of").format(total_games) if total_games > 0 else "",
                         "state": _set.get("state"),
                         "team" : {}
                     }
@@ -918,12 +925,16 @@ class StartGGDataProvider(TournamentDataProvider):
                                     "state" : {},
                                     "name" : playerName,
                                     "team" : team,
-                                    "mergedName" : team + "|" + playerName if not team == "" else playerName,
+<<<<<<< HEAD
+                                    "mergedName" : team + "|" + playerName if team else playerName,
+=======
+                                    "mergedName" : team + "|" + playerName if isinstance(team, str) and team != "" else playerName,
+>>>>>>> upstream
                                     "pronoun" : playerData.get("pronoun", ""),
                                     "real_name" : playerData.get("name", ""),
-                                    "online_avatar" : playerData.get("avatar", "")
+                                    "online_avatar" : playerData.get("avatar", ""),
+                                    "twitter":  playerData.get("twitter", "")
                                 }
-                                
 
                                 teamData["player"][str(playerIndex + 1)] = playerData
 
@@ -1402,6 +1413,7 @@ class StartGGDataProvider(TournamentDataProvider):
                         playerData = StartGGDataProvider.ProcessEntrantData(entrant)
                         if deep_get(team, "seeds", []) != []:
                             playerData["seed"] = deep_get(team, "seeds", [])[0].get("seedNum", 0)
+                            self.player_seeds[playerData["id"][0]] = playerData["seed"]
                         players.append(playerData)
 
                 TSHPlayerDB.AddPlayers(players)

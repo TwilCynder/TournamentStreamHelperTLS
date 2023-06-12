@@ -8,6 +8,8 @@ on:
       - feature/*
       - new-features
       - fix/*
+    paths-ignore:
+      - 'layout/**'
   workflow_dispatch:
 
 jobs:
@@ -20,8 +22,8 @@ jobs:
         os: ["ubuntu-20.04"]
 
     steps:
-      - uses: actions/checkout@v2
-      - uses: actions/setup-python@v2
+      - uses: actions/checkout@v3
+      - uses: actions/setup-python@v4
         with:
           python-version: "3.8"
 
@@ -51,7 +53,7 @@ jobs:
           fi
 
       - name: push changes
-        uses: ad-m/github-push-action@v0.6.0
+        uses: ad-m/github-push-action@master
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           branch: ${{ steps.extract_branch.outputs.branch }}
@@ -68,8 +70,8 @@ jobs:
       - locale_build
 
     steps:
-      - uses: actions/checkout@v2
-      - uses: actions/setup-python@v2
+      - uses: actions/checkout@v3
+      - uses: actions/setup-python@v4
         with:
           python-version: "3.8"
 
@@ -96,7 +98,7 @@ jobs:
           git commit -m "Update exe" -a
 
       - name: push changes
-        uses: ad-m/github-push-action@v0.6.0
+        uses: ad-m/github-push-action@master
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           branch: ${{ steps.extract_branch.outputs.branch }}
