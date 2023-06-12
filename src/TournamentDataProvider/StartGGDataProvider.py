@@ -925,16 +925,13 @@ class StartGGDataProvider(TournamentDataProvider):
                                     "state" : {},
                                     "name" : playerName,
                                     "team" : team,
-<<<<<<< HEAD
-                                    "mergedName" : team + "|" + playerName if team else playerName,
-=======
                                     "mergedName" : team + "|" + playerName if isinstance(team, str) and team != "" else playerName,
->>>>>>> upstream
                                     "pronoun" : playerData.get("pronoun", ""),
                                     "real_name" : playerData.get("name", ""),
                                     "online_avatar" : playerData.get("avatar", ""),
                                     "twitter":  playerData.get("twitter", "")
                                 }
+                                
 
                                 teamData["player"][str(playerIndex + 1)] = playerData
 

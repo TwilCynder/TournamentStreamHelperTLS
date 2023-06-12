@@ -707,11 +707,7 @@ p, li { white-space: pre-wrap; }
 <context>
     <name>app</name>
     <message>
-<<<<<<< HEAD
-        <location filename="../TSHPlayerListWidget.py" line="29"/>
-=======
         <location filename="../TSHPlayerListWidget.py" line="31"/>
->>>>>>> upstream
         <location filename="../TournamentStreamHelper.py" line="208"/>
         <source>Player List</source>
         <translation>Lista de Jugadores</translation>
@@ -1373,9 +1369,6 @@ p, li { white-space: pre-wrap; }
     <message>
         <location filename="../TournamentStreamHelper.py" line="538"/>
         <location filename="../TSHSelectSetWindow.py" line="111"/>
-<<<<<<< HEAD
-        <location filename="../TSHScoreboardWidget.py" line="718"/>
-=======
         <location filename="../TSHScoreboardWidget.py" line="719"/>
 >>>>>>> upstream
         <source>(</source>
@@ -1384,9 +1377,6 @@ p, li { white-space: pre-wrap; }
     <message>
         <location filename="../TournamentStreamHelper.py" line="538"/>
         <location filename="../TSHSelectSetWindow.py" line="112"/>
-<<<<<<< HEAD
-        <location filename="../TSHScoreboardWidget.py" line="718"/>
-=======
         <location filename="../TSHScoreboardWidget.py" line="719"/>
 >>>>>>> upstream
         <source>)</source>
