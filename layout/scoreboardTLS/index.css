@@ -498,4 +498,6 @@ body {
 
 .next_set_name {
   color: var(--tls-yellow);
+  margin-left: 8px;
+  margin-right: 8px;
 }

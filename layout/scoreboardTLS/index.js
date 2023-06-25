@@ -243,6 +243,7 @@ LoadEverything(() => {
 
     try {
       let nextMatch = data.streamQueue && data.streamQueue.toulouselaststock["2"];
+      console.log(nextMatch)
       if (nextMatch){
         console.log("LLLO ,,", nextMatch)
         let t1 = nextMatch.team["1"];
