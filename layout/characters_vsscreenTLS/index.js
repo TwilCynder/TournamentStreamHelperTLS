@@ -8,6 +8,58 @@ function wrapChracter(html){
 
 update_delay = 5000;
 
+function calc_point(center, target, ratio){
+  return {
+    x : center.x + ((target.x - center.x) * ratio),
+    y : center.y + ((target.y - center.y) * ratio),
+  }
+}
+
+function point(x, y){
+  return {x: x, y: y};
+}
+
+function stat(name, x, y, max, min){
+  return {name: name, point : point(x, y), max: max, min: min}
+}
+
+let center = {
+  x: 250,
+  y: 210
+}
+
+let stats = [
+  stat("weight", 250, 70, 135, 62),
+  stat("air_speed", 116, 166, 1.334, 0.735),
+  stat("fall_speed", 166, 327, 2.1, 0.98),
+  stat("dash_speed", 333, 327, 2.45, 1.45),
+  stat("run_speed", 385, 166, 2.41, 1.45)
+]
+
+function graph_clip_path(character_data){
+  if (!character_data) return "";
+  console.log(character_data)
+  let res = "clip-path: polygon("
+  for (let i = 0; i < stats.length; i++){
+    let s = stats[i];
+    let value = character_data[s.name];
+    let point = calc_point(center, s.point, (value - s.min) / (s.max - s.min));
+    res += point.x + "px " + point.y + "px";
+    if (i < stats.length - 1) res += ","
+  }
+
+  res += ");"
+  console.log(res);
+  return res;
+}
+
+let char_data = null
+
+let data_promise = fetch("./data.json")
+    .then(response => response.json())
+    .then(json => char_data = json)
+
+
 LoadEverything(() => {
   // Change this to the name of the assets pack you want to use
   // It's basically the folder name: user_data/games/game/ASSETPACK
@@ -25,18 +77,6 @@ LoadEverything(() => {
 
   let startingAnimation = gsap
     .timeline({ paused: true })
-    .from(
-      [".phase.container"],
-      { duration: 0.8, opacity: "0", ease: "power2.inOut" },
-      0
-    )
-    .from([".match"], { duration: 0.8, opacity: "0", ease: "power2.inOut" }, 0)
-    .from(
-      [".best_of.container"],
-      { duration: 0.8, opacity: "0", ease: "power2.inOut" },
-      0
-    )
-
     .from([".p1.container"], { duration: 1, x: "-100px", ease: "out" }, 0)
     .from([".p2.container"], { duration: 1, x: "100px", ease: "out" }, 0);
 
@@ -70,66 +110,6 @@ LoadEverything(() => {
             `
           );
 
-          SetInnerHtml($(`.p${t + 1} .pronoun`), player.pronoun);
-
-          SetInnerHtml(
-            $(`.p${t + 1} > .sponsor_logo`),
-            player.sponsor_logo
-              ? `
-                <div class='sponsor_logo' style='background-image: url(../../${player.sponsor_logo})'></div>
-                `
-              : ""
-          );
-
-          //SetInnerHtml($(`.p${t + 1} .real_name`), `${player.real_name}`);
-
-          SetInnerHtml(
-            $(`.p${t + 1} .twitter`),
-            `
-              ${
-                player.twitter
-                  ? `
-                  <div class="twitter_logo"></div>
-                  ${player.twitter}
-                  `
-                  : ""
-              }
-          `
-          );
-
-          {
-            if (player.seed){
-              SetInnerHtml($(`.p${t + 1} .seed`), `Seed ${player.seed}`);
-            } else {
-              SetInnerHtml($(`.p${t + 1} .seed`), ``);
-            }
-          }
-          
-          
-
-          SetInnerHtml(
-            $(`.p${t + 1} .flagcountry`),
-            player.country.asset
-              ? `
-              <div>
-                  <div class='flag' style='background-image: url(../../${player.country.asset});'>
-                      <div class="flagname">${player.country.code}</div>
-                  </div>
-              </div>`
-              : ""
-          );
-
-          SetInnerHtml(
-            $(`.p${t + 1} .flagstate`),
-            player.state.asset
-              ? `
-              <div>
-                  <div class='flag' style='background-image: url(../../${player.state.asset});'>
-                      <div class="flagname">${player.state.code}</div>
-                  </div>
-              </div>`
-              : ""
-          );
 
           if (
             !oldData.score ||
@@ -141,46 +121,53 @@ LoadEverything(() => {
           ) {
             let html = "";
             let characters = Object.values(player.character);
+            let character = characters[0]; //we only support 1 char per player
             if (t == 0) characters = characters.reverse();
             let zIndexMultiplyier = 1;
             if (t == 1) zIndexMultiplyier = -1;
             let video = false;
-            characters.forEach((character, c) => {
-              console.log("Char : ", ASSET_TO_USE, character.assets[ASSET_TO_USE]);
-              if (
-                character &&
-                character.assets &&
-                character.assets[ASSET_TO_USE]
-              ) {
-                if (!character.assets[ASSET_TO_USE].asset.endsWith(".webm")) {
-                  // if asset is a image, add a image element
-                  html += wrapChracter(`
-                    <img
-                      class="portrait ${
-                        !FLIP_P2_ASSET && t == 1 ? "invert_shadow flip" : ""
-                      }"
-                      src='
-                          ../../${
-                            character.assets[ASSET_TO_USE].asset
-                          }
-                          
-                    '/>
-                  `);
-                } else {
-                  video = true;
-                  // if asset is a video, add a video element
-                  html += wrapChracter(`
-                    <video id="video_${p}" class="video" width="auto" height="100%" muted>
-                      <source src="../../${
-                        character.assets[ASSET_TO_USE].asset
-                      }">
-                    </video>
-                  `);
-                }
+
+            console.log("Char : ", ASSET_TO_USE, character.assets[ASSET_TO_USE]);
+            if (
+              character &&
+              character.assets &&
+              character.assets[ASSET_TO_USE]
+            ) {
+              if (!character.assets[ASSET_TO_USE].asset.endsWith(".webm")) {
+                // if asset is a image, add a image element
+                html += wrapChracter(`
+                  <img
+                    class="portrait ${
+                      !FLIP_P2_ASSET && t == 1 ? "invert_shadow flip" : ""
+                    }"
+                    src='
+                        ../../${
+                          character.assets[ASSET_TO_USE].asset
+                        }
+                        
+                  '/>
+                `);
+              } else {
+                video = true;
+                // if asset is a video, add a video element
+                html += wrapChracter(`
+                  <video id="video_${p}" class="video" width="auto" height="100%" muted>
+                    <source src="../../${
+                      character.assets[ASSET_TO_USE].asset
+                    }">
+                  </video>
+                `);
               }
-            });
+            }
 
             $(`.p${t + 1}.character`).html(html);
+            SetInnerHtml($(`.p${t + 1} .char_name`), character.display_name);
+
+            
+
+            $(`.p${t + 1} .graph`).css("clip-path", "polygon(250px 70px, 116px 166px, 166px 327px, 333px 327px, 385px 166px);")
+
+            document.getElementById(`p${t+1}_graph`).style =  graph_clip_path(char_data[character.codename])
 
             if (video){
               setTimeout(() => {
@@ -188,73 +175,67 @@ LoadEverything(() => {
               }, 1000);
             }
 
-            if (t == 0) characters = characters.reverse();
-            characters.forEach((character, c) => {
-              if (character.assets[ASSET_TO_USE]) {
-                CenterImage(
-                  $(`.p${t + 1}.character .char${c} .portrait`),
-                  character.assets[ASSET_TO_USE],
-                  zoom,
-                  EYESIGHT_CENTERING
-                );
-              }
-            });
+            let c = 0;
 
-            characters.forEach((character, c) => {
-              if (character) {
-                gsap
-                  .timeline()
-                  .fromTo(
-                    [`.p${t + 1}.character `],
-                    {
-                      x: zIndexMultiplyier * -800 + "px",
-                      z: 0,
-                      rotationY: zIndexMultiplyier * 15 * (c + 1),
-                    },
-                    {
-                      duration: 0.4,
-                      x: zIndexMultiplyier * -40 + "px",
-                      z: -c * 50 + "px",
-                      rotationY: zIndexMultiplyier * 15 * (c + 1),
-                      ease: "in",
-                    },
-                    c / 10
-                  )
-                  .to([`.p${t + 1}.character`], {
-                    duration: 3,
-                    x: 0,
-                    ease: "out",
-                  });
 
-                gsap
-                  .timeline()
-                  .from(
-                    `.p${t + 1}.character .character_container`,
-                    {
-                      duration: 0.2,
-                      opacity: 0,
-                    },
-                    c / 10
-                  )
-                  .from(`.p${t + 1}.character .character_container`, {
+            if (character) {
+              
+              gsap
+                .timeline()
+                .fromTo(
+                  [`.p${t + 1}.character `],
+                  {
+                    x: zIndexMultiplyier * -800 + "px",
+                    z: 0,
+                    rotationY: zIndexMultiplyier * 15 * (c + 1),
+                  },
+                  {
                     duration: 0.4,
-                    filter: "brightness(0%)",
-                    onUpdate: function (tl) {
-                      var tlp = (this.progress() * 100) >> 0;
-                      TweenMax.set(
-                        `.p${t + 1}.character .character_container`,
-                        {
-                          filter: "brightness(" + tlp + "%)",
-                        }
-                      );
-                    },
-                    onUpdateParams: ["{self}"],
-                  });
-              }
-            });
+                    x: zIndexMultiplyier * -40 + "px",
+                    z: -c * 50 + "px",
+                    rotationY: zIndexMultiplyier * 15 * (c + 1),
+                    ease: "in",
+                  },
+                  c / 10
+                )
+                .to([`.p${t + 1}.character`], {
+                  duration: 3,
+                  x: 0,
+                  ease: "out",
+                });
+
+              gsap
+                .timeline()
+                .from(
+                  `.p${t + 1}.character .character_container`,
+                  {
+                    duration: 0.2,
+                    opacity: 0,
+                  },
+                  c / 10
+                )
+                .from(`.p${t + 1}.character .character_container`, {
+                  duration: 0.4,
+                  filter: "brightness(0%)",
+                  onUpdate: function (tl) {
+                    var tlp = (this.progress() * 100) >> 0;
+                    TweenMax.set(
+                      `.p${t + 1}.character .character_container`,
+                      {
+                        filter: "brightness(" + tlp + "%)",
+                      }
+                    );
+                  },
+                  onUpdateParams: ["{self}"],
+                });
+            }
           }
+
         };
       }
+
+      await data_promise;
+
     } else {
       const teams = Object.values(data.score.team);
       for (const [t, team] of teams.entries()) {
@@ -283,20 +264,6 @@ LoadEverything(() => {
             </span>
           `
         );
-
-        SetInnerHtml($(`.p${t + 1} > .sponsor_logo`), "");
-
-        SetInnerHtml($(`.p${t + 1} .real_name`), ``);
-
-        SetInnerHtml($(`.p${t + 1} .twitter`), ``);
-
-        SetInnerHtml($(`.p${t + 1} .seed`), ``);
-
-        SetInnerHtml($(`.p${t + 1} .flagcountry`), "");
-
-        SetInnerHtml($(`.p${t + 1} .flagstate`), "");
-
-        let charactersHtml = "";
 
         let charactersChanged = false;
 
@@ -446,48 +413,15 @@ LoadEverything(() => {
       };
     }
 
-    SetInnerHtml($(`.p1 .score`), String(data.score.team["1"].score));
-    SetInnerHtml($(`.p2 .score`), String(data.score.team["2"].score));
-
-    SetInnerHtml($(".tournament"), data.tournamentInfo.tournamentName);
-    SetInnerHtml($(".match"), data.score.match);
-
-    if (data.score.phase) {
-      gsap.to($(".phase.container"), {
-        autoAlpha: 1,
-        overwrite: true,
-        duration: 0.8,
-      });
-
-      SetInnerHtml(
-        $(".phase:not(.container)"),
-        data.score.phase ? `${data.score.phase}` : ""
-      );
-    } else {
-      gsap.to($(".phase.container"), {
-        autoAlpha: 0,
-        overwrite: true,
-        duration: 0.8,
-      });
-    }
-
-    if (data.score.best_of_text) {
-      gsap.to($(".best_of.container"), {
-        opacity: 1,
-        overwrite: true,
-        duration: 0.8,
-      });
-
-      SetInnerHtml(
-        $(".container .best_of"),
-        data.score.best_of_text ? `${data.score.best_of_text}` : ""
-      );
-    } else {
-      gsap.to($(".best_of.container"), {
-        opacity: 0,
-        overwrite: true,
-        duration: 0.8,
-      });
-    }
   }
 });
+
+
+
+/*
+499 422
+
+283
+
+angles : 90 162 234 306 18
+*/
