@@ -481,6 +481,36 @@ body {
   background: #308affff;
 }
 
+.league_team {
+  position: absolute;
+  top: 90px;
+  width: 180px;
+  height: 30px;
+  background-color: var(--tls-purple);
+  clip-path: polygon(0 0, 100% 0, calc(100% - 10px) 100%, 10px 100%);
+  font-size: 15px;
+  color: white;
+  padding-top: 2px;
+  justify-content: center;
+
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+}
+
+.p1.league_team {
+  left: 344px;
+}
+
+.p2.league_team {
+  right: 372px;
+}
+
+.team_name {
+  margin-left: 1ch;
+  color : var(--tls-yellow)
+}
+
 #next_set {
   position: absolute;
   top: 110px;

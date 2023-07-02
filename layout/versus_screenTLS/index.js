@@ -32,16 +32,11 @@ LoadEverything(() => {
     )
     .from([".match"], { duration: 0.8, opacity: "0", ease: "power2.inOut" }, 0)
     .from(
-      [".score_container"],
-      { duration: 0.8, opacity: "0", ease: "power2.inOut" },
-      0
-    )
-    .from(
       [".best_of.container"],
       { duration: 0.8, opacity: "0", ease: "power2.inOut" },
       0
     )
-    .from([".vs"], { duration: 0.4, opacity: "0", scale: 4, ease: "out" }, 0.5)
+
     .from([".p1.container"], { duration: 1, x: "-100px", ease: "out" }, 0)
     .from([".p2.container"], { duration: 1, x: "100px", ease: "out" }, 0);
 
@@ -210,7 +205,7 @@ LoadEverything(() => {
                 gsap
                   .timeline()
                   .fromTo(
-                    [`.p${t + 1}.character .char${c}`],
+                    [`.p${t + 1}.character `],
                     {
                       x: zIndexMultiplyier * -800 + "px",
                       z: 0,
@@ -225,7 +220,7 @@ LoadEverything(() => {
                     },
                     c / 10
                   )
-                  .to([`.p${t + 1}.character .char${c}`], {
+                  .to([`.p${t + 1}.character`], {
                     duration: 3,
                     x: 0,
                     ease: "out",
@@ -234,20 +229,20 @@ LoadEverything(() => {
                 gsap
                   .timeline()
                   .from(
-                    `.p${t + 1}.character .char${c} .portrait_container`,
+                    `.p${t + 1}.character .character_container`,
                     {
                       duration: 0.2,
                       opacity: 0,
                     },
                     c / 10
                   )
-                  .from(`.p${t + 1}.character .char${c} .portrait_container`, {
+                  .from(`.p${t + 1}.character .character_container`, {
                     duration: 0.4,
                     filter: "brightness(0%)",
                     onUpdate: function (tl) {
                       var tlp = (this.progress() * 100) >> 0;
                       TweenMax.set(
-                        `.p${t + 1}.character .char${c} .portrait_container`,
+                        `.p${t + 1}.character .character_container`,
                         {
                           filter: "brightness(" + tlp + "%)",
                         }
