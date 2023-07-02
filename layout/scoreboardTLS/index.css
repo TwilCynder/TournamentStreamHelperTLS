@@ -480,3 +480,35 @@ body {
 .p2 .losers {
   background: #308affff;
 }
+
+.league_team {
+  position: absolute;
+  top: 110px;
+  width: 150px;
+  height: 30px;
+  background-color: var(--tls-purple);
+  clip-path: polygon(0 0, 100% 0, 95% 100%, 5% 100%);
+}
+
+.p1 .league_team {
+  left: 400px;
+}
+
+.p1 .league_team {
+  right: 400px;
+}
+
+#next_set {
+  position: absolute;
+  top: 110px;
+  left: 50%;
+  transform: translateX(-52%);
+  width: 700px;
+  height: 50px;
+  clip-path: polygon(0 0, calc(50% - 186px) 0, calc(50% - 176px) 10px, calc(50% + 176px) 10px, calc(50% + 186px) 0, 100% 0, calc(100% - 30px) 100%, 30px 100%);
+  background-color: grey;
+  text-align: center;
+  color: var(--tls-yellow);
+  font-size: 25px;
+  padding-top: 10px;
+}
