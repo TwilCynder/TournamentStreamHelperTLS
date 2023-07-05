@@ -737,7 +737,7 @@ p, li { white-space: pre-wrap; }
         <translation>Comentário</translation>
     </message>
     <message>
-        <location filename="../TSHPlayerListWidget.py" line="29"/>
+        <location filename="../TSHPlayerListWidget.py" line="31"/>
         <location filename="../TournamentStreamHelper.py" line="208"/>
         <source>Player List</source>
         <translation>Lista de Jogadores</translation>
@@ -1080,18 +1080,21 @@ p, li { white-space: pre-wrap; }
         <translation>Comentarista {0}</translation>
     </message>
     <message>
+        <location filename="../TSHPlayerListWidget.py" line="64"/>
         <location filename="../TSHBracketWidget.py" line="71"/>
         <location filename="../TSHPlayerListWidget.py" line="62"/>
         <source>Number of slots</source>
         <translation>Número de grupos</translation>
     </message>
     <message>
+        <location filename="../TSHPlayerListWidget.py" line="74"/>
         <location filename="../TSHBracketWidget.py" line="84"/>
         <location filename="../TSHPlayerListWidget.py" line="72"/>
         <source>Players per slot</source>
         <translation>Jogadores por grupo</translation>
     </message>
     <message>
+        <location filename="../TSHPlayerListWidget.py" line="85"/>
         <location filename="../TSHScoreboardWidget.py" line="119"/>
         <location filename="../TSHBracketWidget.py" line="94"/>
         <location filename="../TSHPlayerListWidget.py" line="82"/>
@@ -1099,7 +1102,7 @@ p, li { white-space: pre-wrap; }
         <translation>Personagens por jogador</translation>
     </message>
     <message>
-        <location filename="../TSHPlayerListWidget.py" line="93"/>
+        <location filename="../TSHPlayerListWidget.py" line="98"/>
         <source>Load tournament standings</source>
         <translation>Carregar resultados do torneio</translation>
     </message>
@@ -1336,7 +1339,7 @@ p, li { white-space: pre-wrap; }
     <message>
         <location filename="../TSHScoreboardWidget.py" line="218"/>
         <location filename="../TSHScoreboardWidget.py" line="719"/>
-        <location filename="../TSHScoreboardWidget.py" line="724"/>
+        <location filename="../TSHScoreboardWidget.py" line="723"/>
         <source>Load current stream set</source>
         <translation>Carregar set atual do stream</translation>
     </message>
@@ -1346,12 +1349,12 @@ p, li { white-space: pre-wrap; }
         <translation>Gerar Thumbnail</translation>
     </message>
     <message>
-        <location filename="../TSHScoreboardWidget.py" line="733"/>
+        <location filename="../TSHScoreboardWidget.py" line="732"/>
         <source>Load user set ({0})</source>
         <translation>Carregar set do usuário ({0})</translation>
     </message>
     <message>
-        <location filename="../TSHScoreboardWidget.py" line="737"/>
+        <location filename="../TSHScoreboardWidget.py" line="736"/>
         <source>Load user set</source>
         <translation>Carregar set do usuário</translation>
     </message>
@@ -1394,28 +1397,28 @@ p, li { white-space: pre-wrap; }
         <translation>Fase Final</translation>
     </message>
     <message>
-        <location filename="../TSHTournamentInfoWidget.py" line="95"/>
+        <location filename="../TSHTournamentInfoWidget.py" line="101"/>
         <source>Open Image</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../TSHTournamentInfoWidget.py" line="97"/>
+        <location filename="../TSHTournamentInfoWidget.py" line="103"/>
         <source>Image Files</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../TSHTournamentInfoWidget.py" line="135"/>
-        <location filename="../TSHTournamentInfoWidget.py" line="136"/>
+        <location filename="../TSHTournamentInfoWidget.py" line="142"/>
+        <location filename="../TSHTournamentInfoWidget.py" line="143"/>
         <source>Error</source>
         <translation>Erro</translation>
     </message>
     <message>
-        <location filename="../TSHTournamentInfoWidget.py" line="179"/>
+        <location filename="../TSHTournamentInfoWidget.py" line="186"/>
         <source>The tournament URL could not be loaded.</source>
         <translation>A URL do torneio não pôde ser carregada.</translation>
     </message>
     <message>
-        <location filename="../TSHTournamentInfoWidget.py" line="179"/>
+        <location filename="../TSHTournamentInfoWidget.py" line="186"/>
         <source>Make sure that your tournament URL is correctly formatted and points to an existing event, and try again.</source>
         <translation>Certifique-se de que a URL está no formato correto e que o evento existe.</translation>
     </message>
@@ -1433,16 +1436,18 @@ p, li { white-space: pre-wrap; }
         <translation>]</translation>
     </message>
     <message>
-        <location filename="../TSHScoreboardWidget.py" line="718"/>
-        <location filename="../TSHSelectSetWindow.py" line="111"/>
         <location filename="../TournamentStreamHelper.py" line="538"/>
+        <location filename="../TSHSelectSetWindow.py" line="111"/>
+        <location filename="../TSHScoreboardWidget.py" line="719"/>
+>>>>>>> 57ed798aa3bb4e6bf2ae8e400542872d97e090f4
         <source>(</source>
         <translation>(</translation>
     </message>
     <message>
-        <location filename="../TSHScoreboardWidget.py" line="718"/>
-        <location filename="../TSHSelectSetWindow.py" line="112"/>
         <location filename="../TournamentStreamHelper.py" line="538"/>
+        <location filename="../TSHSelectSetWindow.py" line="112"/>
+        <location filename="../TSHScoreboardWidget.py" line="719"/>
+>>>>>>> 57ed798aa3bb4e6bf2ae8e400542872d97e090f4
         <source>)</source>
         <translation>)</translation>
     </message>
