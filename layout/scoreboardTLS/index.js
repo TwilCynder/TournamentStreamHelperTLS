@@ -243,7 +243,7 @@ LoadEverything(() => {
     SetInnerHtml($(".match"), data.score.match);
 
     try {
-      let nextMatch = data.streamQueue && data.streamQueue.toulouselaststock["1"];
+      let nextMatch = data.streamQueue && data.streamQueue.toulouselaststock["2"];
       if (nextMatch){
         let text = 
           `Prochain match : ${nextMatch.team["1"].player["1"].name} VS ${nextMatch.team["2"].player["1"].name}`;
