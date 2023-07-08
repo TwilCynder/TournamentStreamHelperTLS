@@ -489,5 +489,40 @@ LoadEverything(() => {
         duration: 0.8,
       });
     }
+
+    let stage = null;
+
+    if (_.get(data, "score.stage_strike.selectedStage")) {
+      let stageId = _.get(data, "score.stage_strike.selectedStage");
+
+      let allStages = _.get(data, "score.ruleset.neutralStages", []).concat(
+        _.get(data, "score.ruleset.counterpickStages", [])
+      );
+
+      stage = allStages.find((s) => s.codename == stageId);
+    }
+
+    if (
+      stage &&
+      _.get(data, "score.stage_strike.selectedStage") !=
+        _.get(oldData, "score.stage_strike.selectedStage")
+    ) {
+      gsap.fromTo(
+        $(`.stage`),
+        { scale: 1.6 },
+        { scale: 1.2, duration: 0.6, ease: "power2.out" }
+      );
+    }
+
+    SetInnerHtml(
+      $(`.stage`),
+      stage
+        ? `
+        <div>
+            <div class='' style='background-image: url(../../${stage.path});'>
+            </div>
+        </div>`
+        : ""
+    );
   }
 });
