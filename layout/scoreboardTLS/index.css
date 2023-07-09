@@ -463,22 +463,24 @@ body {
 
 .losers {
   display: inline-flex;
-  width: 22px;
-  height: 22px;
+  width: 30px;
+  height: 30px;
   font-size: 18px;
-  border-radius: 100%;
   text-align: center;
   align-items: center;
   justify-content: center;
   margin: 0 6px;
+  background: var(--tls-yellow);
+  color : var(--tls-purple);
+  
 }
 
 .p1 .losers {
-  background: #ff3837ff;
+  clip-path: polygon(0 20%, 80% 0, 100% 80%, 20% 100%);
 }
 
 .p2 .losers {
-  background: #308affff;
+  clip-path: polygon(20% 0, 100% 20%, 80% 100%, 0% 80%);
 }
 
 #next_set {
