@@ -171,6 +171,8 @@ LoadEverything(() => {
               $(`.p${t + 1}.container .sponsor-container`),
               `<div class='sponsor-logo' style='background-image: url(../../${player.sponsor_logo})'></div>`
             );
+
+            SetInnerHtml($(`.p${t + 1}.score`), String(team.score));
           }
         }
       }
@@ -229,7 +231,6 @@ LoadEverything(() => {
 
         SetInnerHtml($(`.p${t + 1} .twitter`), "");
         
-        SetInnerHtml($(`.p${t + 1}.container .score`), String(team.score));
 
         SetInnerHtml($(`.p${t + 1}.container .sponsor-container`), "");
         */

@@ -483,6 +483,36 @@ body {
   clip-path: polygon(20% 0, 100% 20%, 80% 100%, 0% 80%);
 }
 
+.league_team {
+  position: absolute;
+  top: 90px;
+  width: 180px;
+  height: 30px;
+  background-color: var(--tls-purple);
+  clip-path: polygon(0 0, 100% 0, calc(100% - 10px) 100%, 10px 100%);
+  font-size: 15px;
+  color: white;
+  padding-top: 2px;
+  justify-content: center;
+
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+}
+
+.p1.league_team {
+  left: 344px;
+}
+
+.p2.league_team {
+  right: 372px;
+}
+
+.team_name {
+  margin-left: 1ch;
+  color : var(--tls-yellow)
+}
+
 #next_set {
   position: absolute;
   top: 110px;
@@ -493,13 +523,7 @@ body {
   clip-path: polygon(0 0, calc(50% - 186px) 0, calc(50% - 176px) 10px, calc(50% + 176px) 10px, calc(50% + 186px) 0, 100% 0, calc(100% - 30px) 100%, 30px 100%);
   background-color: grey;
   text-align: center;
-  color: white;
+  color: var(--tls-yellow);
   font-size: 25px;
   padding-top: 10px;
-}
-
-.next_set_name {
-  color: var(--tls-yellow);
-  margin-left: 8px;
-  margin-right: 8px;
 }

@@ -456,7 +456,7 @@ border-bottom: solid 8px var(--border-color);
 
 .character {
   height: 100%;
-  width: 50%;
+  width: 51%;
 }
 
 .character_container {
@@ -554,4 +554,25 @@ border-bottom: solid 8px var(--border-color);
 
 .invert_shadow {
   filter: drop-shadow(16px 12px 0px rgba(0, 0, 0, 0.8));
+}
+
+.stage {
+  position: absolute;
+  width: 100vw;
+  height: 100vh;
+  z-index: -999;
+}
+
+.stage .text div {
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 100vw;
+  height: 100%;
+  z-index: -999;
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+  background-image: url(./bg.png);
+  filter: blur(2px) brightness(0.9);
 }
