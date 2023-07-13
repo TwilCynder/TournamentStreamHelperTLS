@@ -1,5 +1,28 @@
 update_delay = 2000;
 
+let SLTTeams = {};
+
+let teamsPromise = fetch('./Equipes.json')
+  .then( res => res.json())
+  .then( json => {
+    SLTTeams = json;
+});
+
+async function updateSLTTeam(teamN, playerName){
+  await teamsPromise;
+  let team = SLTTeams[playerName];
+  console.log("SLT TEAM", playerName, team);
+  if (team){
+    SetInnerHtml(
+      $(`.p${teamN + 1} .team_name`),
+      team
+    );
+    $(`.p${teamN + 1}.league_team`).show();
+  } else {
+    $(`.p${teamN + 1}.league_team`).hide();
+  }
+}
+
 LoadEverything(() => {
   gsap.config({ nullTargetWarn: false, trialWarn: false });
 
@@ -103,6 +126,7 @@ LoadEverything(() => {
               `
             );
 
+            updateSLTTeam(t, player.name);
 
             SetInnerHtml(
               $(`.p${t + 1} .flagcountry`),

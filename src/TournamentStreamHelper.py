@@ -5,7 +5,7 @@ from src.TSHWebServer import WebServer
 from .Helpers.TSHLocaleHelper import TSHLocaleHelper
 import shutil
 import tarfile
-import qdarkstyle
+import qdarktheme
 import requests
 import urllib
 import json
@@ -16,30 +16,36 @@ import unicodedata
 import sys
 import atexit
 import time
-from PyQt5.QtGui import *
-from PyQt5.QtWidgets import *
-from PyQt5.QtCore import *
+import qtpy
+from qtpy.QtGui import *
+from qtpy.QtWidgets import *
+from qtpy.QtCore import *
+from packaging.version import parse
+
+QCoreApplication.setAttribute(Qt.AA_ShareOpenGLContexts)
+
+if parse(qtpy.QT_VERSION).major == 6:
+    QImageReader.setAllocationLimit(0)
+
 App = QApplication(sys.argv)
 print("QApplication successfully initialized")
 
-from src.TSHAboutWidget import TSHAboutWidget
-from src.TSHAssetDownloader import TSHAssetDownloader
-from .TSHThumbnailSettingsWidget import *
-from .TSHScoreboardWidget import *
-from .Workers import *
-from .TSHPlayerDB import TSHPlayerDB
-from .TSHAlertNotification import TSHAlertNotification
-from .TournamentDataProvider.StartGGDataProvider import StartGGDataProvider
-from .TSHTournamentDataProvider import TSHTournamentDataProvider
-from .TSHTournamentInfoWidget import TSHTournamentInfoWidget
-from .TSHBracketWidget import TSHBracketWidget
-from .TSHGameAssetManager import TSHGameAssetManager
-from .TSHCommentaryWidget import TSHCommentaryWidget
-from .TSHPlayerListWidget import TSHPlayerListWidget
-from .TSHHotkeys import TSHHotkeys
-from qdarkstyle import palette
 from .Settings.TSHSettingsWindow import TSHSettingsWindow
-
+from .TSHHotkeys import TSHHotkeys
+from .TSHPlayerListWidget import TSHPlayerListWidget
+from .TSHCommentaryWidget import TSHCommentaryWidget
+from .TSHGameAssetManager import TSHGameAssetManager
+from .TSHBracketWidget import TSHBracketWidget
+from .TSHTournamentInfoWidget import TSHTournamentInfoWidget
+from .TSHTournamentDataProvider import TSHTournamentDataProvider
+from .TournamentDataProvider.StartGGDataProvider import StartGGDataProvider
+from .TSHAlertNotification import TSHAlertNotification
+from .TSHPlayerDB import TSHPlayerDB
+from .Workers import *
+from .TSHScoreboardWidget import *
+from .TSHThumbnailSettingsWidget import *
+from src.TSHAssetDownloader import TSHAssetDownloader
+from src.TSHAboutWidget import TSHAboutWidget
 
 if getattr(sys, 'frozen', False) and hasattr(sys, '_MEIPASS'):
     sys.stderr = open('./assets/log_error.txt', 'w', encoding="utf-8")
@@ -52,7 +58,8 @@ def generate_restart_messagebox(main_txt):
     messagebox.setText(
         main_txt + "\n" + QApplication.translate("app", "The program will now close."))
     messagebox.finished.connect(QApplication.exit)
-    return(messagebox)
+    return (messagebox)
+
 
 def ExtractUpdate():
     tar = tarfile.open("update.tar.gz")
@@ -72,17 +79,18 @@ def ExtractUpdate():
     tar.close()
     os.remove("update.tar.gz")
 
+
 def remove_accents_lower(input_str):
     nfkd_form = unicodedata.normalize('NFKD', input_str)
     return u"".join([c for c in nfkd_form if not unicodedata.combining(c)]).lower()
 
 
 class WindowSignals(QObject):
-    StopTimer = pyqtSignal()
-    ExportStageStrike = pyqtSignal(object)
-    DetectGame = pyqtSignal(int)
-    SetupAutocomplete = pyqtSignal()
-    UiMounted = pyqtSignal()
+    StopTimer = Signal()
+    ExportStageStrike = Signal(object)
+    DetectGame = Signal(int)
+    SetupAutocomplete = Signal()
+    UiMounted = Signal()
 
 
 class Window(QMainWindow):
@@ -98,8 +106,8 @@ class Window(QMainWindow):
 
         self.signals = WindowSignals()
 
-        splash = QSplashScreen(self, QPixmap(
-            'assets/icons/icon.png').scaled(128, 128))
+        splash = QSplashScreen(
+            QPixmap('assets/icons/icon.png').scaled(128, 128))
         splash.show()
 
         time.sleep(0.1)
@@ -193,8 +201,9 @@ class Window(QMainWindow):
         self.addDockWidget(
             Qt.DockWidgetArea.BottomDockWidgetArea, self.stageWidget)
         self.dockWidgets.append(self.stageWidget)
-        
-        self.webserver = WebServer(parent=None, scoreboard=self.scoreboard, stageWidget=self.stageWidget)
+
+        self.webserver = WebServer(
+            parent=None, scoreboard=self.scoreboard, stageWidget=self.stageWidget)
         self.webserver.start()
 
         commentary = TSHCommentaryWidget()
@@ -217,9 +226,6 @@ class Window(QMainWindow):
         self.tabifyDockWidget(self.scoreboard, bracket)
         self.scoreboard.raise_()
 
-        # pre_base_layout.setSpacing(0)
-        # pre_base_layout.setContentsMargins(QMargins(0, 0, 0, 0))
-
         # Game
         base_layout = QHBoxLayout()
 
@@ -237,10 +243,11 @@ class Window(QMainWindow):
             QApplication.translate("app", "Set tournament"))
         hbox.addWidget(self.setTournamentBt)
         self.setTournamentBt.clicked.connect(
-            lambda bt, s=self: TSHTournamentDataProvider.instance.SetStartggEventSlug(s))
+            lambda bt=None, s=self: TSHTournamentDataProvider.instance.SetStartggEventSlug(s))
 
         self.unsetTournamentBt = QPushButton()
-        self.unsetTournamentBt.setSizePolicy(QSizePolicy.Maximum, QSizePolicy.Maximum)
+        self.unsetTournamentBt.setSizePolicy(
+            QSizePolicy.Maximum, QSizePolicy.Maximum)
         self.unsetTournamentBt.setIcon(QIcon("./assets/icons/cancel.svg"))
         self.unsetTournamentBt.clicked.connect(lambda: [
             TSHTournamentDataProvider.instance.SetTournament(None)
@@ -286,8 +293,9 @@ class Window(QMainWindow):
             QSizePolicy.Maximum, QSizePolicy.Maximum)
         self.optionsBt.setFixedSize(QSize(32, 32))
         self.optionsBt.setIconSize(QSize(32, 32))
-        self.optionsBt.setMenu(QMenu())
-        action = self.optionsBt.menu().addAction(
+        menu = QMenu()
+        self.optionsBt.setMenu(menu)
+        action = menu.addAction(
             QApplication.translate("app", "Always on top"))
         action.setCheckable(True)
         action.toggled.connect(self.ToggleAlwaysOnTop)
@@ -337,7 +345,7 @@ class Window(QMainWindow):
         languageSelectGroup.addAction(action)
         action.setCheckable(True)
         action.setChecked(True)
-        action.triggered.connect(lambda x: [
+        action.triggered.connect(lambda x=None: [
             SettingsManager.Set("program_language", "default"),
             program_language_messagebox.exec()
         ])
@@ -346,7 +354,7 @@ class Window(QMainWindow):
             action = languageSelect.addAction(f"{language[0]} / {language[1]}")
             action.setCheckable(True)
             languageSelectGroup.addAction(action)
-            action.triggered.connect(lambda x, c=code: [
+            action.triggered.connect(lambda x=None, c=code: [
                 SettingsManager.Set("program_language", c),
                 program_language_messagebox.exec()
             ])
@@ -368,7 +376,7 @@ class Window(QMainWindow):
         languageSelectGroup.addAction(action)
         action.setCheckable(True)
         action.setChecked(True)
-        action.triggered.connect(lambda x: [
+        action.triggered.connect(lambda x=None: [
             SettingsManager.Set("game_asset_language", "default"),
             game_asset_language_messagebox.exec()
         ])
@@ -377,7 +385,7 @@ class Window(QMainWindow):
             action = languageSelect.addAction(f"{language[0]} / {language[1]}")
             action.setCheckable(True)
             languageSelectGroup.addAction(action)
-            action.triggered.connect(lambda x, c=code: [
+            action.triggered.connect(lambda x=None, c=code: [
                 SettingsManager.Set("game_asset_language", c),
                 game_asset_language_messagebox.exec()
             ])
@@ -399,7 +407,7 @@ class Window(QMainWindow):
         languageSelectGroup.addAction(action)
         action.setCheckable(True)
         action.setChecked(True)
-        action.triggered.connect(lambda x: [
+        action.triggered.connect(lambda x=None: [
             SettingsManager.Set("fg_term_language", "default"),
             fg_language_messagebox.exec()
         ])
@@ -408,7 +416,7 @@ class Window(QMainWindow):
             action = languageSelect.addAction(f"{language[0]} / {language[1]}")
             action.setCheckable(True)
             languageSelectGroup.addAction(action)
-            action.triggered.connect(lambda x, c=code: [
+            action.triggered.connect(lambda x=None, c=code: [
                 SettingsManager.Set("fg_term_language", c),
                 fg_language_messagebox.exec()
             ])
@@ -420,8 +428,10 @@ class Window(QMainWindow):
         # Help menu code
 
         help_messagebox = QMessageBox()
-        help_messagebox.setWindowTitle(QApplication.translate("app", "Warning"))
-        help_messagebox.setText(QApplication.translate("app", "A new window has been opened in your default webbrowser."))
+        help_messagebox.setWindowTitle(
+            QApplication.translate("app", "Warning"))
+        help_messagebox.setText(QApplication.translate(
+            "app", "A new window has been opened in your default webbrowser."))
 
         helpMenu = QMenu(QApplication.translate(
             "app", "Help") + menu_margin, self.optionsBt.menu())
@@ -429,7 +439,7 @@ class Window(QMainWindow):
         action = helpMenu.addAction(
             QApplication.translate("app", "Open the Wiki"))
         wiki_url = "https://github.com/joaorb64/TournamentStreamHelper/wiki"
-        action.triggered.connect(lambda x: [
+        action.triggered.connect(lambda x=None: [
             QDesktopServices.openUrl(QUrl(wiki_url)),
             help_messagebox.exec()
         ])
@@ -437,7 +447,7 @@ class Window(QMainWindow):
         action = helpMenu.addAction(
             QApplication.translate("app", "Report a bug"))
         issues_url = "https://github.com/joaorb64/TournamentStreamHelper/issues"
-        action.triggered.connect(lambda x: [
+        action.triggered.connect(lambda x=None: [
             QDesktopServices.openUrl(QUrl(issues_url)),
             help_messagebox.exec()
         ])
@@ -445,7 +455,7 @@ class Window(QMainWindow):
         action = helpMenu.addAction(
             QApplication.translate("app", "Ask for Help on Discord"))
         discord_url = "https://discord.gg/X9Sp2FkcHF"
-        action.triggered.connect(lambda x: [
+        action.triggered.connect(lambda x=None: [
             QDesktopServices.openUrl(QUrl(discord_url)),
             help_messagebox.exec()
         ])
@@ -455,7 +465,7 @@ class Window(QMainWindow):
         action = helpMenu.addAction(
             QApplication.translate("app", "Contribute to the Asset Database"))
         asset_url = "https://github.com/joaorb64/StreamHelperAssets/"
-        action.triggered.connect(lambda x: [
+        action.triggered.connect(lambda x=None: [
             QDesktopServices.openUrl(QUrl(asset_url)),
             help_messagebox.exec()
         ])
@@ -665,7 +675,7 @@ class Window(QMainWindow):
                                 response = urllib.request.urlopen(
                                     release["tarball_url"])
 
-                                while(True):
+                                while (True):
                                     chunk = response.read(1024*1024)
 
                                     if not chunk:
@@ -691,8 +701,12 @@ class Window(QMainWindow):
                             atexit.register(ExtractUpdate)
 
                             messagebox = generate_restart_messagebox(
-                                QApplication.translate("app", "Update download complete. The program will extract the update upon closing."))
-                                
+                                QApplication.translate("app", "Update download complete. The program will extract the update upon closing.")
+                                + "\n\n"
+                                + QApplication.translate("app", "Please ensure the layout folder or its contents aren't open in another application before closing this window.")
+                                + "\n"
+                            )
+
                             messagebox.exec()
 
                         worker = Worker(worker)
@@ -749,18 +763,14 @@ class Window(QMainWindow):
 
     def ToggleLightMode(self, checked):
         if checked:
-            App.setStyleSheet(qdarkstyle.load_stylesheet(
-                palette=qdarkstyle.LightPalette))
+            qdarktheme.setup_theme("light")
         else:
-            App.setStyleSheet(qdarkstyle.load_stylesheet(
-                palette=qdarkstyle.DarkPalette))
+            qdarktheme.setup_theme()
 
         SettingsManager.Set("light_mode", checked)
 
     def LoadTheme(self):
         if SettingsManager.Get("light_mode", False):
-            App.setStyleSheet(qdarkstyle.load_stylesheet(
-                palette=qdarkstyle.LightPalette))
+            qdarktheme.setup_theme("light")
         else:
-            App.setStyleSheet(qdarkstyle.load_stylesheet(
-                palette=qdarkstyle.DarkPalette))
+            qdarktheme.setup_theme()
