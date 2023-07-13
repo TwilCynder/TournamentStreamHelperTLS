@@ -7,7 +7,7 @@ import shutil
 import threading
 import requests
 from PIL import Image
-from .translateForUST import translateForUST
+import time
 
 from .Helpers.TSHDictHelper import deep_get, deep_set, deep_unset
 
@@ -17,12 +17,12 @@ class StateManager:
     state = {}
     saveBlocked = 0
 
-    lock = threading.Lock()
+    lock = threading.RLock()
     threads = []
 
     def BlockSaving():
         StateManager.saveBlocked += 1
-    
+
     def ReleaseSaving():
         StateManager.saveBlocked -= 1
         if StateManager.saveBlocked == 0:
@@ -37,17 +37,25 @@ class StateManager:
                 def ExportAll():
                     with open("./out/program_state.json", 'w', encoding='utf-8', buffering=8192) as file:
                         # print("SaveState")
-                        json.dump(StateManager.state, file, indent=4, sort_keys=False)
+                        StateManager.state.update({"timestamp": time.time()})
+                        json.dump(StateManager.state, file,
+                                  indent=4, sort_keys=False)
+                        StateManager.state.pop("timestamp")
 
                     StateManager.ExportText(StateManager.lastSavedState)
-                    StateManager.lastSavedState = copy.deepcopy(StateManager.state)
+                    StateManager.lastSavedState = copy.deepcopy(
+                        StateManager.state)
 
-                exportThread = threading.Thread(target=ExportAll)
-                StateManager.threads.append(exportThread)
-                exportThread.start()
+                diff = DeepDiff(StateManager.lastSavedState,
+                                StateManager.state)
 
-                for t in StateManager.threads:
-                    t.join()
+                if len(diff) > 0:
+                    exportThread = threading.Thread(target=ExportAll)
+                    StateManager.threads.append(exportThread)
+                    exportThread.start()
+
+                    for t in StateManager.threads:
+                        t.join()
 
     def LoadState():
         try:
@@ -58,20 +66,22 @@ class StateManager:
             StateManager.SaveState()
 
     def Set(key: str, value):
-        oldState = copy.deepcopy(StateManager.state)
+        with StateManager.lock:
+            oldState = copy.deepcopy(StateManager.state)
 
-        deep_set(StateManager.state, key, value)
+            deep_set(StateManager.state, key, value)
 
-        if StateManager.saveBlocked == 0:
-            StateManager.SaveState()
-            # StateManager.ExportText(oldState)
+            if StateManager.saveBlocked == 0:
+                StateManager.SaveState()
+                # StateManager.ExportText(oldState)
 
     def Unset(key: str):
-        oldState = copy.deepcopy(StateManager.state)
-        deep_unset(StateManager.state, key)
-        if StateManager.saveBlocked == 0:
-            StateManager.SaveState()
-            # StateManager.ExportText(oldState)
+        with StateManager.lock:
+            oldState = copy.deepcopy(StateManager.state)
+            deep_unset(StateManager.state, key)
+            if StateManager.saveBlocked == 0:
+                StateManager.SaveState()
+                # StateManager.ExportText(oldState)
 
     def Get(key: str, default=None):
         return deep_get(StateManager.state, key, default)
@@ -141,19 +151,22 @@ class StateManager:
             if type(di) == str and di.startswith("./"):
                 if os.path.exists(f"./out/{path}" + "." + di.rsplit(".", 1)[-1]):
                     try:
-                        os.remove(f"./out/{path}" + "." + di.rsplit(".", 1)[-1])
+                        os.remove(f"./out/{path}" + "." +
+                                  di.rsplit(".", 1)[-1])
                     except Exception as e:
                         print(traceback.format_exc())
                 if os.path.exists(di):
                     try:
-                        os.link(os.path.abspath(di), f"./out/{path}" + "." + di.rsplit(".", 1)[-1])
+                        os.link(os.path.abspath(di),
+                                f"./out/{path}" + "." + di.rsplit(".", 1)[-1])
                     except Exception as e:
                         print(traceback.format_exc())
             elif type(di) == str and di.startswith("http") and (di.endswith(".png") or di.endswith(".jpg")):
                 try:
                     if os.path.exists(f"./out/{path}" + "." + di.rsplit(".", 1)[-1]):
                         try:
-                            os.remove(f"./out/{path}" + "." + di.rsplit(".", 1)[-1])
+                            os.remove(f"./out/{path}" +
+                                      "." + di.rsplit(".", 1)[-1])
                         except Exception as e:
                             print(traceback.format_exc())
 

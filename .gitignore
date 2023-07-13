@@ -60,3 +60,4 @@ layout_*/*
 build/main/*
 TSH_old.exe
 main.spec
+*.tmp
