@@ -88,6 +88,8 @@ LoadEverything(() => {
   };
 
   Update = async (event) => {
+
+    console.log("UPDATE");
     let data = event.data;
     let oldData = event.oldData;
 

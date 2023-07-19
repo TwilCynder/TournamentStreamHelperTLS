@@ -48,9 +48,16 @@ async function UpdateData() {
     oldData = data;
     data = await getData();
 
+    console.log("TSH UPDATE");
+    console.log(data.timestamp <= oldData.timestamp)
+    console.log(data.timestamp)
     if(data.timestamp <= oldData.timestamp){
-      return
+        return
     }
+
+    //if(JSON.stringify(data) == JSON.stringify(oldData)){
+    //  return
+    //}
 
     let event = new CustomEvent("tsh_update");
     event.data = data;
