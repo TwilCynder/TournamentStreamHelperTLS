@@ -7,6 +7,39 @@ local hotkeys_id = {
     save_clear = obs.OBS_INVALID_HOTKEY_ID
 }
 
+local match_playlist = {}
+
+local function add_to_match_playlist(path)
+	match_playlist[#match_playlist+1] = path
+end
+
+local function clear_match_playlist()
+	match_playlist = {}
+end
+
+local function load_match_playlist()
+	local source = obs.obs_get_source_by_name(source_name)
+	if source ~= nil then
+		local settings = obs.obs_data_create()
+		local playlist = obs.obs_data_array_create()
+
+		for k, v in ipairs(match_playlist) do
+			local item = obs.obs_data_create()
+			obs.obs_data_set_string(item, "value", v)
+			obs.obs_data_array_push_back(playlist, item)
+		end
+
+		obs.obs_data_set_array(settings, "playlist", playlist)
+--		obs.obs_data_set_bool(settings, "loop", false)
+--		obs.obs_data_set_bool(settings, "shuffle", false)
+--		obs.obs_data_set_string(settings, "playback_behavior", stop_restart)
+		obs.obs_source_update(source, settings)
+		obs.obs_data_array_release(playlist)
+		obs.obs_data_release(settings)
+		obs.obs_source_release(source)
+	end
+end
+
 local function clear_playlist()
 	local source = obs.obs_get_source_by_name(source_name)
 	if source ~= nil then
@@ -110,6 +143,7 @@ local function try_obtain_replay_callback(callback)
 		last_replay_path = path
 
 		callback(path)
+		add_to_match_playlist(path)
 
 		obs.remove_current_callback()
 	end
@@ -173,6 +207,22 @@ local function instant_replay_hotkey(pressed)
     save(try_instant_replay)
 end
 
+local function clear_match_playlist_hotkey(pressed)
+    if not pressed then
+		return
+	end
+
+    clear_match_playlist()
+end
+
+local function load_match_playlist_hotkey(pressed)
+    if not pressed then
+		return
+	end
+
+    load_match_playlist()
+end
+
 local hotkeys = {
     save = {
         name = "save",
@@ -188,6 +238,16 @@ local hotkeys = {
         name = "save_clear",
         description = "Save replay to new playlist",
         func = instant_replay_hotkey
+    },
+	clear_match_playlist = {
+        name = "clear_match_playlist",
+        description = "Clear Match Playlist",
+        func = clear_match_playlist_hotkey
+    },
+	load_match_playlist = {
+        name = "load_match_playlist",
+        description = "Load Match Playlist",
+        func = load_match_playlist_hotkey
     }
 }
 

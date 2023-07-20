@@ -2354,6 +2354,9 @@
   ('zipp',
    'c:\\hostedtoolcache\\windows\\python\\3.8.10\\x64\\lib\\site-packages\\zipp\\__init__.py',
    'PYMODULE'),
+  ('zipp.glob',
+   'c:\\hostedtoolcache\\windows\\python\\3.8.10\\x64\\lib\\site-packages\\zipp\\glob.py',
+   'PYMODULE'),
   ('zipp.py310compat',
    'c:\\hostedtoolcache\\windows\\python\\3.8.10\\x64\\lib\\site-packages\\zipp\\py310compat.py',
    'PYMODULE')])
