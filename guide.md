@@ -34,67 +34,83 @@ Dans OBS :
 
 On ouvre ensuite le dossier TLSStream qui se trouve sur le bureau.
 
-Pour obtenir la dernière version de l'environement de stream (optionel donc, genre ce soir ne le faites aps):
-- clic droit sur le dossier "TournamentStreamHelperTLS" > `Git Bash here`
-- dans le terminal on tape `git checkout main` puis `git pull origin main`. En cas de message d'erreur, on demande à une personne qui s'y connait en git et si pas dispo tant pis on oublie
-
 On ouvre le dossier TournamentStreamHelperTLS et on lance TSH (TSH.exe) : 
 
 Dans TSH, cliquer sur "Set tournament", et entrer l'URL du bracket, qui sera toujours de forme `https://start.gg/tournament/.../events/...` (most likely `https://start.gg/tournament/stock-o-clock-x/events/1v1-ultimate`). 
 
-Enfin (truc chiant mais ça va changer, pas obligatoire mais nécesaire pour avoir le truc qui affiche les derniers sets), on va voir dans le dossier "TournamentStreamHelperTLS/layout/last_results/", on ouvre "config.json", et on remplace l'URL de tournoi déjà présente par l'URL qu'on avait déjà mis dans TSH. 
+Ensuite, si on a la tablette pour le stage strike
+- on va dans l'onglet "Rules"/"Règles", et dans le dropdown tout en haut on choisit TLS. 
+- dans ce même onglet en bas, il doit y avoir un URL : on ouvre firefox sur la tablette et on rentre cet URL. 
 
-## Utilisation (pendant le tournoi)
+Enfin (truc chiant mais ça va changer, pas obligatoire mais nécesaire pour avoir le truc qui affiche les derniers sets sur les scènes Duo), on va voir dans le dossier "TournamentStreamHelperTLS/layout/last_results/", on ouvre "config.json", et on remplace l'URL de tournoi déjà présente par l'URL qu'on avait déjà mis dans TSH. 
 
+## Utilisation (pendant le tournoi) 
 ### Explication générales
-Voir section suivante pour avoir juste la liste des chose à faire step by step. Lisez juste au moins la partie "OBS" ici.
+Voir section suivante pour avoir juste la liste des chose à faire step by step, là c'est la partie explications (c'est bien d'avoir lu ça au moins une fois quand même). Lisez juste au moins la partie "OBS" ici. Les parties précédées d'un 🅰️ sont les trucs un peu "avancés" : c'est bien de les connaître mais pas besoin de les maîtriser dès le début.
 
 **OBS** : 
-- On est en mode studio, donc quand on sélectionne une scène elle s'affiche à gauche, le stram voit ce qui s'affiche à droite, pour passer la scène sélectionnée à gauche vers le stream il faut faire une transition (cliquer sur le bouton transition ou appuyer sur Maj+>. Ca utilise la transition par défaut, voir juste en dessous)
-- On a différentes transitions entre les scènes, pour choisir la transition il y a un bouton par transition entre les 2 previews. En gros
-  - On évite de trop utiliser les scènes "stingers", trop de transition cool tue la transition cool, perso je me calque sur la règle "Pas plus d'un stinger par minute et en priorité en début de fin de game"
-  - Pour toutes passage d'une scène vers une scène qui a des éléments en commun, on peut utiliser la transition "Move".  
-  - Et pis sinon la transition "Fondu" c'est le dernier recours, quand la Move est pas pertinente mais qu'on a fait trop de Stinger récemment
-- Pour prendre un clip, Maj+!
+- Rappel du système / concept de base : une **Scène** est basiquement un layout, un "écran" du stream avec ses éléments et leur placement (caméras, overlay, etc). La base de la régie ça va être d'afficher la bonne scène au bon moment.
+- On est en mode studio, avec preview à gauche et stream à droite ; quand on sélectionne une scène elle s'affiche à gauche, le stram voit ce qui s'affiche à droite, pour passer la scène sélectionnée en preview vers le stream il faut faire une transition. Pour ça vous pouvez utiliser le bouton transition entre la preview et le stream (ou faire Maj+>). 
+- On a différentes transitions entre les scènes ; si vous utilsez le bouton "transition" ça fait une transi par défaut mais on peut choisir la transition qu'on utilise (je recommande mais pour le début vous embêtez pas), avec les boutons en dessous du bouton transition. En gros : 
+  - Les transitions "Stinger" c'est les animations stylées avec le logo TLS ; à utiliser modérément, trop de transition cool tue la transition cool. Voir section suivante pour des indications plus précises à ce niveau là.
+  - "Move" c'est une transition qui déplace les éléments, en gros à utiliser entre 2 scènes qui ont des éléments en commun. 
+  - Et pis sinon la transition "Fondu" c'est juste un fondu normal, à utiliser quand move est pas pertinent et qu'on veut pas faire de Stinger.
+- **Replays/Clip** (c'est pareil) : pour prendre un clip, c'est Maj+!. Si vous utilisez que ce raccourci, vous allez toujours avoir seulement le dernier clip pris qui s'affiche ; souvent ça suffit, et si vous voulez pas vous compliquer la vie on peut s'en contenter. 🅰️*Cependant*, il y a un système de playlist, c'est à dire que vous pouvez enregistrer plusieurs clips pour qu'ils soient joués à la suite. Maj+! prend un clip et vide la playlist avant de mettre le nouveau clip dedans ; Maj+: ajoute juste un nouveau clip dans la playlist. Donc concrètement on va faire Maj+! pour le premier clip de la game, et si y en a d'autres on fait Maj+: à chaque fois.
+- "Downstream Keyer" : dans les panneaux en bas d'IBS vous en avez un qui s'appelle "Downstream Keyer". Ca vous permet de superposer des trucs sur la scène actuelle (peu importe sur quelle scène vous êtes). Vous avez la liste des éléments que vous pouvez afficher, cliquez sur l'un d'eux pour l'afficher (par dessus la scène actuelle). Pour le faire disparaître, cliquez sur l'icône "pause" en bas de la liste (non ça ne fait pas de sens).
+- **Stage Strike** : pour le stage strike, en gros dès que les joueurs utilisent la tablette pour faire le stage strike, si vous cliquez sur "Stage strike" dans la liste du Downstream Keyer ça va afficher le stage strike en bas (peu importe la scène où vous êtes, vu que c'est le Downstream Keyer).
 
-**Scène OBS** :  
-Je ne vais pas lister les scènes ici, si vous ne les connaissez pas bien le mieux c'est de toutes les regarder pour voir ce qu'elles affichent, ou de suivre le guide en section suivante ! QUelques scène spéciales : 
-- BracketTLS : affiche le bracket du top 8 uniquement, bien joli et tout, voir dans la partie TSH juste en dessous pour voir comment faire pour le bracket s'affiche bien
-- TLS Bracket : là c'est juste une page startgg avec le bracket mais en plus joli, on ouvre le bracket sur startgg et on copie l'URL pour la coller dans les propriétés de la source navigateur présente dans cette scène (elle met du temps à bien s'afficher) ; pour scroll sur le bracket on sélectionne la source navigateur, on clique sur le bouton "Interagir" juste au dessus des sources, et on scroll
-- Les scènes avec replay dans le nom affichent le dernier replay, pour prendre un replay on appuie sur "Maj+!"
-
+**Scènes OBS** :  
+Je ne vais pas lister les scènes ici, si vous ne les connaissez pas bien le mieux c'est de toutes les regarder pour voir ce qu'elles affichent (j'ai un doute sur telle scène, je clique juste dessus pour la voir dans la preview), ou de suivre le guide en section suivante pour savoir quand mettre quoi !  Quelques scène spéciales : 
+- Les scènes avec "Replay" dans le nom affichent le replay/clip (ou plus précisément, si vous avez tout lu dans la partie sur les clips, la playlist des replays).
+- BracketTLS 🅰️ : affiche le bracket du top 8 uniquement, bien joli et tout, voir dans la partie TSH juste en dessous pour voir comment faire pour le bracket s'affiche bien
+- TLS Bracket 🅰️ : là c'est juste une page startgg avec le bracket mais en plus joli, on ouvre le bracket sur startgg et on copie l'URL pour la coller dans les propriétés de la source navigateur présente dans cette scène (elle met du temps à bien s'afficher) ; pour scroll sur le bracket on sélectionne la source navigateur, on clique sur le bouton "Interagir" juste au dessus des sources, et on scroll (avec la molette de la souris normal)
 
 **Utilisation de TSH**
-- Pour chaque match, le sélectionner dans la liste des matchs du tournoi en cliquant sur `Load sets from xxx` en bas
+- On va charger les matchs avec la liste qui s'ouvre en cliquant sur `Load sets from xxx` en bas. Les sets qui nous intéressent sont ceux qui ont le nom de la chaine indiqué à gauche (c'est ceux qui sont streamés) ; vous pouvez faire double clic sur la colonne "Stream" pour afficher ces sets là en haut. En général vous sélectionnez juste le premier set streamé de la liste.
 - Presque tout est alors mis à jour automatiquement, il faut juste remplir manuellement : 
-  - Les persos
+  - Les persos 
   - Le champ "Best of" au milieu, pour indiquer si on est en BO3 ou BO5
   - Les commentateurs : pour ça il faut aller chercher dans l'onglet "Commentary"  
-Le score s'update tout seul si vous le mettez à jour sur startgg  
+Le score s'update tout seul si vous le mettez à jour sur startgg (donc faut ouvrir le set sur firefox à côté, et mettre à jour game par game au fur et à mesure du set. Sur la "fenêtre" du set startgg on
 - Quand on veut afficher le bracket (Scène BracketTLS), déjà on se prépare à ce que ça fasse crash TSH, ça arrive c pas grave faut juste le relancer et remettre toutes les infos, on va dans l'onglet "arbre", dans le menu déroulant en haut à gauche on sélectionne "Top 8", on attend un peu (on ne touche surtout pas à TSH tant qu'il n'affiche pas le bracket), et normalement c'est bon
 
 ### Guide concret
-**Entre les games**
-- on affiche une des scènes "multi", un peu comme on veut, avec les casters en grand le plus souvent, avec les joueurs en grand quand ils arrivent etc, perso j'ai une petite préférences pour les multi avec 2 sources (et la liste des derniers sets) mais c'est bien de changer  
-- une fois qu'on a le match sélectionné dans TSH on peut afficher la scène "Head2Head"
-- sinon le bracket des fois c'est bien (voir scènes BracketTLS et TLS BRacket dans section précédente)
-- dès qu'on sait qui joue on sélectionne le match dans TSH
-- si changement de caster on pense à changer le nom dans TSH
+Là c'est la partie à relire si vous voulez vous rafraichir un peu/avez un doute sur la marche à suivre pendant le tournoi.
 
-**Début de match**
-- on lance le match sur startgg, on clique sur "report game data", on choisit les persos (faut bien être sur l'écran avec une liste des games, les persos et stages et tout)
+**Début de stream**
+- On ouvre sur la scène casters en général, jusqu'à ce que les joueurs arrivent (also j'aime bien passer sur casters + scoreboard dès que les casters demandent inévitablement qui joue en premier)
+
+**Début de match/Avant match**
+- On sélectionne le match dans TSH
+- Dès que les joueurs sont là on passe sur une des scènes Trio/Duo (voir partie "Entre les games") histoire d'avoir les joueurs et les casters affichés (en général on met les joueurs en grand quand ils sont installés)
+- on lance le match sur startgg, on clique sur "report game data". Pas besoin de mettre les persos pour l'instant.
 - on lance l'enregistrement
-- éventuellement on affiche la scène "VSScreenTLS" juste avant qu'ils lancent
+- En général on essaie d'afficher la scène "Head2Head", et/ou "Result History" pour les infos, et "VSScreen Cams" un peu avant qu'ils lancent. 
 
 **Game**
-- Dans startgg on renseigne le stage choisi, si besoin on change les persos pour la game en cours
+- Quand vous voyez que les joueurs sont en train de faire le ban des stages sur la tablette, vous affichez le Downstream Keyer "Stage Strike" (c'est bien avec une scène qui montre la cam joueurs 2 en grand, voire carrément de mettre la scène Cam Joueurs 2 basique).
+- Dans startgg on renseigne le stage choisi. Pas besoin de mettre les persos.
 - dès que la game commence on passe sur "TLS In-Game"
-- On pense à prendre des clips avec Maj+! (souvent la dernière stock mais des fois c'est pas le + intéressant)
-- Quand la game se termine, si on a pris un replay on passe sur une scène avec "replay" dans le nom, par contre en cas de popoff ça peut être bien de passer (en fondu carrément) sur une scène avec les joueurs en grand, puis ensuite de montrer le replay
-- On update le score en choisissant le vainqueur pour cette game, sur startgg
+- On pense à prendre des clips (Maj+! pour le premier clip de la game, et si jamais y d'autres clips dans la même game Maj+: pour l'ajouter par dessus le précédent au lieu de le remaplcer)
+- Quand la game se termine, si on a pris des clips on passe sur une scène avec "replay" dans le nom, par contre en cas de popoff ça peut être bien de passer (en fondu carrément pour aller vite) sur une scène avec les joueurs en grand, puis ensuite de montrer le replay. 
+- On update le score en choisissant le vainqueur pour cette game, sur startgg.
+
+**Entre les games**
+- on affiche une des scènes "Trio" ou "Duo", un peu comme on veut, avec les casters en grand le plus souvent, perso j'ai une petite préférences pour les Duo (qui affichent la liste des derniers sets) mais c'est bien de changer.
+- dès qu'on sait qui joue on sélectionne le match dans TSH
+- Si les casters ont demandé une info sur un des trucs qu'il y a dans la liste du Downstream Keyer, ou si ils ont dit de la merde (rappel : ceux qui commencent par "DSK" c'est les slides informatives, ça inclut le poids d'un perso, fonctionnement des pikmins, etc).
 
 **Fin de match**
-- On pense à valider le résultat du match sur startgg
+- Là seulement on met les persos sur startgg, et on fait "Submit Result".
+- On arrête l'enregistrement
+
+**Entre les matchs**
+- C'est un peu comme pour entre les games, on met une scène Trio/Duo
+- Si on est en Top 8, c'est le moment d'afficher le BracketTLS (voir section précédente)
+- si changement de caster on pense à changer le nom dans TSH
+- Et puis on repart à la partie "Début de match/Avant match"
+
+Et surtout n'oubliez pas, je vous donne des indications sur les scènes à mettre, et si vous suivez mes indications normalement vous avez un stream propre, mais au final c'est à vous de juger quelle scène vous voulez mettre (hors des games en tout cas). Dans les scènes Duo/Trio mettez les casters en grand ou les joueurs en grand en fonction de ce qui vous paraît + intéressant / vivant sur le moment, et quand y a rien d'autre que les casters qui bouge on peut mettre la scène avec juste les casters, des fois le VSScreen Cams a la bonne vibe et des fois moins, bref.
 
 ## Première installation
 
@@ -105,6 +121,8 @@ Résumé :
 	- mettre en place les scripts countdown.lua et instant-replay.lua
 - installation des plugins OBS :
 	- transition matrix
+ 	- Move transition
+    	- Downstream Keyer 
 - installation des resources externes
 	- Animated Lower Thirds -> installer le dock
 
