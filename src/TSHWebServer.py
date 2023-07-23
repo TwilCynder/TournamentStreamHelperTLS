@@ -1,12 +1,13 @@
 import os
-from PyQt5.QtGui import *
-from PyQt5.QtWidgets import *
-from PyQt5.QtCore import *
+from qtpy.QtGui import *
+from qtpy.QtWidgets import *
+from qtpy.QtCore import *
 from flask import Flask, send_from_directory, request
 from flask_cors import CORS, cross_origin
 import json
 from .StateManager import StateManager
 from .TSHStatsUtil import TSHStatsUtil
+from .SettingsManager import SettingsManager
 
 
 class WebServer(QThread):
@@ -79,6 +80,7 @@ class WebServer(QThread):
     @app.route('/stage_strike_match_win', methods=['POST'])
     def match_win():
         WebServer.stageWidget.stageStrikeLogic.MatchWinner(int(json.loads(request.get_data()).get("winner")))
+        #Web server updating score here
         WebServer.UpdateScore()
         return "OK"
 
@@ -106,6 +108,11 @@ class WebServer(QThread):
         return "OK"
 
     def UpdateScore():
+        print(SettingsManager.Get("general.control_score_from_stage_strike", True), SettingsManager.Get("general.control_score_from_stage_strike", 12))
+
+        if not SettingsManager.Get("general.control_score_from_stage_strike", True):
+            return
+
         score = [
             len(WebServer.stageWidget.stageStrikeLogic.CurrentState().stagesWon[0]),
             len(WebServer.stageWidget.stageStrikeLogic.CurrentState().stagesWon[1]),
@@ -232,6 +239,12 @@ class WebServer(QThread):
     def stats_recent_sets():
         TSHStatsUtil.instance.signals.RecentSetsSignal.emit()
         return "OK"
+    
+    # Resubmits Call for Upset Factor
+    @app.route('/stats-upset-factor')
+    def stats_upset_factor():
+        TSHStatsUtil.instance.signals.UpsetFactorCalculation.emit()
+        return "OK"
 
     # Resubmits Call for Last Sets
     @app.route('/stats-last-sets-<player>')
@@ -264,10 +277,7 @@ class WebServer(QThread):
     # Resets scores
     @app.route('/reset-scores')
     def reset_scores():
-        WebServer.scoreboard.signals.UpdateSetData.emit({
-            "team1score": 0,
-            "team2score": 0
-        })
+        WebServer.scoreboard.ResetScore()
         return "OK"
 
     # Resets scores, match, phase, and losers status
@@ -276,6 +286,12 @@ class WebServer(QThread):
         WebServer.scoreboard.ClearScore()
         WebServer.scoreboard.scoreColumn.findChild(
             QSpinBox, "best_of").setValue(0)
+        return "OK"
+    
+    # Resets scores, match, phase, and losers status
+    @app.route('/reset-players')
+    def reset_players():
+        WebServer.scoreboard.CommandClearAll()
         return "OK"
 
     # Resets all values
@@ -286,6 +302,7 @@ class WebServer(QThread):
             QSpinBox, "best_of").setValue(0)
         WebServer.scoreboard.playerNumber.setValue(1)
         WebServer.scoreboard.charNumber.setValue(1)
+        WebServer.scoreboard.CommandClearAll()
         return "OK"
 
     @app.route('/', defaults=dict(filename=None))

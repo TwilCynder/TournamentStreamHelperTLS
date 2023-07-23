@@ -1,5 +1,28 @@
 update_delay = 2000;
 
+let SLTTeams = {};
+
+let teamsPromise = fetch('./Equipes.json')
+  .then( res => res.json())
+  .then( json => {
+    SLTTeams = json;
+});
+
+async function updateSLTTeam(teamN, playerName){
+  await teamsPromise;
+  let team = SLTTeams[playerName];
+  console.log("SLT TEAM", playerName, team);
+  if (team){
+    SetInnerHtml(
+      $(`.p${teamN + 1} .team_name`),
+      team
+    );
+    $(`.p${teamN + 1}.league_team`).show();
+  } else {
+    $(`.p${teamN + 1}.league_team`).hide();
+  }
+}
+
 LoadEverything(() => {
   gsap.config({ nullTargetWarn: false, trialWarn: false });
 
@@ -65,6 +88,8 @@ LoadEverything(() => {
   };
 
   Update = async (event) => {
+
+    console.log("UPDATE");
     let data = event.data;
     let oldData = event.oldData;
 
@@ -85,6 +110,8 @@ LoadEverything(() => {
         data.score.team["1"],
         data.score.team["2"],
       ].entries()) {
+        SetInnerHtml($(`.p${t + 1}.score`), String(team.score));
+
         for (const [p, player] of [team.player["1"]].entries()) {
           if (player) {
             SetInnerHtml(
@@ -100,6 +127,8 @@ LoadEverything(() => {
                 ${team.losers ? "<span class='losers'>L</span>" : ""}
               `
             );
+
+            updateSLTTeam(t, player.name);
 
             SetInnerHtml(
               $(`.p${t + 1} .flagcountry`),
@@ -200,6 +229,8 @@ LoadEverything(() => {
           `
         );
 
+        SetInnerHtml($(`.p${t + 1}.score`), String(team.score));
+
         /*
         SetInnerHtml($(`.p${t + 1} .flagcountry`), "");
 
@@ -230,13 +261,32 @@ LoadEverything(() => {
         SetInnerHtml($(`.p${t + 1}.container .sponsor-container`), "");
         */
 
-        SetInnerHtml($(`.p${t + 1}.score`), String(team.score));
       }
     }
 
     SetInnerHtml($(".tournament_name"), data.tournamentInfo.tournamentName);
 
     SetInnerHtml($(".match"), data.score.match);
+
+    try {
+      let nextMatch = data.streamQueue && data.streamQueue.toulouselaststock["2"];
+      console.log(nextMatch)
+      if (nextMatch){
+        console.log("LLLO ,,", nextMatch)
+        let t1 = nextMatch.team["1"];
+        let t2 = nextMatch.team["2"];
+        let text = 
+          `Prochain match : <span class = "next_set_name">${t1 ? t1.player["1"].name : "TBD"}</span> VS <span class = "next_set_name">${t2 ? t2.player["1"].name : "TBD"}</span>`;
+
+        $("#next_set").show()
+        SetInnerHtml($("#next_set"), text);
+      } else {
+        $("#next_set").hide()
+      }
+    } catch (e) {
+      //pas de stream queue
+      $("#next_set").hide()
+    }
 
     let phaseTexts = [];
     if (data.score.phase) phaseTexts.push(data.score.phase);

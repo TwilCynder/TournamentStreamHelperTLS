@@ -47,13 +47,24 @@ async function UpdateData() {
   try {
     oldData = data;
     data = await getData();
+
+    console.log("TSH UPDATE");
+    console.log(data.timestamp <= oldData.timestamp)
+    console.log(data.timestamp)
+    if(data.timestamp <= oldData.timestamp){
+        return
+    }
+
+    //if(JSON.stringify(data) == JSON.stringify(oldData)){
+    //  return
+    //}
+
     let event = new CustomEvent("tsh_update");
     event.data = data;
     event.oldData = oldData;
-    if (JSON.stringify(data) != JSON.stringify(oldData)) {
-      console.log(data);
-      document.dispatchEvent(event);
-    }
+
+    console.log(data);
+    document.dispatchEvent(event);
   } catch (e) {
     console.log(e);
   }
@@ -692,4 +703,24 @@ function nextPow2(v) {
     p <<= 1;
   }
   return p;
+}
+
+/**
+ * Stores content to be added to the DOM with SetInnerHtml later
+ */
+class ContentResolver {
+  constructor () {
+      this.list = [];
+  }
+
+  add(selector, value){
+      this.list.push({s: selector, v: value});
+      return ""
+  }
+
+  resolve(){
+      for (let element of this.list){
+          SetInnerHtml($(element.s), element.v);
+      }
+  }
 }

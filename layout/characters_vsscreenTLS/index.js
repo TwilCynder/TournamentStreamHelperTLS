@@ -29,11 +29,11 @@ let center = {
 }
 
 let stats = [
-  stat("weight", 250, 70, 135, 62),
+  stat("weight", 250, 70, 130, 65),
   stat("air_speed", 116, 166, 1.334, 0.735),
   stat("fall_speed", 166, 327, 2.1, 0.98),
   stat("dash_speed", 333, 327, 2.45, 1.45),
-  stat("run_speed", 385, 166, 2.41, 1.45)
+  stat("run_speed", 385, 166, 3, 1.18)
 ]
 
 function graph_clip_path(character_data){

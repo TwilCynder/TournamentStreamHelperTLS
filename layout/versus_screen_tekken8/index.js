@@ -121,10 +121,10 @@ LoadEverything().then(() => {
           SetInnerHtml($(`.p${t + 1} .pronoun`), player.pronoun);
 
           SetInnerHtml(
-            $(`.p${t + 1} > .sponsor_logo`),
+            $(`.p${t + 1} .sponsor_logo`),
             player.sponsor_logo
               ? `
-                <div class='sponsor_logo' style='background-image: url(../../${player.sponsor_logo})'></div>
+                <div class='sponsor-logo' style='background-image: url(../../${player.sponsor_logo})'></div>
                 `
               : ""
           );
@@ -173,9 +173,13 @@ LoadEverything().then(() => {
 
           let characterNames = [];
 
-          let characters = _.get(player, "character");
-          for (const c of Object.values(characters)) {
-            if (c.name) characterNames.push(c.name);
+          if(window.ONLINE_AVATAR || window.PLAYER_AVATAR){
+            characterNames = [player.name]
+          } else {
+            let characters = _.get(player, "character");
+            for (const c of Object.values(characters)) {
+              if (c.name) characterNames.push(c.name);
+            }
           }
 
           SetInnerHtml(
@@ -240,7 +244,7 @@ LoadEverything().then(() => {
               `
                 <div class="player_avatar">
                   <div style="background-image: url('${
-                    player.avatar ? player.avatar : "./person.svg"
+                    player.avatar ? '../../'+player.avatar : "./person.svg"
                   }');">
                   </div>
                 </div>
@@ -303,10 +307,16 @@ LoadEverything().then(() => {
 
         let characterNames = [];
 
-        for (const [p, player] of Object.values(team.player).entries()) {
-          let characters = _.get(player, "character");
-          for (const c of Object.values(characters)) {
-            if (c.name) characterNames.push(c.name);
+        if(window.ONLINE_AVATAR || window.PLAYER_AVATAR){
+          for (const [p, player] of Object.values(team.player).entries()) {
+            if (player.name) characterNames.push(player.name);
+          }
+        } else {
+          for (const [p, player] of Object.values(team.player).entries()) {
+            let characters = _.get(player, "character");
+            for (const c of Object.values(characters)) {
+              if (c.name) characterNames.push(c.name);
+            }
           }
         }
 
@@ -374,7 +384,7 @@ LoadEverything().then(() => {
           for (const [p, player] of Object.values(team.player).entries()) {
             if (player)
               avatars_html += `<div style="background-image: url('${
-                player.avatar ? player.avatar : "./person.svg"
+                player.avatar ? '../../'+player.avatar : "./person.svg"
               }');"></div>`;
           }
           SetInnerHtml(
