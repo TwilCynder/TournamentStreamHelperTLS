@@ -1,6 +1,7 @@
 update_delay = 2000;
 
 let SLTTeams = {};
+let SLTTeamNames = {};
 
 let teamsPromise = fetch('./Equipes.json')
   .then( res => res.json())
@@ -8,9 +9,16 @@ let teamsPromise = fetch('./Equipes.json')
     SLTTeams = json;
 });
 
+let teamNamesPromise = fetch('./TeamNames.json')
+  .then (res => res.json())
+  .then (json => {
+    SLTTeamNames = json;
+  })
+
 async function updateSLTTeam(teamN, playerName){
   await teamsPromise;
   let team = SLTTeams[playerName];
+  team = SLTTeamNames[team] || team;
   console.log("SLT TEAM", playerName, team);
   if (team){
     SetInnerHtml(
@@ -24,6 +32,11 @@ async function updateSLTTeam(teamN, playerName){
 }
 
 LoadEverything(() => {
+  let carousels = [
+    new Carousel(),
+    new Carousel()
+  ]
+
   gsap.config({ nullTargetWarn: false, trialWarn: false });
 
   let startingAnimation = gsap
@@ -208,26 +221,31 @@ LoadEverything(() => {
         data.score.team["2"],
       ].entries()) {
         let teamName = "";
+        let teamNamePlayers = ""
 
-        if (!team.teamName || team.teamName == "") {
-          let names = [];
-          for (const [p, player] of Object.values(team.player).entries()) {
-            if (player && player.name) {
-              names.push(await Transcript(player.name));
-            }
+        let names = [];
+        for (const [p, player] of Object.values(team.player).entries()) {
+          if (player && player.name) {
+            names.push(player.name);
           }
-          teamName = names.join(" / ");
-        } else {
-          teamName = team.teamName;
         }
+        teamNamePlayers = names.join(" / ");
 
-        SetInnerHtml(
-          $(`.p${t + 1}.container .name`),
-          `
-            ${teamName}
-            ${team.losers ? "<span class='losers'>L</span>" : ""}
-          `
-        );
+        teamName = (!team.teamName || team.teamName == "") ? teamNamePlayers : team.teamName;
+
+        let carousel = carousels[t];
+        carousel.reset();
+        carousel.add(`
+          ${teamName}
+          ${team.losers ? "<span class='losers'>L</span>" : ""}
+        `);
+        carousel.add(`
+          ${teamNamePlayers}
+          ${team.losers ? "<span class='losers'>L</span>" : ""}
+        `);
+        carousel.selector = `.p${t + 1}.container .name`
+
+        carousel.start(15000);
 
         SetInnerHtml($(`.p${t + 1}.score`), String(team.score));
 
@@ -266,7 +284,15 @@ LoadEverything(() => {
 
     SetInnerHtml($(".tournament_name"), data.tournamentInfo.tournamentName);
 
-    SetInnerHtml($(".match"), data.score.match);
+    let match = data.score.match;
+
+    try {
+      match = translateRound(data.score.phase, data.score.match);
+    } catch (e){
+      console.error(e);
+    }
+
+    SetInnerHtml($(".match"), match);
 
     try {
       let nextMatch = data.streamQueue && data.streamQueue.toulouselaststock["2"];
