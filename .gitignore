@@ -61,3 +61,4 @@ build/main/*
 TSH_old.exe
 main.spec
 *.tmp
+logs/*
