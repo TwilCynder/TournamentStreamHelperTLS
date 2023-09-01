@@ -19,19 +19,15 @@ end
 
 -- Function to set the time text
 function set_time_text()
-    print(cur_seconds)
-    print(format)
+
     local res, text = pcall(os.date, get_format(cur_seconds), cur_seconds)
 
 	if cur_seconds < 1 then
 		text = stop_text
 	end
 
-    print(text)
-    print(stop_text)
 	if text ~= last_text then
 		local source = obs.obs_get_source_by_name(source_name)
-        print(source)
 		if source ~= nil then
 			local settings = obs.obs_data_create()
 			obs.obs_data_set_string(settings, "text", text)
@@ -45,7 +41,6 @@ function set_time_text()
 end
 
 function timer_callback()
-    print("callback")
 	cur_seconds = cur_seconds - 1
 	if cur_seconds < 0 then
 		obs.remove_current_callback()
