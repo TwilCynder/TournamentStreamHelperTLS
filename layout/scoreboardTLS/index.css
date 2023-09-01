@@ -193,17 +193,9 @@ body {
   filter: invert(1);
 }
 
-.logo {
-  position: absolute;
+.logos {
   bottom: 40px;
   left: 865;
-  width: 138px;
-  height: 138px;
-  background-size: contain;
-  background-repeat: no-repeat;
-  background-position: center;
-  border-radius: var(--border-radius);
-  z-index: 9;
 }
 
 #logo-tls {
@@ -223,7 +215,7 @@ body {
 #logo-soc {
   width: 150px;
   height: 150px;
-  background-image: url("../../RessourcesTLS/SOC/Overlay/Logo.png");
+  background-image: url("../../RessourcesTLS/HaB/th.png");
 }
 
 .info.container {

@@ -1,3 +1,5 @@
+import { initAlternatingLogos } from "../includeTLS/initAlternatingLogos.js";
+
 update_delay = 2000;
 
 LoadEverything(() => {
@@ -7,7 +9,8 @@ LoadEverything(() => {
     };
   }
 
-  var logos = $("#logos-container");
+  initAlternatingLogos($);
+  var logos = $(".logos");
 
   Start = async (event) => {};
 

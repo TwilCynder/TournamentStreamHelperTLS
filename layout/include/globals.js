@@ -28,7 +28,9 @@ async function UpdateWrapper(event) {
 
   // If initialization wasn't done yet, call Start()
   // We use gsap.globalTimeline.timeScale as 0 for animation to not play before this
+  console.log("&alinaufboaienfvoukazb pute ptue tepute")
   if (gsap.globalTimeline.timeScale() == 0) {
+    console.log("&alinaufboaienfvoukazb pute ptue tepute ++++++++++++++++++++++++++++++++++++++++++")
     window.requestAnimationFrame(() => {
       $(document).waitForImages(() => {
         $("body").fadeTo(1, 1, () => {
@@ -70,11 +72,8 @@ async function UpdateData() {
   }
 }
 
-// Load libraries sequentially (to respect dependencies)
-// Then call InitAll
-async function LoadEverything(callback, promise) {
-  let libPath = "../include/";
-  let scripts = [
+async function LoadEverything(callback, additionalScripts, promise){
+  return LoadScripts("../include/", [
     "jquery-3.6.0.min.js",
     "gsap.min.js",
     "he.js",
@@ -83,9 +82,13 @@ async function LoadEverything(callback, promise) {
     "kuroshiro-analyzer-kuromoji.min.js",
     "jquery.waitforimages.min.js",
     "color-thief.min.js",
-    "assetUtils.js",
-  ];
+    "assetUtils.js"
+  ] .concat (additionalScripts ? additionalScripts : []), callback, promise);
+}
 
+// Load libraries sequentially (to respect dependencies)
+// Then call InitAll
+async function LoadScripts(libPath, scripts, callback, promise) {
   for (let i = 0; i < scripts.length; i += 1) {
     const script = scripts[i];
     const src = libPath + script;
@@ -119,6 +122,7 @@ async function InitAll(callback, promise) {
 
   await LoadKuroshiro();
 
+  console.log("CALLBACK")
   if (callback) callback();
   
   document.addEventListener("tsh_update", UpdateWrapper);

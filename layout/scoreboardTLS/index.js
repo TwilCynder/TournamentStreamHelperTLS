@@ -1,4 +1,7 @@
+import { initAlternatingLogos } from "../includeTLS/initAlternatingLogos.js";
+
 update_delay = 2000;
+let logo_interval = 10000;
 
 let SLTTeams = {};
 let SLTTeamNames = {};
@@ -16,7 +19,7 @@ let teamNamesPromise = fetch('./TeamNames.json')
   })
 
 async function updateSLTTeam(teamN, playerName){
-  await teamsPromise;
+  await Promise.all([teamsPromise, teamNamesPromise]);
   let team = SLTTeams[playerName];
   team = SLTTeamNames[team] || team;
   console.log("SLT TEAM", playerName, team);
@@ -36,6 +39,8 @@ LoadEverything(() => {
     new Carousel(),
     new Carousel()
   ]
+
+  initAlternatingLogos($, logo_interval);
 
   gsap.config({ nullTargetWarn: false, trialWarn: false });
 
@@ -97,7 +102,9 @@ LoadEverything(() => {
     );
 
   Start = async () => {
+    console.log("START TA MERE LA PUTE")
     startingAnimation.restart();
+    $(`.league_team`).hide();
   };
 
   Update = async (event) => {
@@ -117,6 +124,8 @@ LoadEverything(() => {
     $("#caster_names_container").html(html);
 
     let isTeams = Object.keys(data.score.team["1"].player).length > 1;
+
+    
 
     if (!isTeams) {
       for (const [t, team] of [
@@ -216,6 +225,8 @@ LoadEverything(() => {
         }
       }
     } else {
+      $(`.league_team`).hide();
+
       for (const [t, team] of [
         data.score.team["1"],
         data.score.team["2"],
@@ -245,7 +256,7 @@ LoadEverything(() => {
         `);
         carousel.selector = `.p${t + 1}.container .name`
 
-        carousel.start(15000);
+        carousel.startRotation(10000);
 
         SetInnerHtml($(`.p${t + 1}.score`), String(team.score));
 
@@ -321,4 +332,4 @@ LoadEverything(() => {
     SetInnerHtml($(".phase"), phaseTexts.join(" - "));
     SetInnerHtml($("#bestof"), "Best of " + data.score.best_of);
   };
-});
+}, ["../includeTLS/SIHCarousel.js"]);

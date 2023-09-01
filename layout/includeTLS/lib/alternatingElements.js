@@ -1,4 +1,4 @@
-const imageInterval = 10000;
+export var carouselInterval = 10000;
 const fadeInTime = .3; //(seconds)
 const fadeOutTime = .2;
 
@@ -15,13 +15,13 @@ function fadeOut(itemID, duration, funct) {
 /**
  * Manages a display cycle between given elements
  */
-export class RotatingElements extends Array{
+export class RotatingElements{
     /**
      * Contructor
      * @param  {...any} args Elements that will be cycled through
      */
     constructor(...args){
-      super(...args);
+      this.list = new Array(...args);
       this.current = 0;
       for (let i = 1; i < args.length; i++){
         args[i].style.opacity = 0
@@ -30,6 +30,7 @@ export class RotatingElements extends Array{
       this.fadeIn = fadeInTime;
       this.fadeOut = fadeOutTime;
       this.crossFade = false;
+      this.delay = carouselInterval;
     }
     
     /**
@@ -37,12 +38,15 @@ export class RotatingElements extends Array{
      * This method will be called automatically, but can be used to force-advance the cycle.
      */
     next(){
-      let previousElement = this[this.current];
+      if (this.list.length < 1) return;
+
+      let previousElement = this.list[this.current];
 
       this.current++;
-      if (this.current >= this.length) this.current = 0;
+      if (this.current >= this.list.length) this.current = 0;
   
-      let currentElement = this[this.current];
+      console.log(this.list)
+      let currentElement = this.list[this.current];
       currentElement.style.visibility = 'inherit';
 
       if (this.crossFade){
@@ -64,9 +68,9 @@ export class RotatingElements extends Array{
      * @param {number} fadeOut fade out duration, in seconds
      * @returns the RotatingElements object, so you can chain-call
      */
-    setProperties(arg0, fadeIn, fadeOut){
+    setProperties(arg0, fadeIn, fadeOut, delay){
         if (typeof arg0 == "object"){
-            this.setProperties(arg0.crossFade, arg0.fadeIn, arg0.fadeOut);
+            this.setProperties(arg0.crossFade, arg0.fadeIn, arg0.fadeOut, delay);
             return this;
         }
         this.fadeIn = fadeIn || this.fadeIn;
@@ -83,7 +87,7 @@ export class RotatingElements extends Array{
     startRotation(interval){
       this.interval = setInterval(() => {
           this.next();
-      }, interval || imageInterval);
+      }, interval || this.delay || carouselInterval);
       return this;
     }
 
@@ -97,6 +101,14 @@ export class RotatingElements extends Array{
         this.interval = undefined;
       }
     }
+
+    add(element){
+      this.list.push(element)
+    }
+
+    reset(){
+      this.list = []
+    } 
 
     /**
      * Changes the current delay

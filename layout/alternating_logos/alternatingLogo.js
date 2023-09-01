@@ -1,4 +1,3 @@
-import { RotatingElements, getElementsByClass} from "./alternatingImages.js";
+import { initAlternatingLogos } from "../includeTLS/initAlternatingLogos.js";
 
-console.log(RotatingElements);
-var logoRotation = new RotatingElements(...getElementsByClass("logo")).setProperties({crossFade : true}).startRotation(15000);
+initAlternatingLogos($)

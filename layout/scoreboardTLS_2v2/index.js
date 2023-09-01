@@ -1,48 +1,16 @@
+import { initAlternatingLogos } from "../includeTLS/initAlternatingLogos.js";
+import { RotatingElements } from "../includeTLS/lib/alternatingElements.js";
+
 update_delay = 2000;
 
 LoadEverything(() => {
 
-  class Carousel {
-    constructor(){
-      this.list = [];
-      this.interval = null;
-      this.selector = "";
-      this.time = 5000;
-    }
-  
-    start(time){
-      if (time) this.time = time;
-      if (this.interval){
-        clearInterval(this.interval);
-      }
-      let i = 0;
-      let callback = () => {
-        SetInnerHtml( $(this.selector), this.list[i]);
-        i++;
-        if (i >= this.list.length){
-          i = 0;
-        }
-      }
-      callback();
-      this.interval = setInterval(callback, this.time)
-    }
-  
-    reset(){
-      this.list = []
-    } 
-  
-    add(t){
-      this.list.push(t);
-    }
-    
-  }
-  
   let carousels = [
-      new Carousel(),
-      new Carousel()
+      new RotatingElements(),
+      new RotatingElements()
   ]
 
-
+  initAlternatingLogos($);
 
   gsap.config({ nullTargetWarn: false, trialWarn: false });
 

@@ -34,18 +34,26 @@
     --twitter-blue: #1DA1F2;
 }
 
-#logo-soc {
-    background-image: url("../RessourcesTLS/common/Overlay/Logo.png");
+.logos {
+    position: absolute;
+    width: 138px;
+    height: 138px;
+    z-index: 9;
+}
+
+.logo {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    background-size: contain;
+    background-repeat: no-repeat;
+    background-position: center;
+}
+
+#logo-tournoi {
+    background-image: url("./logo.png");
 }
 
 #logo-tls {
     background-image: url("../RessourcesTLS/common/Overlay/Logo.png");
-}
-
-#logo-ogc {
-    background-image: url("../RessourcesTLS/common/Overlay/occitania\ gaming\ convention.png");
-}
-
-#logo-gaminglink {
-    background-image: url("../RessourcesTLS/common/Overlay/gaminglink.png");
 }
