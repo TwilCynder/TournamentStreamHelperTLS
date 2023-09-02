@@ -899,8 +899,6 @@ class StartGGDataProvider(TournamentDataProvider):
                 streamName = q.get("stream", {}).get("streamName", "")
                 queueData = {}
                 for setIndex, _set in enumerate(q.get("sets", [])):
-
-
                     phase_name = deep_get(_set, "phaseGroup.phase.name")
                     if deep_get(_set, "phaseGroup.phase.groupCount") > 1:
                         phase_name += " - " + TSHLocaleHelper.phaseNames.get(
