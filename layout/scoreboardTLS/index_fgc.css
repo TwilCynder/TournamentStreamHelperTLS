@@ -1,0 +1,746 @@
+@font-face {
+  font-family: "NotoSans";
+  src: url("../include/NotoSans-Regular.ttf") format("truetype");
+}
+
+@font-face {
+  font-family: "RobotoCondensed";
+  src: url("../include/RobotoCondensed.ttf") format("truetype");
+}
+
+@font-face {
+  font-family: "Roboto";
+  src: url("../include/Roboto-Regular.ttf") format("truetype");
+}
+
+@font-face {
+  font-family: "SriRacha";
+  src: url("../../RessourcesTLS/SF6/Font/Sriracha-Regular.ttf") format("truetype");
+}
+
+@font-face {
+  font-family: "Grafiti";
+  src: url("../../RessourcesTLS/SF6/Font/AttackGraffiti-3zRBM.ttf ") format("truetype");
+}
+
+body {
+  background: url("./66_2_1.jpg");
+  font-family: "SriRacha";
+  font-weight: bold;
+  opacity: 0;
+  overflow: hidden;
+  margin: 0;
+  width: 1920px;
+  height: 1080px;
+  filter: drop-shadow(0 2px 2px rgba(0, 0, 0, 0.12))
+    drop-shadow(0 3px 1px rgba(0, 0, 0, 0.14))
+    drop-shadow(0 1px 5px rgba(0, 0, 0, 0.12))
+    drop-shadow(0 -1px 2px rgba(0, 0, 0, 0.1));
+  letter-spacing: 1;
+  background-size: cover;
+}
+
+.anim_container_outer {
+  position: absolute;
+  overflow: hidden;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 1920px;
+  height: 1080px;
+}
+
+.anim_container_inner {
+  position: absolute;
+  overflow: hidden;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 1920px;
+  height: 1080px;
+}
+
+.container {
+  position: absolute;
+  color: var(--text-color);
+  overflow: hidden;
+  display: flex;
+  box-sizing: border-box;
+  border-radius: var(--border-radius);
+  background: var(--bg-color);
+  align-items: center;
+}
+
+.sf6 .container {
+  color: white;
+}
+
+.sf6 .container.p1 {
+  background: url("./image/SF6BgP1.png");
+}
+
+.sf6 .container.p2 {
+  background: url("./image/SF6BgP2.png");
+}
+
+.player.container {
+  width: 500px;
+  height: 64px;
+  top: 42px;
+  padding: 0px 6px;
+}
+
+.player.container > div:not(.score) > .text:not(.text_empty) {
+  margin-left: 4px;
+  margin-right: 4px;
+}
+
+.fgc .player.container {
+  top: 8px;
+  width: 652px;
+}
+
+.tekken7 .player.container {
+  width: 580px;
+}
+
+.fgc.thin .player.container {
+  top: 2px;
+  height: 48px;
+  width: 640px;
+}
+
+.fgc.thin.strive .player.container {
+  width: 580px;
+  top: 60px;
+}
+
+.sf6 .player.container {
+  top: 0px;
+  height: 64px;
+  width: 480px;
+  align-items: flex-start;
+  justify-content: flex-end;
+}
+
+.p1.container {
+  background-position: 100% 0;
+  left: 380px;
+  flex-direction: row;
+}
+
+.fgc .p1.container {
+  left: 154px;
+}
+
+.tekken7 .p1.container {
+  left: 226px;
+}
+
+.fgc.thin .p1.container {
+  left: 164px;
+}
+
+.sf6 .p1.container {
+  left: 248px;
+}
+
+.p2.container {
+  background-position: 0 0;
+  right: 380px;
+  flex-direction: row-reverse;
+}
+
+.fgc .p2.container {
+  right: 154px;
+}
+
+.tekken7 .p2.container {
+  right: 226px;
+}
+
+.fgc.thin .p2.container {
+  right: 164px;
+}
+
+.sf6 .p2.container {
+  right: 248px;
+}
+
+.thin .player.container {
+  padding: 0 2px;
+}
+
+.name,
+.name_twitter {
+  display: flex;
+  width: 100%;
+  flex-direction: column;
+  overflow: hidden;
+  justify-content: center;
+  padding-left: 8px;
+  padding-right: 8px;
+  box-sizing: border-box;
+  max-width: 100%;
+  font-size: 30px;
+}
+
+.sf6 .name, .sf6 .name_twitter{
+  width: 300px;
+}
+
+.chips {
+  display: flex;
+  position: absolute;
+  top: 112px;
+  width: 500px;
+  height: 24px;
+  justify-content: right;
+  align-content: center;
+  overflow: hidden;
+}
+
+.sf6 .chips {
+  top: 106px;
+  height: 32px;
+  background: none;
+}
+
+.sf6.offline .chips {
+  width: 450px;
+}
+
+.sf6.online .chips {
+  width: 270px;
+  border-radius: calc(var(--border-radius) / 2);
+}
+
+.chip {
+  overflow: hidden;
+  border-radius: calc(var(--border-radius) / 2);
+}
+
+.p1.chips {
+  left: 380px;
+}
+
+.sf6 .chip {
+  height: 32px;
+  margin-right: 5px;
+}
+
+.sf6.online .p1.chips {
+  left: 200px;
+  justify-content: left;
+}
+
+.sf6.offline .p1.chips {
+  left: 8px;
+  justify-content: left;
+}
+
+.p2.chips {
+  flex-direction: row-reverse;
+  left: 1040px;
+  justify-content: left;
+}
+
+.sf6.online .p2.chips {
+  left: unset;
+  right: 200px;
+  justify-content: right;
+}
+
+.sf6.offline .p2.chips {
+  left: unset;
+  right: 8px;
+  justify-content: right;
+}
+
+.sf6.online .seed {
+  position: absolute;
+  top: 106px;
+}
+
+.sf6.online .p1 .seed {
+  left: 0;
+  border-top-left-radius: 0;
+  border-bottom-left-radius: 0;
+}
+
+.sf6.online .p2 .seed {
+  left: unset;
+  right: 0;
+  border-top-right-radius: 0;
+  border-bottom-right-radius: 0;
+}
+
+.chip .text:not(.text_empty) {
+  margin-left: 4px;
+  margin-right: 4px;
+  height: 24px;
+  font-size: 18px;
+  padding-left: 12px;
+  padding-right: 12px;
+  background: var(--bg-color);
+  color: var(--text-color);
+  border-radius: calc(var(--border-radius) / 2);
+  min-width: unset;
+}
+
+.sf6 .chip .text:not(.text_empty) {
+  font-size: 20px;
+  height: 100%;
+  background: none;
+}
+
+.sf6.online .seed.chip .text:not(.text_empty) {
+  margin: 0;
+  border-radius: 0;
+  width: 130px;
+}
+
+.fgc .name_twitter {
+  flex-direction: row;
+  justify-content: space-between;
+}
+
+.fgc .p2 .name_twitter {
+  flex-direction: row-reverse;
+}
+
+.sf6 .name_twitter{
+  justify-content: center;
+}
+
+.name_twitter .name {
+  font-size: 32px;
+}
+
+.fgc .name_twitter .name {
+  width: 60%;
+}
+
+.sf6 .name_twitter .name {
+  width: 100%;
+  font-size: 30px;
+}
+
+.fgc:not(.sf6) .p1 .name_twitter .name .text {
+  justify-content: flex-start;
+}
+
+.fgc:not(.sf6) .p2 .name_twitter .name .text {
+  justify-content: flex-end;
+}
+
+.name_twitter {
+  max-width: 100%;
+}
+
+.name_twitter .extra {
+  display: flex;
+  justify-content: center;
+  width: 40%;
+  font-size: 18px;
+  overflow: hidden;
+}
+
+.p2 .extra {
+  flex-direction: row-reverse;
+}
+
+.fgc .name_twitter .extra {
+  flex-direction: column;
+}
+
+.name_twitter .twitter {
+  font-size: 18px;
+  max-width: 100%;
+}
+
+.extra .pronoun {
+  width: 100%;
+}
+
+.fgc .p1 .name_twitter .twitter .text {
+  justify-content: flex-end;
+}
+
+.fgc .p2 .name_twitter .twitter .text {
+  justify-content: flex-start;
+}
+
+.fgc .p1 .name_twitter .pronoun .text {
+  justify-content: flex-end;
+}
+
+.fgc .p2 .name_twitter .pronoun .text {
+  justify-content: flex-start;
+}
+
+.twitter_logo {
+  -webkit-mask-image: url(./twitter.svg);
+  -webkit-mask-size: contain;
+  -webkit-mask-repeat: no-repeat;
+  -webkit-mask-position: center;
+  background: var(--text-color);
+  width: 18px;
+  height: 18px;
+  margin-right: 8px;
+}
+
+.chips .twitter_logo {
+  margin-left: -4px;
+}
+
+.sf6 .p1 .chip {
+  background-color: #E1497C;
+}
+
+.sf6 .p2 .chip {
+  background-color: #3FA0E0;
+}
+
+.light .twitter_logo {
+  filter: invert(1);
+}
+
+.info.container {
+  left: 50%;
+  padding-left: 20px;
+  padding-right: 20px;
+  background-position: center;
+  text-transform: uppercase;
+  box-sizing: border-box;
+  font-size: 20px;
+}
+
+.info.container_inner {
+  display: flex;
+  width: 100%;
+  font-size: inherit;
+  justify-content: space-around;
+}
+
+.info.container_inner > div {
+  flex-shrink: 0;
+  text-align: center;
+}
+
+.info.container.top {
+  bottom: 8px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 360px;
+  display: flex;
+  justify-content: space-between;
+  flex-direction: column;
+  height: 36px;
+  padding: 8px 16px;
+}
+
+.ssbu .container.top {
+  bottom: 0;
+  border-bottom-right-radius: 0;
+  border-bottom-left-radius: 0;
+}
+
+.tournament_name {
+  font-size: 22px;
+  width: 100%;
+  height: 100%;
+}
+
+.fgc .info.container.top {
+  top: 8px;
+  height: 34px;
+  width: 300px;
+  font-size: 16px;
+  padding: 8px 16px;
+}
+
+.tekken7 .info.container.top {
+  height: 48px;
+}
+
+.fgc.thin .info.container.top {
+  top: 2px;
+  height: 48px;
+}
+
+.sf6 .info.container.top {
+  width: 440px;
+  top: 0;
+  border-top-right-radius: 0;
+  border-top-left-radius: 0;
+  height: 100px;
+  background: none;
+  font-family: "Grafiti";
+  color: #822c87;
+}
+
+.info.container.bottom {
+  top: 42px;
+  left: 42px;
+  display: flex;
+  justify-content: center;
+  height: unset;
+  flex-direction: column;
+  width: 280px;
+  height: 64px;
+  font-size: 20px;
+  padding: 4px 16px;
+}
+
+.phase {
+  font-size: 16px;
+  letter-spacing: 3px;
+  width: 100%;
+}
+
+.sf6 .phase {
+  font-size: 20px;
+  letter-spacing: 2px;
+}
+
+.match {
+  font-size: 24px;
+  letter-spacing: 2px;
+  width: 100%;
+}
+
+.sf6 .match {
+  font-size: 30px;
+  letter-spacing: 4px;
+  text-shadow: 3px 3px 4px white, -3px 3px 4px white, 3px -3px 4px white, -3px -3px 4px white;
+}
+
+.fgc .info.container.bottom {
+  top: unset;
+  bottom: 6px;
+  padding: 16px 24px;
+  left: 50%;
+  transform: translateX(-50%);
+}
+
+.sf6 .info.container.bottom {
+  border-bottom-left-radius: 0;
+  border-bottom-right-radius: 0;
+  top: unset;
+  bottom: 0;
+  width: 400px;
+  height: 64px;
+  padding: 0px 20px;
+}
+
+.bblue .info.container.bottom {
+  top: 180px;
+  bottom: unset;
+}
+
+.icon,
+.flagcountry,
+.flagstate {
+  display: flex;
+  justify-content: center;
+}
+
+.icon .text:not(.text_empty) {
+  flex-shrink: 0;
+  background-position: center;
+  background-repeat: no-repeat;
+  background-size: contain;
+}
+
+.thin .icon {
+  border-radius: 8px;
+}
+
+.icon div:not(.text) {
+  width: 48px;
+  height: 48px;
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+  background-color: #3f3f46;
+  border-radius: var(--border-radius);
+}
+
+.tsh_character {
+  background-color: #3f3f46;
+  border-radius: var(--border-radius);
+  overflow: hidden;
+}
+
+.icon div:not(.text) {
+  border-radius: calc(var(--border-radius) * 2 / 3);
+}
+
+.fgc.thin .icon div:not(.text) {
+  height: 38px;
+  width: 38px;
+  background-size: cover;
+}
+
+.sf6 .icon div:not(.text) {
+  height: 34px;
+  width: 34px;
+}
+
+.flags_container {
+  display: flex;
+  flex-direction: column;
+}
+
+.flag {
+  display: inline-block;
+  background-size: cover;
+  background-repeat: no-repeat;
+  background-position: center;
+  width: 36px;
+  height: 24px;
+  border-radius: 4px;
+}
+
+.chips .flag {
+  margin-left: 4px;
+  margin-right: 4px;
+}
+
+.sponsor_icon > div > div {
+  display: inline-block;
+  background-size: contain;
+  background-repeat: no-repeat;
+  background-position: center;
+  width: 48px;
+  height: 48px;
+  border-radius: var(--border-radius);
+}
+
+.fgc.thin .sponsor_icon > div > div {
+  width: 38px;
+  height: 38px;
+}
+
+.character_container {
+  display: flex;
+  overflow: hidden;
+  height: 100%;
+  flex-shrink: 0;
+  width: auto;
+  align-items: center;
+  gap: 4px;
+}
+
+.character_container > div {
+  overflow: hidden;
+  height: 48px;
+  width: 48px;
+}
+
+.fgc.thin .character_container > div {
+  height: 100%;
+}
+
+.fgc.thin .character_container > div > div {
+  height: 100%;
+}
+
+.character_container > div > div {
+  overflow: hidden;
+  height: 48px;
+  display: flex;
+  align-items: center;
+}
+
+.score {
+  width: 64px;
+  height: 64px;
+  font-size: 40px;
+  color: var(--bg-color);
+  flex-grow: 0;
+  flex-shrink: 0;
+  overflow: hidden;
+}
+
+.sf6 .score {
+  color: white;
+  font-size: 50px;
+  top: 0px;
+  height: 50px;
+}
+
+.sf6 .p2 .score {
+  margin-left: 15px;
+}
+
+.fgc.thin .score {
+  font-size: 32px;
+  width: 48px;
+}
+
+
+.p1 .score {
+  color: var(--p1-score-color);
+  background: var(--p1-score-bg-color);
+  margin-right: -6px;
+  margin-left: 6px;
+}
+
+.thin .p1 .score {
+  margin-right: -2px;
+  margin-left: 2px;
+}
+
+.sponsor {
+  margin-right: 6px;
+}
+
+.p1 .sponsor {
+  color: var(--p1-sponsor-color);
+}
+
+.p2 .score {
+  color: var(--p2-score-color);
+  background: var(--p2-score-bg-color);
+  margin-left: -6px;
+  margin-right: 6px;
+}
+
+.thin .p2 .score {
+  margin-left: -2px;
+  margin-right: 2px;
+}
+
+.p2 .sponsor {
+  color: var(--p2-sponsor-color);
+}
+
+.sf6 .score {
+  background: none;
+}
+
+
+.losers {
+  display: inline-flex;
+  width: 22px;
+  height: 22px;
+  font-size: 18px;
+  border-radius: 100%;
+  text-align: center;
+  align-items: center;
+  justify-content: center;
+  margin: 0 6px;
+}
+
+.p1 .losers {
+  background: #ff3837ff;
+}
+
+.p2 .losers {
+  background: #308affff;
+}
+
+.logos {
+  bottom: 40px;
+  left: 865;
+}

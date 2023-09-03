@@ -1,4 +1,6 @@
 import { initAlternatingLogos } from "../includeTLS/initAlternatingLogos.js";
+import { Carousel } from "../includeTLS/SIHCarousel.js";
+import { translateRound } from "../includeTLS/util.js";
 
 update_delay = 2000;
 let logo_interval = 10000;
@@ -34,11 +36,23 @@ async function updateSLTTeam(teamN, playerName){
   }
 }
 
+const default_config = {
+  display : {
+    "inline_pronoun" : true,
+    "sponsor":  true
+  }
+}
+
 LoadEverything(() => {
   let carousels = [
     new Carousel(),
     new Carousel()
   ]
+
+  //a changer plus tard quand on aura un système de config plus avancé
+
+
+  let config = _.defaultsDeep(window.config, default_config);
 
   initAlternatingLogos($, logo_interval);
 
@@ -132,20 +146,26 @@ LoadEverything(() => {
         data.score.team["1"],
         data.score.team["2"],
       ].entries()) {
-        SetInnerHtml($(`.p${t + 1}.score`), String(team.score));
 
         for (const [p, player] of [team.player["1"]].entries()) {
           if (player) {
             SetInnerHtml(
               $(`.p${t + 1}.container .name`),
               `
-                <span class="sponsor">
-                  ${player.team ? player.team : ""}
-                </span>
+                ${config.display.sponsor ? `
+                  <span class="sponsor">
+                    ${player.team ? player.team : ""}
+                  </span>` 
+                  : ""
+                }
                 ${await Transcript(player.name)}
-                <span class="pronoun">
+                ${config.display.inline_pronoun ? `
+                  <span class="pronoun scoreboard_pronoun">
                   ${player.pronoun ? player.pronoun : ""}
-                </span>
+                  </span>`
+                  : ""
+                }
+                
                 ${team.losers ? "<span class='losers'>L</span>" : ""}
               `
             );
@@ -182,7 +202,6 @@ LoadEverything(() => {
                 : ""
             );
 
-            /*
             SetInnerHtml(
               $(`.p${t + 1}.container .avatar`),
               player.avatar
@@ -203,10 +222,9 @@ LoadEverything(() => {
                 ? `<span class="twitter_logo"></span>${String(player.twitter)}`
                 : ""
             );
-            */
 
             SetInnerHtml(
-              $(`.p${t + 1} .pronoun`),
+              $(`.p${t + 1} .pronoun.chip`),
               player.pronoun ? player.pronoun : ""
             );
 
@@ -221,6 +239,18 @@ LoadEverything(() => {
             );
 
             SetInnerHtml($(`.p${t + 1}.score`), String(team.score));
+            SetInnerHtml($(`.p${t + 1} .score`), String(team.score));
+
+            if ($(".sf6.online").length > 0) {
+              console.log("hi");
+              console.log(player.twitter);
+              console.log(player.pronoun);
+              if (!player.twitter && !player.pronoun) {
+                gsap.to($(`.p${t + 1}.chips`), { autoAlpha: 0 });
+              } else {
+                gsap.to($(`.p${t + 1}.chips`), { autoAlpha: 1 });
+              }
+            }
           }
         }
       }
@@ -260,7 +290,15 @@ LoadEverything(() => {
 
         SetInnerHtml($(`.p${t + 1}.score`), String(team.score));
 
-        /*
+        if ($(".sf6.online").length > 0) {
+          if (!player.twitter && !player.pronoun) {
+            gsap.to($(`.p${t + 1}.chips`), { autoAlpha: 0 });
+          } else {
+            gsap.to($(`.p${t + 1}.chips`), { autoAlpha: 1 });
+          }
+        }
+
+
         SetInnerHtml($(`.p${t + 1} .flagcountry`), "");
 
         SetInnerHtml($(`.p${t + 1} .flagstate`), "");
@@ -275,9 +313,9 @@ LoadEverything(() => {
           },
           event
         );
-        */
 
-        /*
+
+
         SetInnerHtml($(`.p${t + 1}.container .sponsor_icon`), "");
 
         SetInnerHtml($(`.p${t + 1}.container .avatar`), "");
@@ -288,7 +326,7 @@ LoadEverything(() => {
         
 
         SetInnerHtml($(`.p${t + 1}.container .sponsor-container`), "");
-        */
+
 
       }
     }
