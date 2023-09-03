@@ -1,4 +1,4 @@
-class Carousel {
+export class Carousel {
     constructor(){
       this.list = [];
       this.interval = null;
