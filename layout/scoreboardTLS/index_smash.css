@@ -194,6 +194,7 @@ body {
 }
 
 .logos {
+  position: absolute;
   bottom: 40px;
   left: 865;
 }

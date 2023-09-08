@@ -235,6 +235,9 @@ async function Transcript(text) {
   if (text == null || text.length == 0 || !settings.enabled) return text;
 
   try {
+    console.log("KURISHIRO =====")
+    console.log(text, window.Kuroshiro.default.Util.hasJapanese(text))
+
     if (window.Kuroshiro.default.Util.hasJapanese(text)) {
       return window.kuroshiro
         .convert(text, {

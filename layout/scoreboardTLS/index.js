@@ -149,6 +149,11 @@ LoadEverything(() => {
 
         for (const [p, player] of [team.player["1"]].entries()) {
           if (player) {
+
+            console.log('Pronoun', config.display.inline_pronoun, player.pronoun)
+
+            console.log(await Transcript(player.name));
+
             SetInnerHtml(
               $(`.p${t + 1}.container .name`),
               `
@@ -158,7 +163,7 @@ LoadEverything(() => {
                   </span>` 
                   : ""
                 }
-                ${await Transcript(player.name)}
+                ${/*await Transcript(player.name)*/player.name}
                 ${config.display.inline_pronoun ? `
                   <span class="pronoun scoreboard_pronoun">
                   ${player.pronoun ? player.pronoun : ""}
@@ -368,6 +373,6 @@ LoadEverything(() => {
     if (data.score.best_of_text) phaseTexts.push(data.score.best_of_text);
 
     SetInnerHtml($(".phase"), phaseTexts.join(" - "));
-    SetInnerHtml($("#bestof"), "Best of " + data.score.best_of);
+    //SetInnerHtml($("#bestof"), "Best of " + data.score.best_of);
   };
-}, ["../includeTLS/SIHCarousel.js"]);
+}, []);
