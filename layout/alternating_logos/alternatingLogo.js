@@ -1,3 +1,3 @@
 import { initAlternatingLogos } from "../includeTLS/initAlternatingLogos.js";
 
-initAlternatingLogos($)
+initAlternatingLogos($, 15000, "logos", "castanha");

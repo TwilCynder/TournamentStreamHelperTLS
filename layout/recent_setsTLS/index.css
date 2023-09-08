@@ -105,16 +105,16 @@ body {
 }
 
 #set_count {
-  color: var(--tls-purple);
+  color: var(--tls-yellow);
   font-size: 65px;
 }
 
 .player_1 .sponsor {
-  color: var(--tls-purple);
+  color: var(--tls-yellow);
 }
 
 .player_2 .sponsor {
-  color: var(--tls-purple);
+  color: var(--tls-yellow);
 }
 
 /* Recent Sets Section */

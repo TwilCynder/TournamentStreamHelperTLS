@@ -1,6 +1,12 @@
 {
-    "logos" : [
-        "logo-tournoi",
-        "logo-tls"
-    ]
+    "logos" : {
+        "base" : [
+            "logo-tournoi",
+            "logo-tls"
+        ],
+        "castanha" : [
+            "logo-castanha-bg",
+            "logo-tls"
+        ]
+    }
 }

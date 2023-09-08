@@ -46,7 +46,7 @@
     z-index: 9;
 }
 
-.logo {
+.logo_carousel {
     position: absolute;
     width: 100%;
     height: 100%;
@@ -61,4 +61,8 @@
 
 #logo-tls {
     background-image: url("../RessourcesTLS/common/Overlay/Logo.png");
+}
+
+#logo-castanha-bg {
+    background-image: url("../RessourcesTLS/Castanha/LOGO\ ENTOURE.png");
 }

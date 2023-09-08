@@ -3,26 +3,30 @@
         <script src="../include/globals.js"></script>
         <link rel="stylesheet" href="../main.css" />
         <link rel="stylesheet" href="../tlsMain.css" />
-        <link rel="stylesheet" href="./indexCastanha.css" />
+        <link rel="stylesheet" href="./indexWHATTHEFUCK.css" />
     </head>
     <body class="ssbu">
 
         <div class="anim_container_outer">
             <div class="anim_container_inner"> 
-                <img class="absol" src="image/castanha-2_ingame.png">
+                <img class="absol" src="image/frankenstein.png">
+                <div class="info top container">
+                    <div class="tournament_name"></div>
+                </div>
         
-                <div class="info material_container middle">
-                    <div class="logos"></div>
-                    <div class="info">
-                      <div class="match"></div>
-                      <div class="phase"></div>
-                    </div>
-                </div>               
+                <div class="info bottom container">
+                    <div class="match"></div>
+                    <div class="phase"></div>
+                </div>
 
                 <div id = "casters_container">
                     <img src= "../../RessourcesTLS/common/Overlay/mic-grey-2.png" class = "float_child" height = "50px" alt = "ligma"/>
                     <div id = "caster_names_container" class = "float_child">
                     </div>
+                </div>
+
+                <div id = "next_set">
+                    Chargment du prochain set ...
                 </div>
 
                 <div class="p1 player container">
@@ -37,6 +41,7 @@
                         <div class="name"></div>
                         <!--<div class="twitter"></div>-->
                     </div>
+                    <div class="character_container"></div>
                 </div>
                 <div class="p1 league_team">Team <span class = "team_name"></span></div>
                 <div class="p1 score"></div>
@@ -52,20 +57,13 @@
                         <div class="name"></div>
                         <!--<div class="twitter"></div>-->
                     </div>
+                    <div class="character_container"></div>
                 </div>
                 <div class="p2 score"></div>
                 <div class="p2 league_team">Team <span class = "team_name"></span></div>
             </div>
         </div>
         
-        <script>
-            window.config = {
-              display : {
-                    "inline_pronoun": false
-                }
-            }
-        </script>
-
         <script src="index.js" type = "module"></script>
     </body>
 </html>
