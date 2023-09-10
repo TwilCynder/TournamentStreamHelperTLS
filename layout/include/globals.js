@@ -235,8 +235,14 @@ async function Transcript(text) {
   if (text == null || text.length == 0 || !settings.enabled) return text;
 
   try {
-    console.log("KURISHIRO =====")
+    console.log("KUROSHIRO =====")
     console.log(text, window.Kuroshiro.default.Util.hasJapanese(text))
+    console.log(window.Kuroshiro.default.Util.hasJapanese("Ganymède"))
+    console.log("Ganymède".length)
+    for (let i = 0; i < text.length; i++){
+      console.log(text.codePointAt(i));
+    }
+    console.log("================")
 
     if (window.Kuroshiro.default.Util.hasJapanese(text)) {
       return window.kuroshiro

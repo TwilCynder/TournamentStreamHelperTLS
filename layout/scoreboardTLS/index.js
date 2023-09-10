@@ -116,7 +116,6 @@ LoadEverything(() => {
     );
 
   Start = async () => {
-    console.log("START TA MERE LA PUTE")
     startingAnimation.restart();
     $(`.league_team`).hide();
   };
@@ -150,9 +149,10 @@ LoadEverything(() => {
         for (const [p, player] of [team.player["1"]].entries()) {
           if (player) {
 
-            console.log('Pronoun', config.display.inline_pronoun, player.pronoun)
+            console.log("________")
+            console.log(player.name, player.name == "Ganymède");
+            console.log("TTTT", await Transcript(player.name))
 
-            console.log(await Transcript(player.name));
 
             SetInnerHtml(
               $(`.p${t + 1}.container .name`),
@@ -163,7 +163,7 @@ LoadEverything(() => {
                   </span>` 
                   : ""
                 }
-                ${/*await Transcript(player.name)*/player.name}
+                ${await Transcript(player.name)}
                 ${config.display.inline_pronoun ? `
                   <span class="pronoun scoreboard_pronoun">
                   ${player.pronoun ? player.pronoun : ""}
