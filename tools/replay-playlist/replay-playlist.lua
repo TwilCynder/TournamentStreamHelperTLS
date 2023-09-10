@@ -79,6 +79,31 @@ local function add_to_playlist(path)
 	end
 end
 
+local function remove_last_replay()
+	local source = obs.obs_get_source_by_name(source_name)
+	if source ~= nil then
+		local settings = obs.obs_source_get_settings(source)
+		local playlist = obs.obs_data_get_array(settings, "playlist")
+
+		local size = obs.obs_data_array_count(playlist)
+		if size > 0 then
+			obs.obs_data_array_erase(playlist, size - 1)
+		end
+
+		obs.obs_data_set_array(settings, "playlist", playlist)
+
+		--obs.obs_data_set_bool(settings, "loop", false)
+		--obs.obs_data_set_bool(settings, "shuffle", false)
+		--obs.obs_data_set_string(settings, "playback_behavior", stop_restart)
+
+		obs.obs_source_update(source, settings)
+		obs.script_log(obs.LOG_INFO, "In the try_add to path to source. About to release!")
+		obs.obs_data_array_release(playlist)
+		obs.obs_data_release(settings)
+		obs.obs_source_release(source)
+	end
+end
+
 local function instant_play(path)
 	local source = obs.obs_get_source_by_name(source_name)
 	if source ~= nil then
@@ -183,72 +208,45 @@ local function save(callback)
 	end
 end
 
-local function save_hotkey(pressed)
-    if not pressed then
-		return
-	end
-
+local function save_add_to_playlist()
     save(try_add_to_playlist)
 end
 
-local function clear_hotkey(pressed)
-    if not pressed then
-		return
-	end
-    
-	clear_playlist()
-end
-
-local function instant_replay_hotkey(pressed)
-    if not pressed then
-		return
-	end
-
+local function save_instant_replay()
     save(try_instant_replay)
-end
-
-local function clear_match_playlist_hotkey(pressed)
-    if not pressed then
-		return
-	end
-
-    clear_match_playlist()
-end
-
-local function load_match_playlist_hotkey(pressed)
-    if not pressed then
-		return
-	end
-
-    load_match_playlist()
 end
 
 local hotkeys = {
     save = {
         name = "save",
         description = "Save replay to current playlist",
-        func = save_hotkey
+        func = save_add_to_playlist
     },
     clear = {
         name = "clear",
         description = "Clear replay playlist";
-        func = clear_hotkey
+        func = clear_playlist
     },
     save_clear = {
         name = "save_clear",
         description = "Save replay to new playlist",
-        func = instant_replay_hotkey
+        func = save_instant_replay
     },
+	remove_last = {
+		name = "remove_last",
+		description = "Remove last replay",
+		func = remove_last_replay
+	},
 	clear_match_playlist = {
         name = "clear_match_playlist",
         description = "Clear Match Playlist",
-        func = clear_match_playlist_hotkey
+        func = clear_match_playlist
     },
 	load_match_playlist = {
         name = "load_match_playlist",
         description = "Load Match Playlist",
-        func = load_match_playlist_hotkey
-    }
+        func = load_match_playlist
+    },
 }
 
 
@@ -285,7 +283,12 @@ end
 function script_load(settings)
     for k, v in pairs(hotkeys) do
         local name = "replay_playlist."..v.name
-        hotkeys_id[k] = obs.obs_hotkey_register_frontend(name, v.description, v.func)
+        hotkeys_id[k] = obs.obs_hotkey_register_frontend(name, v.description, function(pressed)
+			if not pressed then
+				return
+			end 
+			v.func()
+		end)
         local hotkey_save_array = obs.obs_data_get_array(settings, name)
         obs.obs_hotkey_load(hotkeys_id[k], hotkey_save_array)
         obs.obs_data_array_release(hotkey_save_array)
