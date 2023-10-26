@@ -79,7 +79,7 @@ $(() => {
         .then((data) => {  
             $('#sets').empty();   
             if (!data.data || !data.data.event){
-                throw "Invalid response from the startgg API (check the tournament URL or API key)"
+                throw data;
             }
             for (let i = 0; i < data.data.event.sets.nodes.length; i++){
                 let set = data.data.event.sets.nodes[i];
