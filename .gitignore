@@ -5,6 +5,7 @@ user_data/sponsor_logo/
 !user_data/sponsor_logo/*.txt
 user_data/team_logo/
 !user_data/team_logo/*.txt
+!user_data/rulesets.json
 out/
 update.tar.gz
 __pycache__/
@@ -15,6 +16,12 @@ assets/log_error.txt
 layout_backup*
 layout_custom*
 .idea/
+
+OBSDirs/
+RessourcesTLS/OBS assets/
+tournament.json
+
+build
 
 TSH.cflags
 

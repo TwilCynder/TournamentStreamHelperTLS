@@ -1,0 +1,34 @@
+
+.match.has-identifier {
+  background: #444444;
+  color:white;
+}
+
+.match .match-player {
+  background-color: inherit;
+  color:white;
+}
+
+.match > .match-affix-wrapper > .match-section {
+  border-color: black;
+  color:white;
+}
+
+.match .match-split-characters .match-character-divider, .rr-match .match-split-characters .match-character-divider {
+  background-color: darkgray;
+  border-color: transparent;
+}
+
+svg {
+    -webkit-filter: grayscale(100%);
+    -webkit-filter: contrast(0%);
+    -webkit-filter: brightness(0%);
+}
+
+.match .match-spacer, .rr-match .match-spacer {
+  border-color: black;
+}
+
+.match .match-player.entrant, .rr-match .match-player.entrant {
+  color:white;
+}

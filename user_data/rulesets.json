@@ -1,0 +1,28 @@
+[
+    {
+        "banByMaxGames": {},
+        "banCount": 3,
+        "counterpickStages": [],
+        "errors": [],
+        "name": "TLS",
+        "neutralStages": [
+            "Battlefield",
+            "Final Destination",
+            "Hollow Bastion",
+            "Kalos Pok\u00e9mon League",
+            "Small Battlefield",
+            "Smashville",
+            "Pok\u00e9mon Stadium 2",
+            "Town and City",
+            "Yoshi's Story"
+        ],
+        "strikeOrder": [
+            3,
+            4,
+            1
+        ],
+        "useDSR": false,
+        "useMDSR": false,
+        "videogame": "ssbu"
+    }
+]
