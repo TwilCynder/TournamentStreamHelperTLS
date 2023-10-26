@@ -110,12 +110,15 @@ async function updateCharacterContainer(e, event) {
   }
 
   // Use settings passed via script, default to settings got via json files
+
   let settings = _.defaultsDeep(
     Object.assign({}, $(e).data()),
     Object.assign({}, asset_settings)
   );
 
   let path = settings.source;
+
+    console.log(settings)
 
   let slice_player = [0, Infinity];
 

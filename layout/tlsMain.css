@@ -1,0 +1,68 @@
+@font-face {
+    font-family: "Gobold";
+    src: url("../RessourcesTLS/common/Fonts/Gobold\ Extra1.otf");
+}
+
+@font-face {
+    font-family: "Dosis";
+    src: url("../RessourcesTLS/common/Fonts/dosis.ttf");
+}
+
+.absol {
+    position: absolute;
+}
+
+  
+.fullsize {
+    width: 100%;
+    height: 100%;
+}
+
+.gray {
+    filter: grayscale(100%);
+}
+
+:root {
+    --tls-purple: #3d0082;
+    --tls-purple2: #48278F;
+    --blue: #22278F;
+    --tls-yellow: #efd000;
+    --tls-yellow2 : #FCaa21;
+    --tls-black:  #333333;
+    --tls-p1-score: var(--tls-yellow);
+    --tls-p1-sponsor: var(--tls-yellow);
+    --tls-p2-score: var(--tls-purple);
+    --tls-p2-sponsor: var(--tls-purple);
+    --tls-yellow-gradient: linear-gradient(135deg, var(--tls-yellow) 0%, var(--tls-yellow2) 100%);
+    --tls-purple-gradient: linear-gradient(135deg, var(--tls-purple) 0%, var(--blue) 100%);
+    --tls-font: 'Gobold';
+
+    --twitter-blue: #1DA1F2;
+}
+
+.logos {
+    width: 138px;
+    height: 138px;
+    z-index: 9;
+}
+
+.logo_carousel {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    background-size: contain;
+    background-repeat: no-repeat;
+    background-position: center;
+}
+
+#logo-tournoi {
+    background-image: url("./logo.png");
+}
+
+#logo-tls {
+    background-image: url("../RessourcesTLS/common/Overlay/Logo.png");
+}
+
+#logo-castanha-bg {
+    background-image: url("../RessourcesTLS/Castanha/LOGO\ ENTOURE.png");
+}

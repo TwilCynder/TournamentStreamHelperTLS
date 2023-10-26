@@ -20,13 +20,17 @@ var Update = async (event) => {
   console.log("Update(): Implement me");
 };
 
+var update_delay = 64
+
 // Wrapper for the update call
 async function UpdateWrapper(event) {
   await Update(event);
 
   // If initialization wasn't done yet, call Start()
   // We use gsap.globalTimeline.timeScale as 0 for animation to not play before this
+  console.log("&alinaufboaienfvoukazb pute ptue tepute")
   if (gsap.globalTimeline.timeScale() == 0) {
+    console.log("&alinaufboaienfvoukazb pute ptue tepute ++++++++++++++++++++++++++++++++++++++++++")
     window.requestAnimationFrame(() => {
       $(document).waitForImages(() => {
         $("body").fadeTo(1, 1, () => {
@@ -46,9 +50,16 @@ async function UpdateData() {
     oldData = data;
     data = await getData();
 
+    console.log("TSH UPDATE");
+    console.log(data.timestamp <= oldData.timestamp)
+    console.log(data.timestamp)
     if(data.timestamp <= oldData.timestamp){
-      return
+        return
     }
+
+    //if(JSON.stringify(data) == JSON.stringify(oldData)){
+    //  return
+    //}
 
     let event = new CustomEvent("tsh_update");
     event.data = data;
@@ -61,11 +72,8 @@ async function UpdateData() {
   }
 }
 
-// Load libraries sequentially (to respect dependencies)
-// Then call InitAll
-async function LoadEverything() {
-  let libPath = "../include/";
-  let scripts = [
+async function LoadEverything(callback, additionalScripts, promise){
+  return LoadScripts("../include/", [
     "jquery-3.6.0.min.js",
     "gsap.min.js",
     "he.js",
@@ -74,9 +82,13 @@ async function LoadEverything() {
     "kuroshiro-analyzer-kuromoji.min.js",
     "jquery.waitforimages.min.js",
     "color-thief.min.js",
-    "assetUtils.js",
-  ];
+    "assetUtils.js"
+  ] .concat (additionalScripts ? additionalScripts : []), callback, promise);
+}
 
+// Load libraries sequentially (to respect dependencies)
+// Then call InitAll
+async function LoadScripts(libPath, scripts, callback, promise) {
   for (let i = 0; i < scripts.length; i += 1) {
     const script = scripts[i];
     const src = libPath + script;
@@ -97,11 +109,11 @@ async function LoadEverything() {
 
   console.log("== Loading complete ==");
 
-  await InitAll();
+  return await InitAll(callback, promise);
 }
 
 // Initialize libraries
-async function InitAll() {
+async function InitAll(callback, promise) {
   await LoadSettings();
 
   if (tsh_settings.automatic_theme) {
@@ -110,14 +122,21 @@ async function InitAll() {
 
   await LoadKuroshiro();
 
+  console.log("CALLBACK")
+  if (callback) callback();
+  
+  document.addEventListener("tsh_update", UpdateWrapper);
+
+  if (promise) await promise;
+
+  UpdateData();
   setInterval(async () => {
     await UpdateData();
-  }, 64);
+  }, update_delay);
 
   console.log("== Init complete ==");
   document.dispatchEvent(new CustomEvent("tsh_init"));
 
-  document.addEventListener("tsh_update", UpdateWrapper);
   gsap.globalTimeline.timeScale(0);
 }
 
@@ -158,7 +177,6 @@ async function LoadSettings() {
   }
 
   tsh_settings = _.defaultsDeep(file_settings, global_settings);
-  console.log(tsh_settings);
 }
 
 // Registers element for content fitting inside div if the div is resized
@@ -217,6 +235,9 @@ async function Transcript(text) {
   if (text == null || text.length == 0 || !settings.enabled) return text;
 
   try {
+    console.log("KURISHIRO =====")
+    console.log(text, window.Kuroshiro.default.Util.hasJapanese(text))
+
     if (window.Kuroshiro.default.Util.hasJapanese(text)) {
       return window.kuroshiro
         .convert(text, {
