@@ -1,6 +1,9 @@
 {
-    "logos" : [
-        "logo-tournoi",
-        "logo-tls"
-    ]
+    "logos_configs" : {
+        "base" :    [
+            "logo-tournoi",
+            "logo-tls"
+        ]
+    },
+    "current_logos_config" : "base"
 }
