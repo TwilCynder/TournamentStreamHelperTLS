@@ -34,10 +34,9 @@ body {
   /*box-sizing: border-box;*/
   overflow: hidden;
   /*border-radius: 12px;*/
-  background-image: url("../../RessourcesTLS/Castanha/BACKGROUND.png");
-  background: cover;
+  background-image: url("../../RessourcesTLS/common/Overlay/BG-CDV.jpg");
   border: 7px solid ;
-  border-color: var(--tls-purple);
+  border-color: var(--tls-yellow);
   font-family: Gobold;
 }
 
@@ -54,7 +53,7 @@ body {
 
 .name {
   font-size: 40px;
-  color: white;
+  color: var(--tls-purple);
   font-weight: bolder;
   
 }
