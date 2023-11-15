@@ -34,7 +34,7 @@ body {
   /*box-sizing: border-box;*/
   overflow: hidden;
   /*border-radius: 12px;*/
-  background-image: url("../../RessourcesTLS/Castanha/BACKGROUND.png");
+  background-image: url("../../RessourcesTLS/common/Overlay/BG-CDV.jpg");
   background: cover;
   border: 7px solid ;
   border-color: var(--tls-purple);
