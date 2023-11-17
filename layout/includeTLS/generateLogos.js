@@ -28,8 +28,8 @@ export async function generateDivs($, containerClassName, logoListName, configPa
     }
 
     let res = "";
-    for (let logoName of logos){
-        
+    for (let logoName of logos_config){
+
         res += `<div class="logo_carousel" id = "${logoName}"></div>`
     }
 
