@@ -147,11 +147,11 @@ p, li { white-space: pre-wrap; }
 <context>
     <name>Form</name>
     <message>
-        <location filename="../layout/TSHScoreboardStage.ui" line="14"/>
-        <location filename="../layout/TSHScoreboardPlayer.ui" line="25"/>
-        <location filename="../layout/TSHThumbnailSettings.ui" line="14"/>
-        <location filename="../layout/TSHScoreboardScore.ui" line="21"/>
         <location filename="../layout/TSHScoreboardTeam.ui" line="20"/>
+        <location filename="../layout/TSHScoreboardScore.ui" line="21"/>
+        <location filename="../layout/TSHScoreboardStage.ui" line="14"/>
+        <location filename="../layout/TSHThumbnailSettings.ui" line="14"/>
+        <location filename="../layout/TSHScoreboardPlayer.ui" line="25"/>
         <source>Form</source>
         <translation>フォーム</translation>
     </message>
@@ -876,8 +876,8 @@ p, li { white-space: pre-wrap; }
         <translation>最新のバージョンに更新しますか?</translation>
     </message>
     <message>
-        <location filename="../TournamentStreamHelper.py" line="746"/>
         <location filename="../TSHScoreboardStageWidget.py" line="237"/>
+        <location filename="../TournamentStreamHelper.py" line="746"/>
         <source>Update</source>
         <translation>アップデート</translation>
     </message>
@@ -1038,20 +1038,20 @@ p, li { white-space: pre-wrap; }
         <translation>解説者{0}</translation>
     </message>
     <message>
-        <location filename="../TSHBracketWidget.py" line="71"/>
         <location filename="../TSHPlayerListWidget.py" line="55"/>
+        <location filename="../TSHBracketWidget.py" line="71"/>
         <source>Number of slots</source>
         <translation>スロットの数</translation>
     </message>
     <message>
-        <location filename="../TSHBracketWidget.py" line="82"/>
         <location filename="../TSHPlayerListWidget.py" line="64"/>
+        <location filename="../TSHBracketWidget.py" line="82"/>
         <source>Players per slot</source>
         <translation>各スロットのプレイヤー数</translation>
     </message>
     <message>
-        <location filename="../TSHBracketWidget.py" line="91"/>
         <location filename="../TSHPlayerListWidget.py" line="73"/>
+        <location filename="../TSHBracketWidget.py" line="91"/>
         <location filename="../TSHScoreboardWidget.py" line="118"/>
         <source>Characters per player</source>
         <translation>各プレイヤーの使用キャラクター数</translation>
