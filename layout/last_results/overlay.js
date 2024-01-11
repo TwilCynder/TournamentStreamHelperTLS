@@ -24,8 +24,6 @@ const query = `
         }    
     ` 
 
-var config = {};
-
 $(() => {
     let setsContainer = $("#sets");
 
@@ -57,7 +55,8 @@ $(() => {
 
     //add_set("SnooSnoo", 2, "Nacy's Bitch", 1, 4);
               
-    function load_sets(){
+    function load_sets(config){
+        console.log(config)
         console.log("Load sets");
         fetch('https://api.start.gg/gql/alpha', {         
             method: 'POST',         
@@ -93,15 +92,34 @@ $(() => {
         .catch(err => {console.error(err)});
     }
 
-fetch("./config.json")
-    .then(response => response.json())
-    .then(json => {
-        config = json;
-    })
-    .then(() => {
-        load_sets();
+/**
+ * Removes the adress from the URL, keeping only the event slug
+ * @param {string} url 
+ * @returns 
+ */
+function stripURL(url){
+    return url.split("start.gg/")[1];
+}
+
+Promise.all([
+    fetch("./config.json"),
+    fetch('../../user_data/settings.json'),
+])
+    .then( results => Promise.all(results.map(
+        response => response.json()
+    )))
+    
+    .then(([config, tsh_settings]) => {
+        if (tsh_settings && tsh_settings.TOURNAMENT_URL){
+            config.event = tsh_settings.TOURNAMENT_URL;
+        }
+
+        if (!config.event) return;
+        if (config.event.includes("start.gg")) config.event = stripURL(config.event);
+
+        load_sets(config);
         setTimeout(() => {
-            load_sets();
+            load_sets(config);
         }, 15000);
     });
 
