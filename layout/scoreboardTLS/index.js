@@ -1,6 +1,7 @@
 import { initAlternatingLogos } from "../includeTLS/initAlternatingLogos.js";
 import { Carousel } from "../includeTLS/SIHCarousel.js";
 import { translateRound } from "../includeTLS/util.js";
+import { startTimeDisplay } from "../includeTLS/timeDisplayManager.js";
 
 update_delay = 2000;
 let logo_interval = 10000;
@@ -376,3 +377,5 @@ LoadEverything(() => {
     SetInnerHtml($("#bestof"), "Best of " + data.score.best_of);
   };
 }, []);
+
+startTimeDisplay("time");
