@@ -23,6 +23,7 @@
 }
 
 :root {
+    --light-text: #717171;
     --tls-purple: #3d0082;
     --tls-purple2: #48278F;
     --blue: #22278F;

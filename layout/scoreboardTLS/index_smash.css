@@ -13,9 +13,29 @@ body {
   letter-spacing: 1;
 }
 
+#time {
+  font-size: 23px;
+}
+
+.clock {
+  height: 30px;
+}
+
+.time_container {
+  display: flex;
+  flex-direction: row;
+  gap: 7px;
+  align-items: center;
+  position: absolute;
+  top: 30px;
+  right: 50px;
+  height: 40px;
+  color: var(--light-text);
+}
+
 #casters_container {
   position: absolute;
-  top: 15px;
+  top: 30px;
   left: 15px;
   display: block;
 }
@@ -29,7 +49,7 @@ body {
   display: block;
   height: 50%;
   font-size: 23px;
-  color: #717171;
+  color: var(--light-text);
 }
 
 .float_child {
