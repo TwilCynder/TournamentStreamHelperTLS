@@ -61,7 +61,7 @@ jobs:
   build:
     name: Generate Windows Release
     runs-on: ${{ matrix.os }}
-    if: ${{ github.ref == 'refs/heads/main' || startsWith( github.ref, 'refs/heads/feature/' ) || startsWith( github.ref, 'refs/heads/fix/' || github.ref == 'refs/heads/new-features')}}
+    if: ${{ github.ref == 'refs/heads/main' || startsWith( github.ref, 'refs/heads/feature/' ) || startsWith( github.ref, 'refs/heads/fix/' || github.ref == 'refs/heads/time-bending-merge')}}
     strategy:
       fail-fast: false
       matrix:
