@@ -141,7 +141,7 @@ async function UpdateData_SocketIO() {
 
 // Load libraries sequentially (to respect dependencies)
 // Then call InitAll
-async function LoadEverything() {
+async function LoadEverything(callback) {
   let libPath = "../include/";
   let scripts = [
     "jquery-3.6.0.min.js",
@@ -188,11 +188,12 @@ async function LoadEverything() {
 
   console.log("== Loading complete ==");
 
-  return await InitAll(callback, promise);
+
+  return await InitAll(callback);
 }
 
 // Initialize libraries
-async function InitAll(callback, promise) {
+async function InitAll(callback) {
   await LoadSettings();
 
   if (tsh_settings.automatic_theme) {
@@ -205,8 +206,6 @@ async function InitAll(callback, promise) {
   if (callback) callback();
   
   document.addEventListener("tsh_update", UpdateWrapper);
-
-  if (promise) await promise;
 
   if(window.location.protocol === 'file:' || window.location.host === 'absolute') {
     setInterval(async () => {
