@@ -60,8 +60,8 @@ LoadEverything().then(() => {
     let oldData = event.oldData;
 
     for (const [t, team] of [
-      data.score.team["1"],
-      data.score.team["2"],
+      data.score[window.scoreboardNumber].team["1"],
+      data.score[window.scoreboardNumber].team["2"],
     ].entries()) {
       for (const [p, player] of [team.player["1"]].entries()) {
         if (player) {
@@ -104,9 +104,12 @@ LoadEverything().then(() => {
             );
           }
 
-          let score = [data.score.score_left, data.score.score_right];
+          let score = [data.score[window.scoreboardNumber].score_left, data.score[window.scoreboardNumber].score_right];
 
           SetInnerHtml($(`.p${t + 1}.score`), String(team.score));
+        }
+        if(team.color) {
+          document.querySelector(':root').style.setProperty(`--p${t + 1}-score-bg-color`, team.color);
         }
       }
     }

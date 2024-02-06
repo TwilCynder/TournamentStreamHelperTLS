@@ -72,8 +72,8 @@ LoadEverything().then(() => {
     let oldData = event.oldData;
 
     for (const [t, team] of [
-      data.score.team["1"],
-      data.score.team["2"],
+      data.score[window.scoreboardNumber].team["1"],
+      data.score[window.scoreboardNumber].team["2"],
     ].entries()) {
       for (const [p, player] of [team.player["1"]].entries()) {
         if (player) {
@@ -132,13 +132,16 @@ LoadEverything().then(() => {
               : ``
           );
 
-          let score = [data.score.score_left, data.score.score_right];
+          let score = [data.score[window.scoreboardNumber].score_left, data.score[window.scoreboardNumber].score_right];
 
           SetInnerHtml($(`.p${t + 1}.score`), String(team.score));
 
           if (!TwitterPronounChecker()) {
             SetInnerHtml($(`.p${t + 1}.twitter`), player.pronoun.toUpperCase());
           }
+        }
+        if(team.color) {
+          document.querySelector(':root').style.setProperty(`--p${t + 1}-score-bg-color`, team.color);
         }
       }
     }
@@ -159,35 +162,35 @@ LoadEverything().then(() => {
   async function UpdateMatch() {
     const tournamentContainer = document.querySelector(".tournament_container");
 
-    if (!(data.score.best_of || data.score.match)) {
+    if (!(data.score[window.scoreboardNumber].best_of || data.score[window.scoreboardNumber].match)) {
       tournamentContainer.classList.add("hidden");
       tournamentContainer.classList.remove("unhidden");
     } else {
       tournamentContainer.classList.add("unhidden");
       tournamentContainer.classList.remove("hidden");
 
-      if (!data.score.best_of && data.score.match) {
-        SetInnerHtml($(".match"), data.score.match.toUpperCase());
-      } else if (data.score.best_of && !data.score.match) {
-        SetInnerHtml($(".match"), data.score.best_of_text.toUpperCase());
-      } else if (savedMatch != data.score.match) {
-        SetInnerHtml($(".match"), data.score.match.toUpperCase());
-      } else if (savedBestOf != data.score.best_of) {
-        SetInnerHtml($(".match"), data.score.match.toUpperCase());
+      if (!data.score[window.scoreboardNumber].best_of && data.score[window.scoreboardNumber].match) {
+        SetInnerHtml($(".match"), data.score[window.scoreboardNumber].match.toUpperCase());
+      } else if (data.score[window.scoreboardNumber].best_of && !data.score[window.scoreboardNumber].match) {
+        SetInnerHtml($(".match"), data.score[window.scoreboardNumber].best_of_text.toUpperCase());
+      } else if (savedMatch != data.score[window.scoreboardNumber].match) {
+        SetInnerHtml($(".match"), data.score[window.scoreboardNumber].match.toUpperCase());
+      } else if (savedBestOf != data.score[window.scoreboardNumber].best_of) {
+        SetInnerHtml($(".match"), data.score[window.scoreboardNumber].match.toUpperCase());
       } else {
-        SetInnerHtml($(".match"), data.score.best_of_text.toUpperCase());
-        SetInnerHtml($(".match"), data.score.match.toUpperCase());
+        SetInnerHtml($(".match"), data.score[window.scoreboardNumber].best_of_text.toUpperCase());
+        SetInnerHtml($(".match"), data.score[window.scoreboardNumber].match.toUpperCase());
       }
     }
-    savedBestOf = data.score.best_of;
-    savedMatch = data.score.match;
+    savedBestOf = data.score[window.scoreboardNumber].best_of;
+    savedMatch = data.score[window.scoreboardNumber].match;
   }
 
   async function UpdateTwitter() {
     changeInP1 = false;
     changeInP2 = false;
 
-    [data.score.team["1"], data.score.team["2"]].forEach((team, t) => {
+    [data.score[window.scoreboardNumber].team["1"], data.score[window.scoreboardNumber].team["2"]].forEach((team, t) => {
       [team.player["1"]].forEach((player, p) => {
         if (player) {
           if (t == 0) {
@@ -210,7 +213,7 @@ LoadEverything().then(() => {
       }
     });
 
-    [data.score.team["1"], data.score.team["2"]].forEach((team, t) => {
+    [data.score[window.scoreboardNumber].team["1"], data.score[window.scoreboardNumber].team["2"]].forEach((team, t) => {
       [team.player["1"]].forEach((player, p) => {
         if (player) {
           const playerTwitter = document.querySelector(`.p${t + 1}.twitter`);
@@ -289,7 +292,7 @@ LoadEverything().then(() => {
 
   async function TwitterPronounChecker() {
     let refreshNeeded = false;
-    [data.score.team["1"], data.score.team["2"]].forEach((team, t) => {
+    [data.score[window.scoreboardNumber].team["1"], data.score[window.scoreboardNumber].team["2"]].forEach((team, t) => {
       [team.player["1"]].forEach((player, p) => {
         if (
           t == 0 &&
@@ -320,7 +323,8 @@ LoadEverything().then(() => {
     let refreshNeeded = false;
 
     if (
-      !(savedBestOf == data.score.best_of && savedMatch == data.score.match)
+      !(savedBestOf == data.score[window.scoreboardNumber].best_of
+        && savedMatch == data.score[window.scoreboardNumber].match)
     ) {
       refreshNeeded = true;
     }

@@ -51,8 +51,8 @@ LoadEverything().then(() => {
     let oldData = event.oldData;
 
     for (const [t, team] of [
-      data.score.team["1"],
-      data.score.team["2"],
+      data.score[window.scoreboardNumber].team["1"],
+      data.score[window.scoreboardNumber].team["2"],
     ].entries()) {
       for (const [p, player] of [team.player["1"]].entries()) {
         if (player) {
@@ -129,7 +129,7 @@ LoadEverything().then(() => {
               : ""
           );
 
-          let score = [data.score.score_left, data.score.score_right];
+          let score = [data.score[window.scoreboardNumber].score_left, data.score[window.scoreboardNumber].score_right];
 
           SetInnerHtml($(`.p${t + 1}.container .score`), String(team.score));
 
@@ -140,6 +140,9 @@ LoadEverything().then(() => {
               : `<div class='sponsor-logo' style=''></div>`
           );
         }
+        if(team.color) {
+          document.querySelector(':root').style.setProperty(`--p${t + 1}-score-bg-color`, team.color);
+        }
       }
     }
 
@@ -148,12 +151,12 @@ LoadEverything().then(() => {
       data.tournamentInfo.tournamentName.toUpperCase()
     );
 
-    SetInnerHtml($(".match"), data.score.match.toUpperCase());
+    SetInnerHtml($(".match"), data.score[window.scoreboardNumber].match.toUpperCase());
 
     let phaseTexts = [];
-    if (data.score.phase) phaseTexts.push(data.score.phase.toUpperCase());
-    if (data.score.best_of_text)
-      phaseTexts.push(`${data.score.best_of_text}`.toUpperCase());
+    if (data.score[window.scoreboardNumber].phase) phaseTexts.push(data.score[window.scoreboardNumber].phase.toUpperCase());
+    if (data.score[window.scoreboardNumber].best_of_text)
+      phaseTexts.push(`${data.score[window.scoreboardNumber].best_of_text}`.toUpperCase());
 
     SetInnerHtml($(".phase"), phaseTexts.join(" - "));
   };

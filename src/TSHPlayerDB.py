@@ -1,4 +1,3 @@
-import copy
 from multiprocessing import Lock
 import os
 import json
@@ -10,8 +9,9 @@ import csv
 import traceback
 from loguru import logger
 
+from .Helpers.TSHDictHelper import deep_clone
 from .TSHGameAssetManager import TSHGameAssetManager
-
+from .SettingsManager import SettingsManager
 
 class TSHPlayerDBSignals(QObject):
     db_updated = Signal()
@@ -45,7 +45,7 @@ class TSHPlayerDB:
                                 player.get("mains", "{}"))
                         except:
                             player["mains"] = {}
-                            logger.error(traceback.format_exc())
+                            logger.error(f"No mains found for: {tag}")
 
             TSHPlayerDB.SetupModel()
         except Exception as e:
@@ -67,8 +67,9 @@ class TSHPlayerDB:
                                     main.append(0)
                         TSHPlayerDB.database[tag] = player
                     else:
-                        dbMains = copy.deepcopy(
-                            TSHPlayerDB.database[tag].get("mains", {}))
+                        dbMains = deep_clone(
+                            TSHPlayerDB.database[tag].get("mains", {})
+                        )
                         incomingMains = player.get("mains", {})
 
                         newMains = []
@@ -84,7 +85,10 @@ class TSHPlayerDB:
                                 newMains.append(main)
                             dbMains[game] = newMains
 
-                        TSHPlayerDB.database[tag].update(player)
+                        if SettingsManager.Get("general.disable_overwrite", False):
+                            TSHPlayerDB.database[tag] = player | TSHPlayerDB.database[tag]
+                        else:
+                            TSHPlayerDB.database[tag].update(player)
                         TSHPlayerDB.database[tag]["mains"] = dbMains
                 else:
                     if TSHPlayerDB.database.get(tag) is not None and player.get("mains") is not None:
@@ -182,7 +186,7 @@ class TSHPlayerDB:
 
                 for player in TSHPlayerDB.database.values():
                     if player is not None:
-                        playerData = copy.deepcopy(player)
+                        playerData = deep_clone(player)
 
                         if player.get("mains") is not None:
                             playerData["mains"] = json.dumps(player["mains"])

@@ -23,11 +23,11 @@ LoadEverything().then(() => {
 
     if (
       !oldData.score ||
-      JSON.stringify(data.score.history_sets) !=
-        JSON.stringify(oldData.score.history_sets)
+      JSON.stringify(data.score[window.scoreboardNumber].history_sets) !=
+        JSON.stringify(oldData.score[window.scoreboardNumber].history_sets)
     ) {
       tournament_html = "";
-      Object.values(data.score.history_sets[window.PLAYER])
+      Object.values(data.score[window.scoreboardNumber].history_sets[window.PLAYER])
         .slice(0, 6)
         .forEach((sets, s) => {
           tournament_html += `
@@ -45,7 +45,7 @@ LoadEverything().then(() => {
       $(".player1_content").html(tournament_html);
 
       for (const [s, tournament] of Object.values(
-        data.score.history_sets[window.PLAYER]
+        data.score[window.scoreboardNumber].history_sets[window.PLAYER]
       )
         .slice(0, 6)
         .entries()) {

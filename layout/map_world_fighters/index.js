@@ -75,7 +75,7 @@ LoadEverything().then(() => {
 
     let servers = [];
 
-    Object.values(data.score.team).forEach((team) => {
+    Object.values(data.score[window.scoreboardNumber].team).forEach((team) => {
       Object.values(team.player).forEach((player) => {
         if(!player.name){
           return
@@ -333,10 +333,10 @@ LoadEverything().then(() => {
 
     if (
       Object.keys(oldData).length == 0 ||
-      JSON.stringify(oldData.score.team["1"].player) !=
-        JSON.stringify(data.score.team["1"].player) ||
-      JSON.stringify(oldData.score.team["2"].player) !=
-        JSON.stringify(data.score.team["2"].player)
+      JSON.stringify(oldData.score[window.scoreboardNumber].team["1"].player) !=
+        JSON.stringify(data.score[window.scoreboardNumber].team["1"].player) ||
+      JSON.stringify(oldData.score[window.scoreboardNumber].team["2"].player) !=
+        JSON.stringify(data.score[window.scoreboardNumber].team["2"].player)
     ) {
       UpdateMap();
     }

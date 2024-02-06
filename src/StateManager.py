@@ -1,31 +1,37 @@
 import os
-import json
-import copy
+import orjson
 import traceback
 from deepdiff import DeepDiff, extract
+from functools import partial
 import shutil
 import threading
 import requests
 from PIL import Image
 import time
 from loguru import logger
-
-from .Helpers.TSHDictHelper import deep_get, deep_set, deep_unset
+from .Helpers.TSHDictHelper import deep_get, deep_set, deep_unset, deep_clone
+from .SettingsManager import SettingsManager
 
 
 class StateManager:
     lastSavedState = {}
     state = {}
     saveBlocked = 0
+    webServer = None
 
     lock = threading.RLock()
     threads = []
+    loop = None
 
     def BlockSaving():
         StateManager.saveBlocked += 1
+        logger.critical(
+            "Initial Block - Current Blocking Status: " + str(StateManager.saveBlocked))
 
     def ReleaseSaving():
         StateManager.saveBlocked -= 1
+        logger.critical(
+            "Release Block - Current Blocking Status: " + str(StateManager.saveBlocked))
         if StateManager.saveBlocked == 0:
             StateManager.SaveState()
 
@@ -35,23 +41,33 @@ class StateManager:
             with StateManager.lock:
                 StateManager.threads = []
 
-                def ExportAll():
-                    with open("./out/program_state.json", 'w', encoding='utf-8', buffering=8192) as file:
+                def ExportAll(ref_diff):
+                    with open("./out/program_state.json", 'wb', buffering=8192) as file:
                         # logger.info("SaveState")
                         StateManager.state.update({"timestamp": time.time()})
-                        json.dump(StateManager.state, file,
-                                  indent=4, sort_keys=False)
+                        file.write(orjson.dumps(
+                            StateManager.state, option=orjson.OPT_NON_STR_KEYS | orjson.OPT_INDENT_2))
                         StateManager.state.pop("timestamp")
 
-                    StateManager.ExportText(StateManager.lastSavedState)
-                    StateManager.lastSavedState = copy.deepcopy(
+                    if not SettingsManager.Get("general.disable_export", False):
+                        StateManager.ExportText(
+                            StateManager.lastSavedState, ref_diff)
+                    StateManager.lastSavedState = deep_clone(
                         StateManager.state)
 
                 diff = DeepDiff(StateManager.lastSavedState,
                                 StateManager.state)
 
                 if len(diff) > 0:
-                    exportThread = threading.Thread(target=ExportAll)
+                    try:
+                        if StateManager.webServer is not None:
+                            StateManager.webServer.emit(
+                                'program_state', StateManager.state)
+                    except Exception as e:
+                        logger.error(traceback.format_exc())
+
+                    exportThread = threading.Thread(
+                        target=partial(ExportAll, ref_diff=diff))
                     StateManager.threads.append(exportThread)
                     exportThread.start()
 
@@ -60,15 +76,16 @@ class StateManager:
 
     def LoadState():
         try:
-            with open("./out/program_state.json", 'r', encoding='utf-8') as file:
-                StateManager.state = json.load(file)
-        except:
+            with open("./out/program_state.json", 'rb') as file:
+                StateManager.state = orjson.loads(file.read())
+        except Exception as e:
+            logger.error(traceback.format_exc())
             StateManager.state = {}
             StateManager.SaveState()
 
     def Set(key: str, value):
         with StateManager.lock:
-            oldState = copy.deepcopy(StateManager.state)
+            # StateManager.lastSavedState = deep_clone(StateManager.state)
 
             deep_set(StateManager.state, key, value)
 
@@ -78,7 +95,7 @@ class StateManager:
 
     def Unset(key: str):
         with StateManager.lock:
-            oldState = copy.deepcopy(StateManager.state)
+            # StateManager.lastSavedState = deep_clone(StateManager.state)
             deep_unset(StateManager.state, key)
             if StateManager.saveBlocked == 0:
                 StateManager.SaveState()
@@ -87,9 +104,8 @@ class StateManager:
     def Get(key: str, default=None):
         return deep_get(StateManager.state, key, default)
 
-    def ExportText(oldState):
+    def ExportText(oldState, diff):
         # logger.info("ExportState")
-        diff = DeepDiff(oldState, StateManager.state)
         # logger.info(diff)
 
         mergedDiffs = list(diff.get("values_changed", {}).items())

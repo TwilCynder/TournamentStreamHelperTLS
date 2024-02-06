@@ -127,8 +127,8 @@ LoadEverything().then(() => {
     let oldData = event.oldData;
 
     for (const [t, team] of [
-      data.score.team["1"],
-      data.score.team["2"],
+      data.score[window.scoreboardNumber].team["1"],
+      data.score[window.scoreboardNumber].team["2"],
     ].entries()) {
       for (const [p, player] of [team.player["1"]].entries()) {
         if (player) {
@@ -156,7 +156,7 @@ LoadEverything().then(() => {
             `${team.losers ? "<span class='losers'>[L]</span>" : ""}`
           );
 
-          let score = [data.score.score_left, data.score.score_right];
+          let score = [data.score[window.scoreboardNumber].score_left, data.score[window.scoreboardNumber].score_right];
 
           SetInnerHtml($(`.p${t + 1} .score`), String(team.score));
 
@@ -164,6 +164,9 @@ LoadEverything().then(() => {
             $(`.p${t + 1} .sponsor_container`),
             `<div class='sponsor_logo' style='background-image: url(../../${player.sponsor_logo})'></div>`
           );
+        }
+        if(team.color) {
+          document.querySelector(':root').style.setProperty(`--p${t + 1}-score-bg-color`, team.color);
         }
       }
     }
@@ -176,7 +179,7 @@ LoadEverything().then(() => {
   };
 
   async function UpdateFlagSponsor() {
-    [data.score.team["1"], data.score.team["2"]].forEach((team, t) => {
+    [data.score[window.scoreboardNumber].team["1"], data.score[window.scoreboardNumber].team["2"]].forEach((team, t) => {
       [team.player["1"]].forEach((player, p) => {
         if (player) {
           if (!player.country.asset && !player.sponsor_logo) {
@@ -209,20 +212,20 @@ LoadEverything().then(() => {
   async function UpdateMatch() {
     const tournamentContainer = document.querySelector(".tournament_container");
 
-    if (!(data.score.best_of || data.score.match)) {
+    if (!(data.score[window.scoreboardNumber].best_of || data.score[window.scoreboardNumber].match)) {
       tournamentContainer.classList.add("hidden");
       tournamentContainer.classList.remove("unhidden");
     } else {
       tournamentContainer.classList.add("unhidden");
       tournamentContainer.classList.remove("hidden");
 
-      if (!data.score.best_of && data.score.match) {
-        SetInnerHtml($(".match"), data.score.match.toUpperCase());
-      } else if (data.score.best_of && !data.score.match) {
-        SetInnerHtml($(".match"), data.score.best_of_text.toUpperCase());
+      if (!data.score[window.scoreboardNumber].best_of && data.score[window.scoreboardNumber].match) {
+        SetInnerHtml($(".match"), data.score[window.scoreboardNumber].match.toUpperCase());
+      } else if (data.score[window.scoreboardNumber].best_of && !data.score[window.scoreboardNumber].match) {
+        SetInnerHtml($(".match"), data.score[window.scoreboardNumber].best_of_text.toUpperCase());
       } else {
-        SetInnerHtml($(".match"), data.score.best_of_text.toUpperCase());
-        SetInnerHtml($(".match"), data.score.match.toUpperCase());
+        SetInnerHtml($(".match"), data.score[window.scoreboardNumber].best_of_text.toUpperCase());
+        SetInnerHtml($(".match"), data.score[window.scoreboardNumber].match.toUpperCase());
       }
     }
   }

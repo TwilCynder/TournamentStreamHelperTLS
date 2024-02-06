@@ -8,9 +8,9 @@ LoadEverything().then(() => {
     let src = "";
 
     if (window.team != undefined && window.player != undefined) {
-      src = `score.team.${window.team}.player.${window.player}`;
+      src = `score.${window.scoreboardNumber}.team.${window.team}.player.${window.player}`;
     } else {
-      src = `score.team.${window.team}`;
+      src = `score.${window.scoreboardNumber}.team.${window.team}`;
     }
 
     await CharacterDisplay(

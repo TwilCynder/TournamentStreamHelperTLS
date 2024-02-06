@@ -4,7 +4,7 @@ qtpy
 requests
 py7zr
 deepdiff
-pyqtdarktheme
+git+https://github.com/woopelderly/PyQtDarkTheme@python3.12
 Pillow
 Flask
 flask-cors
@@ -14,3 +14,9 @@ pynput
 pyside6
 cloudscraper
 loguru
+flask-socketio
+simple_websocket
+termcolor==2.3.0
+orjson
+msgpack
+qasync

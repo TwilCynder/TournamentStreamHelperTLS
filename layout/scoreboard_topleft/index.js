@@ -61,11 +61,11 @@ LoadEverything().then(() => {
     let data = event.data;
     let oldData = event.oldData;
 
-    if (Object.keys(data.score.team["1"].player).length == 1) {
+    if (Object.keys(data.score[window.scoreboardNumber].team["1"].player).length == 1) {
       // Singles
       for (const [t, team] of [
-        data.score.team["1"],
-        data.score.team["2"],
+        data.score[window.scoreboardNumber].team["1"],
+        data.score[window.scoreboardNumber].team["2"],
       ].entries()) {
         for (const [p, player] of Object.values(team.player).entries()) {
           if (player) {
@@ -100,7 +100,7 @@ LoadEverything().then(() => {
             await CharacterDisplay(
               $(`.p${t + 1}.container .character_container`),
               {
-                source: `score.team.${t + 1}`,
+                source: `score.${window.scoreboardNumber}.team.${t + 1}`,
                 scale_based_on_parent: window.PORTRAITS ? true : false,
               },
               event
@@ -134,7 +134,7 @@ LoadEverything().then(() => {
                 : ""
             );
 
-            let score = [data.score.score_left, data.score.score_right];
+            let score = [data.score[window.scoreboardNumber].score_left, data.score[window.scoreboardNumber].score_right];
 
             SetInnerHtml($(`.p${t + 1}.container .score`), String(team.score));
 
@@ -143,13 +143,16 @@ LoadEverything().then(() => {
               `<div class='sponsor-logo' style='background-image: url(../../${player.sponsor_logo})'></div>`
             );
           }
+          if(team.color) {
+            document.querySelector(':root').style.setProperty(`--p${t + 1}-score-bg-color`, team.color);
+          }
         }
       }
     } else {
       // Doubles
       for (const [t, team] of [
-        data.score.team["1"],
-        data.score.team["2"],
+        data.score[window.scoreboardNumber].team["1"],
+        data.score[window.scoreboardNumber].team["2"],
       ].entries()) {
         let teamName = "";
 
@@ -188,7 +191,7 @@ LoadEverything().then(() => {
         await CharacterDisplay(
           $(`.p${t + 1}.container .character_container`),
           {
-            source: `score.team.${t + 1}`,
+            source: `score.${window.scoreboardNumber}.team.${t + 1}`,
             slice_character: [0, 1],
             custom_element: window.PORTRAITS ? -2 : 0,
           },
@@ -217,7 +220,7 @@ LoadEverything().then(() => {
             : ""
         );
 
-        let score = [data.score.score_left, data.score.score_right];
+        let score = [data.score[window.scoreboardNumber].score_left, data.score[window.scoreboardNumber].score_right];
 
         SetInnerHtml($(`.p${t + 1}.container .score`), String(team.score));
 
@@ -226,14 +229,17 @@ LoadEverything().then(() => {
           `<div class='sponsor-logo' style='background-image: url(../../${player.sponsor_logo})'></div>`
         );
       }
+      if(team.color) {
+        document.querySelector(':root').style.setProperty(`--p${t + 1}-score-bg-color`, team.color);
+      }
     }
 
     SetInnerHtml($(".tournament_name"), data.tournamentInfo.tournamentName);
 
     SetInnerHtml($(".event_name"), data.tournamentInfo.eventName);
 
-    SetInnerHtml($(".phase"), data.score.phase);
-    SetInnerHtml($(".match"), data.score.match);
-    SetInnerHtml($(".best_of"), data.score.best_of_text);
+    SetInnerHtml($(".phase"), data.score[window.scoreboardNumber].phase);
+    SetInnerHtml($(".match"), data.score[window.scoreboardNumber].match);
+    SetInnerHtml($(".best_of"), data.score[window.scoreboardNumber].best_of_text);
   };
 });

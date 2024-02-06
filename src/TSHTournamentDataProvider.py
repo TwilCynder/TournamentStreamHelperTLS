@@ -16,17 +16,14 @@ from loguru import logger
 
 from .Workers import Worker
 
-
 class TSHTournamentDataProviderSignals(QObject):
     tournament_changed = Signal()
     entrants_updated = Signal()
     tournament_data_updated = Signal(dict)
     twitch_username_updated = Signal()
     user_updated = Signal()
-    recent_sets_updated = Signal(dict)
-    last_sets_updated = Signal(dict)
-    history_sets_updated = Signal(dict)
     get_sets_finished = Signal(list)
+    get_stations_finished = Signal(list)
     tournament_phases_updated = Signal(list)
     tournament_phasegroup_updated = Signal(dict)
     game_changed = Signal(int)
@@ -216,15 +213,45 @@ class TSHTournamentDataProvider:
         ])
         self.threadPool.start(worker)
 
-    def LoadStreamSet(self, mainWindow, streamName):
-        streamSet = TSHTournamentDataProvider.instance.provider.GetStreamMatchId(
-            streamName)
+    def LoadStations(self):
+        worker = Worker(self.provider.GetStations)
+        worker.signals.result.connect(lambda data: [
+            logger.info(data),
+            self.signals.get_stations_finished.emit(data)
+        ])
+        self.threadPool.start(worker)
 
-        if not streamSet:
-            return
+    def LoadStationSets(self, mainWindow):
+        if mainWindow.lastStationSelected:
+            stationSet = None
 
-        streamSet["auto_update"] = "stream"
-        mainWindow.signals.NewSetSelected.emit(streamSet)
+            if mainWindow.lastStationSelected.get("type") == "stream":
+                stationSet = TSHTournamentDataProvider.instance.provider.GetStreamMatchId(
+                    mainWindow.lastStationSelected.get("identifier"))
+            else:
+                stationSets = TSHTournamentDataProvider.instance.provider.GetStationMatchsId(
+                    mainWindow.lastStationSelected.get("id")
+                )
+
+                if len(stationSets) > 0:
+                    stationSet = stationSets[0]
+
+                queueCache = mainWindow.stationQueueCache
+                logger.info(queueCache.queue)
+                logger.info(stationSets)
+                if queueCache and not queueCache.CheckQueue(stationSets):
+                    queueCache.UpdateQueue(stationSets)
+
+                    TSHTournamentDataProvider.instance.GetStationMatches(stationSets, mainWindow)
+
+            if not stationSet:
+                stationSet = {}
+
+            stationSet["auto_update"] = mainWindow.lastStationSelected.get(
+                "type")
+            
+
+            mainWindow.signals.NewSetSelected.emit(stationSet)
 
     def LoadUserSet(self, mainWindow, user):
         _set = TSHTournamentDataProvider.instance.provider.GetUserMatchId(user)
@@ -235,18 +262,31 @@ class TSHTournamentDataProvider:
         _set["auto_update"] = "user"
         mainWindow.signals.NewSetSelected.emit(_set)
 
-    def GetMatch(self, mainWindow, setId, overwrite=True):
+    #omits the first one (loaded through NewSetSelected)
+    def GetStationMatches(self, matchesId, mainWindow):
+
+        matchesId = matchesId[1:]
+
+        worker = Worker(self.provider.GetFutureMatchesList, **{
+            "setsId": matchesId
+        })
+        worker.signals.result.connect(
+            lambda sets: mainWindow.signals.StationSetsLoaded.emit(sets)
+        )
+        self.threadPool.start(worker)
+
+    def GetMatch(self, mainWindow, setId, overwrite=True, no_mains=False):
         worker = Worker(self.provider.GetMatch, **
                         {"setId": setId})
         worker.signals.result.connect(lambda data: [
-            data.update({"overwrite": overwrite}),
+            data.update({"overwrite": overwrite, "no_mains": no_mains}),
             mainWindow.signals.UpdateSetData.emit(data)
         ])
         self.threadPool.start(worker)
 
-    def GetRecentSets(self, id1, id2):
+    def GetRecentSets(self, callback, id1, id2):
         worker = Worker(self.provider.GetRecentSets, **{
-            "id1": id1, "id2": id2, "callback": self.signals.recent_sets_updated, "requestTime": time.time_ns()
+            "id1": id1, "id2": id2, "callback": callback, "requestTime": time.time_ns()
         })
         self.threadPool.start(worker)
 
@@ -259,25 +299,24 @@ class TSHTournamentDataProvider:
         ])
         self.threadPool.start(worker)
 
-    def GetLastSets(self, playerId, playerNumber):
+    def GetLastSets(self, callback, playerId, playerNumber):
         worker = Worker(self.provider.GetLastSets, **{
             "playerID": playerId[0],
             "playerNumber": playerNumber,
-            "callback": self.signals.last_sets_updated
+            "callback": callback
         })
         self.threadPool.start(worker)
 
-    def GetPlayerHistoryStandings(self, playerId, playerNumber, gameType):
+    def GetPlayerHistoryStandings(self, callback, playerId, playerNumber, gameType):
         worker = Worker(self.provider.GetPlayerHistoryStandings, **{
             "playerID": playerId[0],
             "playerNumber": playerNumber,
             "gameType": gameType,
-            "callback": self.signals.history_sets_updated
+            "callback": callback
         })
         self.threadPool.start(worker)
 
     def GetStreamQueue(self):
-
         worker = Worker(self.provider.GetStreamQueue)
         worker.signals.result.connect(lambda streamQueue: [
             TSHTournamentDataProvider.instance.signals.stream_queue_loaded.emit(
@@ -291,6 +330,9 @@ class TSHTournamentDataProvider:
                 SettingsManager.Get("TOURNAMENT_URL"), initialLoading=True)
             TSHTournamentDataProvider.instance.signals.twitch_username_updated.emit()
             TSHTournamentDataProvider.instance.signals.user_updated.emit()
+
+    def GetProvider(self):
+        return self.provider
 
 
 TSHTournamentDataProvider.instance = TSHTournamentDataProvider()
