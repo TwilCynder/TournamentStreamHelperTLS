@@ -34,10 +34,10 @@ LoadEverything(() => {
 
     if (
       !oldData.score ||
-      JSON.stringify(oldData.score.recent_sets) !=
-        JSON.stringify(data.score.recent_sets)
+      JSON.stringify(oldData.score[1].recent_sets) !=
+        JSON.stringify(data.score[1].recent_sets)
     ) {
-      playersRecentSets = data.score.recent_sets;
+      playersRecentSets = data.score[1].recent_sets;
       console.log(playersRecentSets);
     } else {
       return; //for performance ??
@@ -111,7 +111,7 @@ LoadEverything(() => {
       $("#set_count").html(`${p1Victories} - ${p2Victories}`);
 
 
-      let team = data.score.team["1"];
+      let team = data.score[1].team["1"];
       if (team)
         players += generatePlayerHTML(team.player["1"], 1)
 
@@ -119,7 +119,7 @@ LoadEverything(() => {
         <div id = "set_count">${p1Victories} - ${p2Victories}</div>
       `
       
-      team = data.score.team["2"];
+      team = data.score[1].team["2"];
       if (team)
           players += generatePlayerHTML(team.player["1"], 2)
     }
