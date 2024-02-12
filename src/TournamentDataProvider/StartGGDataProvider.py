@@ -483,7 +483,7 @@ class StartGGDataProvider(TournamentDataProvider):
                     stream = ""
 
                     if queues is not None:
-                        stream = next((deep_get(s, "stream.streamName", None) for s in queues if str(
+                        stream = next(((deep_get(s, "stream.streamSource", None) + "/" + deep_get(s, "stream.streamName", None)) for s in queues if str(
                             deep_get(s, "stream.id", None)) == str(station.get("streamId"))), "")
 
                     final_data.append({
@@ -499,7 +499,7 @@ class StartGGDataProvider(TournamentDataProvider):
                         stream = queue.get("stream")
                         final_data.append({
                             "id": stream.get("id"),
-                            "identifier": stream.get("streamName"),
+                            "identifier": stream.get("streamSource") + "/" + stream.get("streamName") ,
                             "type": "stream"
                         })
 
