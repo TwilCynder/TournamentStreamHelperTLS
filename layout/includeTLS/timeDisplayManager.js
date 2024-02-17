@@ -7,7 +7,9 @@ function makeDateString(){
 
 function update(id){
     console.log(document.getElementById(id));
-    document.getElementById("time").innerHTML = makeDateString();
+    let element = document.getElementById("time");
+    if (element)
+        element.innerHTML = makeDateString();
 }
 
 export function startTimeDisplay(id){
