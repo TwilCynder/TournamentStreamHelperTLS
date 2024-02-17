@@ -1,5 +1,4 @@
 body {
-    font-family: var(--font);
     color: var(--tls-yellow);
     font-weight: bold;
     opacity: 0;
@@ -19,36 +18,44 @@ body {
     align-content: center;
     width: 100%;
     gap: 16px;
-    color: var(--text-color);
+    color: white;
     flex-wrap: wrap;
     position: absolute;
     bottom: 50px;
   }
   
   .commentator_container {
-    width: 300ox;
-    border-radius: var(--border-radius);
+    max-width: 400px;
+    /*border-radius: var(--border-radius);*/
     display: flex;
-    flex-direction: column;
+    flex-direction: column; 
     justify-content: center;
     padding: 10px 30px;
-    box-sizing: border-box;
+    /*box-sizing: border-box;*/
     overflow: hidden;
-    border-radius: 12px;
-    background: var(--bg-color);
+    /*border-radius: 12px;*/
+    background-color: var(--bg-color);
+    border-radius: 10px;
+    background: cover;
+    font-family: Gobold;
   }
   
   .mic_icon {
     display: inline-block;
-    width: 30px;
-    height: 30px;
-    background-image: url("./icon_mic.svg");
-    background-size: contain;
+    height: 50px;
+    width: 50px;
+    -webkit-mask-image: url(./icon_mic.svg);
+    -webkit-mask-size: contain;
+    -webkit-mask-repeat: no-repeat;
+    -webkit-mask-position: center;
+    background: white;
   }
   
   .name {
     font-size: 40px;
-    color: var(--tls-yellow)
+    color: white;
+    font-weight: bolder;
+    
   }
   
   .team {
@@ -77,15 +84,10 @@ body {
     text-shadow: 12px 12px 2px black;
   }
   
-  .logo {
+  .logos {
     position: absolute;
     bottom: 40px;
     left: 865;
     width: 138px;
     height: 138px;
-    background-size: contain;
-    background-repeat: no-repeat;
-    background-position: center;
-    border-radius: var(--border-radius);
-    z-index: 9;
   }
