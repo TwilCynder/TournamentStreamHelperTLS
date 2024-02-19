@@ -141,9 +141,9 @@ p, li { white-space: pre-wrap; }
 <context>
     <name>Form</name>
     <message>
-        <location filename="../layout/TSHScoreboardScore.ui" line="21"/>
         <location filename="../layout/TSHScoreboardStage.ui" line="14"/>
         <location filename="../layout/TSHThumbnailSettings.ui" line="14"/>
+        <location filename="../layout/TSHScoreboardScore.ui" line="21"/>
         <location filename="../layout/TSHScoreboardPlayer.ui" line="25"/>
         <location filename="../layout/TSHScoreboardTeam.ui" line="20"/>
         <source>Form</source>
@@ -629,14 +629,14 @@ p, li { white-space: pre-wrap; }
 <context>
     <name>GroupBox</name>
     <message>
-        <location filename="../layout/TSHCommentary.ui" line="23"/>
         <location filename="../layout/TSHCommentator.ui" line="29"/>
+        <location filename="../layout/TSHCommentary.ui" line="23"/>
         <source>GroupBox</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../layout/TSHCommentary.ui" line="26"/>
         <location filename="../layout/TSHCommentator.ui" line="32"/>
+        <location filename="../layout/TSHCommentary.ui" line="26"/>
         <source>Commentator 1</source>
         <translation>Comentarista 1</translation>
     </message>
@@ -661,38 +661,38 @@ p, li { white-space: pre-wrap; }
         <translation>Patrocinador</translation>
     </message>
     <message>
-        <location filename="../layout/TSHCommentary.ui" line="90"/>
         <location filename="../layout/TSHCommentator.ui" line="90"/>
+        <location filename="../layout/TSHCommentary.ui" line="90"/>
         <source>GamerTag</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../layout/TSHCommentary.ui" line="108"/>
         <location filename="../layout/TSHCommentator.ui" line="108"/>
+        <location filename="../layout/TSHCommentary.ui" line="108"/>
         <source>REAL NAME</source>
         <translation>NOME REAL</translation>
     </message>
     <message>
-        <location filename="../layout/TSHCommentary.ui" line="124"/>
         <location filename="../layout/TSHCommentator.ui" line="124"/>
+        <location filename="../layout/TSHCommentary.ui" line="124"/>
         <source>Real Name</source>
         <translation>Nome Real</translation>
     </message>
     <message>
-        <location filename="../layout/TSHCommentary.ui" line="140"/>
         <location filename="../layout/TSHCommentator.ui" line="140"/>
+        <location filename="../layout/TSHCommentary.ui" line="140"/>
         <source>TWITTER</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../layout/TSHCommentary.ui" line="156"/>
         <location filename="../layout/TSHCommentator.ui" line="156"/>
+        <location filename="../layout/TSHCommentary.ui" line="156"/>
         <source>Handle Only</source>
         <translation>Somente o handle</translation>
     </message>
     <message>
-        <location filename="../layout/TSHCommentary.ui" line="170"/>
         <location filename="../layout/TSHCommentator.ui" line="172"/>
+        <location filename="../layout/TSHCommentary.ui" line="170"/>
         <source>PRONOUNS</source>
         <translation>PRONOMES</translation>
     </message>
@@ -763,8 +763,8 @@ p, li { white-space: pre-wrap; }
         <translation>Verificar por atualizações</translation>
     </message>
     <message>
-        <location filename="../TournamentStreamHelper.py" line="401"/>
         <location filename="../TSHAssetDownloader.py" line="78"/>
+        <location filename="../TournamentStreamHelper.py" line="401"/>
         <source>Download assets</source>
         <translation>Baixar conteúdo de jogos</translation>
     </message>
@@ -808,8 +808,8 @@ p, li { white-space: pre-wrap; }
         <translation>NOTA: UM BACKUP DE /layout/ SERÁ FEITO, MAS TODOS OS DADOS EM /assets/ SERÃO SUBSTITUIDOS</translation>
     </message>
     <message>
-        <location filename="../TournamentStreamHelper.py" line="746"/>
         <location filename="../TSHScoreboardStageWidget.py" line="237"/>
+        <location filename="../TournamentStreamHelper.py" line="746"/>
         <source>Update</source>
         <translation>Atualizar</translation>
     </message>
@@ -826,10 +826,10 @@ p, li { white-space: pre-wrap; }
         <translation>Nova versão disponível</translation>
     </message>
     <message>
-        <location filename="../TournamentStreamHelper.py" line="749"/>
-        <location filename="../TournamentStreamHelper.py" line="759"/>
         <location filename="../TSHAssetDownloader.py" line="305"/>
         <location filename="../TSHAssetDownloader.py" line="458"/>
+        <location filename="../TournamentStreamHelper.py" line="749"/>
+        <location filename="../TournamentStreamHelper.py" line="759"/>
         <source>Cancel</source>
         <translation>Cancelar</translation>
     </message>
@@ -1085,21 +1085,21 @@ p, li { white-space: pre-wrap; }
         <translation>Comentarista {0}</translation>
     </message>
     <message>
-        <location filename="../TSHBracketWidget.py" line="71"/>
         <location filename="../TSHPlayerListWidget.py" line="55"/>
+        <location filename="../TSHBracketWidget.py" line="71"/>
         <source>Number of slots</source>
         <translation>Número de grupos</translation>
     </message>
     <message>
-        <location filename="../TSHBracketWidget.py" line="82"/>
         <location filename="../TSHPlayerListWidget.py" line="64"/>
+        <location filename="../TSHBracketWidget.py" line="82"/>
         <source>Players per slot</source>
         <translation>Jogadores por grupo</translation>
     </message>
     <message>
         <location filename="../TSHScoreboardWidget.py" line="118"/>
-        <location filename="../TSHBracketWidget.py" line="91"/>
         <location filename="../TSHPlayerListWidget.py" line="73"/>
+        <location filename="../TSHBracketWidget.py" line="91"/>
         <source>Characters per player</source>
         <translation>Personagens por jogador</translation>
     </message>
