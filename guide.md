@@ -3,16 +3,21 @@
 ## Installation (au début du tournoi)
 
 ### Physique
+Note : je pars du principe qu'on utilise la table de mixage, mais on peut aussi utiliser la carte son (scarlett 2i2), ça ne fait pas bcp de différence  
+
 - On commence par placer les 5 écrans (2 régie, 1 caster, 2 joueurs), et brancher leurs alim
 - On branche le HUB USB au PC
 - On branche
   - sur le PC obligatoirement : carte capture, cam logitech
   - sur le PC ou le HUB peu importe : la carte son, le casque régie, la souris, le clavier, la cam casters
-- On branche 6 HDMIs : deux entre les écrans régie et le PC, un entre la switche et le IN de la carte capture, un entre le OUT de la carte capture et le IN du splitter, deux entre les sorties du splitter HDMI et les écrans joueurs. 
-- On branche les casques à la carte son : il faut trouver le splitter jack dans le sac des câbles, c'est un splitter normal mais avec des grosses prises jack, et on le branche sur la prise en bas à droite de la carte son. Puis, pour chaque casque, on branche son bros embout jack au splitter, et l'autre embout à la prise correspondante sur l'avant de la carte son.
+- On branche 6 HDMIs : deux entre les écrans régie et le PC, un entre la switch et le IN de la carte capture, un entre le OUT de la carte capture et le IN du splitter, deux entre les sorties du splitter HDMI et les écrans joueurs. 
+- On branche les casques à la carte son : il faut trouver le splitter jack dans le sac des câbles ou avec un casque caster, c'est un splitter normal mais avec des grosses prises jack
+  - Si on est sur la carte son (le boitier rouge), on branche le splitter dans la prise jack en bas à droite de la carte son. Puis, pour chaque casque, on branche son gros embout jack au splitter, et l'autre embout à la prise correspondante sur l'avant de la carte son.
+  - Si on est sur la table de mixage, les grosses prises des casques vont dans les prises tout en haut de la table, les 2 premières en partant de la gauche. Le splitter se branche dans la prise jack tout en bas à droite. 
 - On branche le cable ethernet de la box (sous la table des casters) au PC.
+- Pour le casque régie il est sans fil, dans sa boite il y a une petite clé USB à rbanche sur un port USB du PC ; il faut l'allumer avec le bouton à gauche ; il peut être bon de le mettre à charger (cable USB-C) avant le début du tournoi
 - On sort aussi l'ampli jack (le truc sur lequel les joueurs doivent brancher leurs casques) : on n'oublie pas son bloc chargeur, et on met le jack sur un des deux écrans. 
-- On place le PC portable qui va servir aux cams joueurs, on y branche les 2 cams joueur, dessus on ouvre [VDO Ninja](https://VDO.ninja) dans un navigateur. Une fois ouvert on clique sur "Add your camera to OBS", on sélectionne une des 2 cams, pour le son "No Audio", on clique sur "START", *et on répète le process pour la 2ème cam*. Pour les deux cams, on copie l'URL qui s'affiche maintenant en vert en haut (pas dans la barre d'URL du navigateur, juste en dessous) et on l'envoie sur le serveur discord "en général dans le channel #régie-stream".  
+- On place le PC portable qui va servir aux cams joueurs, on y branche les 2 cams joueur. On va ensuite sur Discord, dans le channel #régie-stream, threah "VDO Ninja", chercher dans les 2 derniers messages les 2 liens marqués "Invite". On les ouvre, et dans chacun des onglets on fait "Add your camera to OBS", on sélectionne une des 2 cams, pour le son "No Audio", on clique sur "START".
 
 ### Logicielle
 Si tout n'est pas déjà installé, voir section "Première installation" plus bas
@@ -22,21 +27,23 @@ On commence par lancer OBS.
 Dans OBS : 
 
 - On commence par vérifier les caméras (à savoir : les "cam joueurs" c'est les cams devant eux, la "cam joueurs 2" c'est la cam en contre-plongée).
-  - Pour la cam joueurs 2, cam casters, et puis le jeu (la carte de capture compte comme une cam), si y en a une qui marche pas on va dans une scène qui les contient (respectivement, "Cam Joueurs 2", "Casters", "TLS In Game"), dans la liste des sources on double-clique sur la source vidéo (c'est celle qui a une icône d'appareil photo), et on fait "désactiver" puis "activer". Si ça marche toujours pas, dans la liste déroulante en haut des propriétés, on choisit un autre périphérique puis on remet l'ancien.
-  - Pour les cam joueurs, on va dans les scènes "Cam Joueur Face x only", double clic sur la source navigateur, et on colle l'URL qu'on avait envoyé sur discord quand on a setup VDO Ninja.
+  - Pour la cam joueurs 2, cam casters, et puis le jeu (la carte de capture compte comme une cam), si y en a une qui marche pas on va dans une scène qui les contient (respectivement, "Cam Joueurs 2", "Casters", "Jeu", faut chercher tout en bas pour les 2 dernières), dans la liste des sources on double-clique sur la source vidéo (c'est celle qui a une icône d'appareil photo), et on fait "désactiver" puis "activer". Si ça marche toujours pas, dans la liste déroulante en haut des propriétés, on choisit un autre périphérique puis on remet l'ancien.
 - Ensuite IMPORTANT on vérifie le son
-  - Dans les paramèrtres, partie Audio, dans "périphérique de monitoring" on choisit bien le casque de régie (CORSAIR machin là)
-  - Ensuite on regarde le panneau de contrôle du son (en bas de l'écran de base d'OBS)
-  - On vérifie qu'OBS entend bien les casters = quand ils parlent la barre verte o grise correspondant à "Casque casters" s'anime. Si ce n'est pas le cas on clic droit dessus -> propriétés, dans la liste déroulante on choisir celui qui contient "Scarlett" et/ou "2i2"
-  - Pareil pour le casque régie
-  - Si le casque régie n'entend pas le jeu et/ou les casters : clic droit dans la partie vide du panneau de contrôle du son, Propriétés Audio Avancées, pour les 2 sources "Casque Casters" et "Switch" on change "Monitoring et Sortie" en "Monitoring Désactivé" PUIS on remet à "Monitoring et Sortie"
-  - ENSUITE on s'assure que OBS entend bien la switch et que le son du jeu le sort pas des écrans. Dans le cas contraire on branche le jack de l'ampli jack à l'autre écran et ça devrait être bon. 
+  - Sur le panel du son en bas de l'interface d'OBS, on voit entrées. Si la barre centrale s'anime c'est que du son est capté. Pour chacune, on clique sur les 3 points en bas, propriétés, et dans le menu déroulant on choisit le bon périphérique (ATTENTION si ça a l'air d'être déjà le bon, ouvrez quand même le menu des fois les casques aparaissent en double): 
+    - Pour le jeu, "Game Capture HD60 S"
+    - Pour les casters, "USB Codec" ou un truc comme ça pour la table de mixage, "Scarlett 2i2" pour la carte son
+    - Pour la régie, la marque du casque utilisé (donc en général HyperX Cloud)
+  - Une fois que les périphériques son set on vérifie qu'OBS entend tout le monde (comme dit plus haut faut que la barre colorée s'anime)
+  - Dans les paramèrtres, partie Audio, dans "périphérique de monitoring" on choisit bien le casque de régie (HyperX Cloud)
+  - Si le casque régie n'entend pas le jeu et/ou les casters : clic droit dans la partie vide du panneau de contrôle du son, Propriétés Audio Avancées, pour les 2 sources "Casque Casters" et "Switch" on change "Monitoring et Sortie" en "Monitoring Désactivé" PUIS on remet à "Monitoring et Sortie". On remet donc comme c'était à la base au final, c'est un bug d'OBS qui nous oblige à faire ça. 
+  - Si les casters n'entendent pas la régie : clic droit sur l'entrée casque régie, filtres, dans la liste à gauche "Audio monitor", dans le menu déroulant à droite on choisit le périphérique qui correspont aux casques casters (table de mixage ou carte son)
 
 On ouvre ensuite le dossier TLSStream qui se trouve sur le bureau.
 
 On ouvre le dossier TournamentStreamHelperTLS et on lance TSH (TSH.exe) : 
 
-Dans TSH, cliquer sur "Set tournament", et entrer l'URL du bracket, qui sera toujours de forme `https://start.gg/tournament/.../events/...` (most likely `https://start.gg/tournament/stock-o-clock-x/events/1v1-ultimate`). 
+Dans TSH, cliquer sur "Set tournament", et entrer l'URL de l'event (pas le tournoi, l'event spécifiquement), qui sera toujours de forme `https://start.gg/tournament/.../events/...`.
+
 
 Ensuite, si on a la tablette pour le stage strike
 - on va dans l'onglet "Rules"/"Règles", et dans le dropdown tout en haut on choisit TLS. 
