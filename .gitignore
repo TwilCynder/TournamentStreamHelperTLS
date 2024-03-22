@@ -65,3 +65,5 @@ main.spec
 logs/*
 
 Pipfile*
+
+desktop.ini
