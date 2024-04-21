@@ -193,14 +193,14 @@ LoadEverything().then(() => {
                 : ""
             );
 
-            await CharacterDisplay(
+            /*await CharacterDisplay(
               $(`.p${t + 1}.container .character_container`),
               {
                 asset_key: "base_files/icon",
                 source: `score.1.team.${t + 1}`,
               },
               event
-            );
+            );*/
 
             SetInnerHtml(
               $(`.p${t + 1}.container .sponsor_icon`),
@@ -285,7 +285,7 @@ LoadEverything().then(() => {
         carousel.reset();
         carousel.add(`
           ${teamName}
-          ${team.losers ? "<span class='losers'>L</span>" : ""}
+          ${team.losers ? " [L]" : ""}
         `);
         carousel.add(`
           ${teamNamePlayers}
