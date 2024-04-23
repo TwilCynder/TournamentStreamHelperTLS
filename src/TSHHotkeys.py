@@ -5,12 +5,13 @@ from qtpy.QtGui import *
 from qtpy.QtWidgets import *
 import requests
 import os
+import platform
 import traceback
 import json
-import copy
 import pynput
 from .SettingsManager import SettingsManager
 from .Helpers.TSHLocaleHelper import TSHLocaleHelper
+from .Helpers.TSHDictHelper import deep_clone
 from loguru import logger
 
 class TSHHotkeysSignals(QObject):
@@ -68,6 +69,10 @@ class TSHHotkeys(QObject):
         
         self.pynputListener = pynput.keyboard.GlobalHotKeys(shortcuts)
 
+        if platform.system() == "Darwin":
+            logger.error("macOS detected, deactivating hotkeys for now")
+            return
+
         self.pynputListener.start()
     
     def HotkeyTriggered(self, k, v):
@@ -77,7 +82,7 @@ class TSHHotkeys(QObject):
     
     def LoadUserHotkeys(self):
         user_keys = SettingsManager.Get("hotkeys", {})
-        self.loaded_keys = copy.copy(self.keys)
+        self.loaded_keys = deep_clone(self.keys)
 
         # Update keys
         self.loaded_keys.update((k,v) for k,v in user_keys.items() if k in self.keys)

@@ -88,10 +88,10 @@ LoadEverything(() => {
     let data = event.data;
     let oldData = event.oldData;
 
-    let isTeams = Object.keys(data.score.team["1"].player).length > 1;
+    let isTeams = Object.keys(data.score[1].team["1"].player).length > 1;
 
     if (!isTeams) {
-      const teams = Object.values(data.score.team);
+      const teams = Object.values(data.score[1].team);
       for (const [t, team] of teams.entries()) {
         const players = Object.values(team.player);
         for (const [p, player] of players.entries()) {
@@ -115,7 +115,7 @@ LoadEverything(() => {
             !oldData.score ||
             JSON.stringify(player.character) !=
               JSON.stringify(
-                oldData.score.team[String(t + 1)].player[String(p + 1)]
+                oldData.score[1].team[String(t + 1)].player[String(p + 1)]
                   .character
               )
           ) {
@@ -237,7 +237,7 @@ LoadEverything(() => {
       await data_promise;
 
     } else {
-      const teams = Object.values(data.score.team);
+      const teams = Object.values(data.score[1].team);
       for (const [t, team] of teams.entries()) {
         let teamName = "";
 
@@ -276,7 +276,7 @@ LoadEverything(() => {
                 if (
                   JSON.stringify(player.character) !=
                   JSON.stringify(
-                    oldData.score.team[`${t + 1}`].player[`${p + 1}`].character
+                    oldData.score[1].team[`${t + 1}`].player[`${p + 1}`].character
                   )
                 ) {
                   charactersChanged = true;

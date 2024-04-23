@@ -54,6 +54,29 @@ class TSHSettingsWindow(QDialog):
             True
         ))
 
+        generalSettings.append((
+            QApplication.translate(
+                "settings.disable_autoupdate", "Disable automatic set updating for the scoreboard"),
+            "disable_autoupdate",
+            "checkbox",
+            False
+        ))
+
+        generalSettings.append((
+            QApplication.translate(
+                "settings.disable_export", "Disable TSH file exporting"),
+            "disable_export",
+            "checkbox",
+            False
+        ))
+        
+        generalSettings.append((
+            QApplication.translate(
+                "settings.disable_overwrite", "Do not override existing values in local_players.csv (takes effect on next restart)"),
+            "disable_overwrite",
+            "checkbox",
+            False
+        ))
 
         self.add_setting_widget(QApplication.translate(
             "settings", "General"), SettingsWidget("general", generalSettings))

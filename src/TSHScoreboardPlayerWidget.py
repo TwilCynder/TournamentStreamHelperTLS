@@ -37,7 +37,7 @@ class TSHScoreboardPlayerWidget(QGroupBox):
 
     dataLock = threading.RLock()
 
-    def __init__(self, index=0, teamNumber=0, path="", *args):
+    def __init__(self, index=0, teamNumber=0, path="", scoreboardNumber=1, customName="", *args):
         super().__init__(*args)
 
         self.instanceSignals = TSHScoreboardPlayerWidgetSignals()
@@ -46,6 +46,8 @@ class TSHScoreboardPlayerWidget(QGroupBox):
 
         self.index = index
         self.teamNumber = teamNumber
+        self.scoreboardNumber = scoreboardNumber
+        self.customName = customName
 
         self.losers = False
 
@@ -167,7 +169,7 @@ class TSHScoreboardPlayerWidget(QGroupBox):
             f"{self.path}.{element.objectName()}", element.currentData())
         self.instanceSignals.dataChanged.emit()
 
-    def CharactersChanged(self):
+    def CharactersChanged(self, includeMains=False):
         with self.dataLock:
             characters = {}
 
@@ -198,6 +200,10 @@ class TSHScoreboardPlayerWidget(QGroupBox):
 
             StateManager.Set(
                 f"{self.path}.character", characters)
+
+            if includeMains:
+                StateManager.Set(
+                    f"{self.path}.mains", characters)
 
     def SetLosers(self, value):
         with self.dataLock:
@@ -279,11 +285,12 @@ class TSHScoreboardPlayerWidget(QGroupBox):
             if StateManager.Get(f"{self.path}.id") != id:
                 StateManager.Set(
                     f"{self.path}.id", id)
-                self.instanceSignals.playerId_changed.emit()
-                if self.path.startswith("score.team.1"):
-                    self.instanceSignals.player1Id_changed.emit()
-                else:
-                    self.instanceSignals.player2Id_changed.emit()
+                if "score" in self.path:
+                    self.instanceSignals.playerId_changed.emit()
+                    if "team.1" in self.path:
+                        self.instanceSignals.player1Id_changed.emit()
+                    else:
+                        self.instanceSignals.player2Id_changed.emit()
 
     def ExportPlayerSeed(self, seed=None):
         with self.dataLock:
@@ -335,8 +342,13 @@ class TSHScoreboardPlayerWidget(QGroupBox):
             StateManager.ReleaseSaving()
 
     def SetIndex(self, index: int, team: int):
-        self.findChild(QWidget, "title").setText(
-            QApplication.translate("app", "Player {0}").format(index))
+        if self.customName == "":
+            self.findChild(QWidget, "title").setText(
+                QApplication.translate("app", "Player {0}").format(index))
+        else:
+            title = self.customName + " {0}"
+            self.findChild(QWidget, "title").setText(
+                QApplication.translate("app", title).format(index))
         self.index = index
         self.teamNumber = team
 
@@ -421,7 +433,7 @@ class TSHScoreboardPlayerWidget(QGroupBox):
             self.character_elements[-1][0].setParent(None)
             self.character_elements.pop()
 
-        self.CharactersChanged()
+        self.CharactersChanged(includeMains=True)
 
     def SwapCharacters(self, index1: int, index2: int):
         StateManager.BlockSaving()
@@ -494,7 +506,7 @@ class TSHScoreboardPlayerWidget(QGroupBox):
             state.lineEdit().setFont(QFont(state.font().family(), 9))
 
         except Exception as e:
-            logger.error(e)
+            logger.error(traceback.format_exc())
             exit()
 
     def LoadStates(self, index):
@@ -566,13 +578,13 @@ class TSHScoreboardPlayerWidget(QGroupBox):
             self.ManageSavePlayerToDBText()
             self.ManageDeletePlayerFromDBActive()
 
-    def SetData(self, data, dontLoadFromDB=False, clear=True):
+    def SetData(self, data, dontLoadFromDB=False, clear=True, no_mains=False):
         self.dataLock.acquire()
         StateManager.BlockSaving()
 
         try:
             if clear:
-                self.Clear()
+                self.Clear(no_mains=no_mains)
 
             # Load player data from DB; will be overwriten by incoming data
             if not dontLoadFromDB:
@@ -587,7 +599,7 @@ class TSHScoreboardPlayerWidget(QGroupBox):
                         "prefix")+" "+item.get("gamerTag") if item.get("prefix") else item.get("gamerTag")
 
                     if tag == dbTag:
-                        self.SetData(item, dontLoadFromDB=True, clear=False)
+                        self.SetData(item, dontLoadFromDB=True, clear=False, no_mains=no_mains)
                         break
 
             name = self.findChild(QWidget, "name")
@@ -647,7 +659,8 @@ class TSHScoreboardPlayerWidget(QGroupBox):
                         if data.get("country_code") == item.get("code"):
                             countryIndex = i
                             break
-                countryElement.setCurrentIndex(countryIndex)
+                if countryElement.currentIndex() != countryIndex:
+                    countryElement.setCurrentIndex(countryIndex)
 
             if data.get("state_code"):
                 countryElement: QComboBox = self.findChild(
@@ -660,9 +673,10 @@ class TSHScoreboardPlayerWidget(QGroupBox):
                         if data.get("state_code") == item.get("code"):
                             stateIndex = i
                             break
-                stateElement.setCurrentIndex(stateIndex)
+                if stateElement.currentIndex() != stateIndex:
+                    stateElement.setCurrentIndex(stateIndex)
 
-            if data.get("mains"):
+            if data.get("mains") and no_mains != True:
                 if type(data.get("mains")) == list:
                     for element in self.character_elements:
                         character_element = element[1]
@@ -689,11 +703,15 @@ class TSHScoreboardPlayerWidget(QGroupBox):
                                     if item.get("en_name") == main[0]:
                                         characterIndex = i
                                         break
-                            character_element.setCurrentIndex(characterIndex)
+                            if character_element.currentIndex() != characterIndex:
+                                character_element.setCurrentIndex(
+                                    characterIndex)
                             if len(main) > 1:
-                                color_element.setCurrentIndex(int(main[1]))
+                                if color_element.currentIndex() != int(main[1]):
+                                    color_element.setCurrentIndex(int(main[1]))
                             else:
-                                color_element.setCurrentIndex(0)
+                                if color_element.currentIndex() != 0:
+                                    color_element.setCurrentIndex(0)
 
             if data.get("seed"):
                 StateManager.Set(f"{self.path}.seed", data.get("seed"))
@@ -750,11 +768,13 @@ class TSHScoreboardPlayerWidget(QGroupBox):
 
         TSHPlayerDB.AddPlayers([playerData], overwrite=True)
 
-        if playerData["pronoun"] not in self.pronoun_list:
+        if playerData.get("pronoun") and playerData["pronoun"] not in self.pronoun_list:
             with open("./user_data/pronouns_list.txt", 'at') as pronouns_file:
                 pronouns_file.write(playerData["pronoun"] + "\n")
                 self.pronoun_list.append(playerData["pronoun"])
                 self.pronoun_model.setStringList(self.pronoun_list)
+
+        self.CharactersChanged(includeMains=True)
 
     def ManageSavePlayerToDBText(self):
         tag = self.GetCurrentPlayerTag()
@@ -778,7 +798,7 @@ class TSHScoreboardPlayerWidget(QGroupBox):
         tag = self.GetCurrentPlayerTag()
         TSHPlayerDB.DeletePlayer(tag)
 
-    def Clear(self):
+    def Clear(self, no_mains=False):
         StateManager.BlockSaving()
         with self.dataLock:
             for c in self.findChildren(QLineEdit):
@@ -787,5 +807,15 @@ class TSHScoreboardPlayerWidget(QGroupBox):
                     c.editingFinished.emit()
 
             for c in self.findChildren(QComboBox):
-                c.setCurrentIndex(0)
+                if(no_mains):
+                    for charelem in self.character_elements:
+                        for i in range(len(charelem)):
+                            if charelem[i] == c:
+                                break
+                        else:
+                            c.setCurrentIndex(0)
+                        continue  # only executed if the inner loop DID break
+                else:
+                    c.setCurrentIndex(0)
+        StateManager.Unset(f"{self.path}.seed")
         StateManager.ReleaseSaving()

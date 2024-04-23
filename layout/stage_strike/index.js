@@ -50,16 +50,16 @@ LoadEverything().then(() => {
 
     if (
       !oldData.score ||
-      JSON.stringify(data.score.stage_strike) !=
-        JSON.stringify(oldData.score.stage_strike) ||
-      JSON.stringify(oldData.score.team) != JSON.stringify(data.score.team)
+      JSON.stringify(data.score[window.scoreboardNumber].stage_strike) !=
+        JSON.stringify(oldData.score[window.scoreboardNumber].stage_strike) ||
+      JSON.stringify(oldData.score[window.scoreboardNumber].team) != JSON.stringify(data.score[window.scoreboardNumber].team)
     ) {
       html = "";
 
       try {
         let teamNames = [];
 
-        [data.score.team["1"], data.score.team["2"]].forEach((team, t) => {
+        [data.score[window.scoreboardNumber].team["1"], data.score[window.scoreboardNumber].team["2"]].forEach((team, t) => {
           let teamName = "";
 
           if (!team.teamName || team.teamName == "") {
@@ -81,19 +81,19 @@ LoadEverything().then(() => {
           teamNames.push(teamName);
         });
 
-        console.log(data.score.teamsSwapped);
+        console.log(data.score[window.scoreboardNumber].teamsSwapped);
 
-        if (data.score.teamsSwapped == true) {
+        if (data.score[window.scoreboardNumber].teamsSwapped == true) {
           teamNames = teamNames.reverse();
         }
 
         console.log(teamNames);
 
-        console.log(data.score.stage_strike);
+        console.log(data.score[window.scoreboardNumber].stage_strike);
 
         let allStages = data.score.ruleset.neutralStages;
 
-        if (data.score.stage_strike.currGame > 0) {
+        if (data.score[window.scoreboardNumber].stage_strike.currGame > 0) {
           allStages = allStages.concat(data.score.ruleset.counterpickStages);
         }
 
@@ -104,41 +104,41 @@ LoadEverything().then(() => {
           html += `
               <div class="stage-container 
                 ${
-                  IsStageStriked(data.score.stage_strike, stage.codename) ||
+                  IsStageStriked(data.score[window.scoreboardNumber].stage_strike, stage.codename) ||
                   IsStageBanned(
                     data.score.ruleset,
-                    data.score.stage_strike,
+                    data.score[window.scoreboardNumber].stage_strike,
                     stage.codename
                   )
                     ? "striked"
                     : ""
                 }
                 ${
-                  data.score.stage_strike.selectedStage &&
-                  data.score.stage_strike.selectedStage == stage.codename
+                  data.score[window.scoreboardNumber].stage_strike.selectedStage &&
+                  data.score[window.scoreboardNumber].stage_strike.selectedStage == stage.codename
                     ? "selected"
                     : ""
                 }
                 ">
                   <div class="stage-icon" style="background-image: url('../../${path}')">
                       ${
-                        IsStageStriked(data.score.stage_strike, stage.codename)
+                        IsStageStriked(data.score[window.scoreboardNumber].stage_strike, stage.codename)
                           ? `<div class="stage-striked stamp"></div>`
                           : ""
                       }
                       ${
                         IsStageBanned(
                           data.score.ruleset,
-                          data.score.stage_strike,
+                          data.score[window.scoreboardNumber].stage_strike,
                           stage.codename
                         )
                           ? `<div class="stage-dsr stamp"></div>`
                           : ""
                       }
                       ${
-                        data.score.stage_strike.selectedStage &&
-                        data.score.stage_strike.selectedStage == stage.codename
-                          ? data.score.stage_strike.gentlemans
+                        data.score[window.scoreboardNumber].stage_strike.selectedStage &&
+                        data.score[window.scoreboardNumber].stage_strike.selectedStage == stage.codename
+                          ? data.score[window.scoreboardNumber].stage_strike.gentlemans
                             ? `<div class="stage-selected-gentlemans stamp"></div>`
                             : `<div class="stage-selected stamp"></div>`
                           : ""
@@ -150,17 +150,17 @@ LoadEverything().then(() => {
                       </div>
                   </div>
                   ${
-                    IsStageStriked(data.score.stage_strike, stage.codename) &&
-                    (data.score.stage_strike.strikedBy[0].includes(
+                    IsStageStriked(data.score[window.scoreboardNumber].stage_strike, stage.codename) &&
+                    (data.score[window.scoreboardNumber].stage_strike.strikedBy[0].includes(
                       stage.codename
                     ) ||
-                      data.score.stage_strike.strikedBy[1].includes(
+                      data.score[window.scoreboardNumber].stage_strike.strikedBy[1].includes(
                         stage.codename
                       ))
                       ? `<div class="banned-by-name">
                         <div class="text">
                           ${
-                            data.score.stage_strike.strikedBy[0].includes(
+                            data.score[window.scoreboardNumber].stage_strike.strikedBy[0].includes(
                               stage.codename
                             )
                               ? teamNames[0]
@@ -171,14 +171,14 @@ LoadEverything().then(() => {
                       : ""
                   }
                   ${
-                    data.score.stage_strike.selectedStage &&
-                    data.score.stage_strike.selectedStage == stage.codename
+                    data.score[window.scoreboardNumber].stage_strike.selectedStage &&
+                    data.score[window.scoreboardNumber].stage_strike.selectedStage == stage.codename
                       ? `<div class="banned-by-name">
                         <div class="text">
                           ${
-                            data.score.stage_strike.gentlemans
+                            data.score[window.scoreboardNumber].stage_strike.gentlemans
                               ? "Gentlemans"
-                              : teamNames[data.score.stage_strike.currPlayer]
+                              : teamNames[data.score[window.scoreboardNumber].stage_strike.currPlayer]
                           }
                         </div>
                       </div>`
@@ -195,8 +195,8 @@ LoadEverything().then(() => {
 
         if (
           window.AUTOHIDE &&
-          !_.get(oldData, "score.stage_strike.selectedStage") &&
-          _.get(data, "score.stage_strike.selectedStage")
+          !_.get(oldData, `score.${window.scoreboardNumber}.stage_strike.selectedStage`) &&
+          _.get(data, `score.${window.scoreboardNumber}.stage_strike.selectedStage`)
         ) {
           hideStagesTimeout = setTimeout(() => {
             gsap.to(".container", { autoAlpha: "0" });
@@ -208,7 +208,7 @@ LoadEverything().then(() => {
       $(".container").html(html);
 
       // Fade stage strike back in
-      if (!_.get(data, "score.stage_strike.selectedStage")) {
+      if (!_.get(data, `score.${window.scoreboardNumber}.stage_strike.selectedStage`)) {
         gsap.to(".container", { autoAlpha: "1", overwrite: true });
       }
 

@@ -19,8 +19,8 @@ LoadEverything().then(() => {
     let oldData = event.oldData;
 
     for (const [t, team] of [
-      data.score.team["1"],
-      data.score.team["2"],
+      data.score[window.scoreboardNumber].team["1"],
+      data.score[window.scoreboardNumber].team["2"],
     ].entries()) {
       for (const [p, player] of [team.player["1"]].entries()) {
         if (player) {
@@ -108,6 +108,10 @@ LoadEverything().then(() => {
               ? `<div class='sponsor-logo' style='background-image: url(../../${player.sponsor_logo})'></div>`
               : ""
           );
+
+        }
+        if(team.color) {
+          document.querySelector(':root').style.setProperty(`--p${t + 1}-score-bg-color`, team.color);
         }
       }
     }
@@ -115,7 +119,7 @@ LoadEverything().then(() => {
     let phaseTexts = [];
     if (data.tournamentInfo.eventName)
       phaseTexts.push(data.tournamentInfo.eventName);
-    if (data.score.best_of_text) phaseTexts.push(data.score.phase);
+    if (data.score[window.scoreboardNumber].phase) phaseTexts.push(data.score[window.scoreboardNumber].phase);
 
     SetInnerHtml($(".info.material_container .phase"), phaseTexts.join(" - "));
     SetInnerHtml(
@@ -123,7 +127,53 @@ LoadEverything().then(() => {
       data.tournamentInfo.tournamentName
     );
 
-    SetInnerHtml($(".singles .match"), data.score.match);
-    SetInnerHtml($(".singles .best_of"), data.score.best_of_text);
+    SetInnerHtml($(".singles .match"), data.score[window.scoreboardNumber].match);
+    SetInnerHtml($(".singles .best_of"), data.score[window.scoreboardNumber].best_of_text);
+
+    if (
+      Object.keys(oldData).length == 0 ||
+      Object.keys(oldData.commentary).length 
+    ) {
+      let html = "";
+      Object.values(data.commentary).forEach((commentator, index) => {
+        html += `
+              <div class="commentator_container commentator${index}">
+                  <div class="name"></div>
+                  <div class="pronoun"></div>
+              </div>
+          `;
+      });
+      console.log({html});
+      $(".com_container").html(html);
+    }
+
+    for (const [index, commentator] of Object.values(
+      data.commentary
+    ).entries()) {
+      if (commentator.name) {
+        $(`.commentator${index}`).css("display", "");
+        SetInnerHtml(
+          $(`.commentator${index} .name`),
+          `
+            <span class="mic_icon"></span>
+            <span class="team">
+              ${commentator.team ? commentator.team + "&nbsp;" : ""}
+            </span>
+            ${await Transcript(commentator.name)}
+          `
+        );
+        SetInnerHtml($(`.commentator${index} .pronoun`), commentator.pronoun);
+        SetInnerHtml(
+          $(`.commentator${index} .real_name`),
+          commentator.real_name
+        );
+        SetInnerHtml(
+          $(`.commentator${index} .twitter`),
+          commentator.twitter ? "@" + commentator.twitter : ""
+        );
+      } else {
+        $(`.commentator${index}`).css("display", "none");
+      }
+    }
   };
 });

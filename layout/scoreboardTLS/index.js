@@ -44,13 +44,11 @@ const default_config = {
   }
 }
 
-LoadEverything(() => {
+LoadEverything().then(() => {
   let carousels = [
     new Carousel(),
     new Carousel()
   ]
-
-  //a changer plus tard quand on aura un système de config plus avancé
 
 
   let config = _.defaultsDeep(window.config, default_config);
@@ -129,22 +127,25 @@ LoadEverything(() => {
 
 
     let casters = Object.values(data.commentary);
+    console.log(casters)
     let html = ""
     casters.forEach((commentator, index) => {
-      html += `
+      if (commentator.name){
+        html += `
         <span class = "caster_name">${commentator.name}</span>
         `;
+      }
     });
     $("#caster_names_container").html(html);
 
-    let isTeams = Object.keys(data.score.team["1"].player).length > 1;
+    let isTeams = Object.keys(data.score[1].team["1"].player).length > 1;
 
     
 
     if (!isTeams) {
       for (const [t, team] of [
-        data.score.team["1"],
-        data.score.team["2"],
+        data.score[1].team["1"],
+        data.score[1].team["2"],
       ].entries()) {
 
         for (const [p, player] of [team.player["1"]].entries()) {
@@ -196,7 +197,7 @@ LoadEverything(() => {
               $(`.p${t + 1}.container .character_container`),
               {
                 asset_key: "base_files/icon",
-                source: `score.team.${t + 1}`,
+                source: `score.1.team.${t + 1}`,
               },
               event
             );
@@ -264,8 +265,8 @@ LoadEverything(() => {
       $(`.league_team`).hide();
 
       for (const [t, team] of [
-        data.score.team["1"],
-        data.score.team["2"],
+        data.score[1].team["1"],
+        data.score[1].team["2"],
       ].entries()) {
         let teamName = "";
         let teamNamePlayers = ""
@@ -314,7 +315,7 @@ LoadEverything(() => {
           $(`.p${t + 1}.container .character_container`),
           {
             asset_key: "base_files/icon",
-            source: `score.team.${t + 1}`,
+            source: `score.1.team.${t + 1}`,
             slice_character: [0, 1],
           },
           event
@@ -339,10 +340,10 @@ LoadEverything(() => {
 
     SetInnerHtml($(".tournament_name"), data.tournamentInfo.tournamentName);
 
-    let match = data.score.match;
+    let match = data.score[1].match;
 
     try {
-      match = translateRound(data.score.phase, data.score.match);
+      match = translateRound(data.score[1].phase, data.score[1].match);
     } catch (e){
       console.error(e);
     }
@@ -370,12 +371,12 @@ LoadEverything(() => {
     }
 
     let phaseTexts = [];
-    if (data.score.phase) phaseTexts.push(data.score.phase);
-    if (data.score.best_of_text) phaseTexts.push(data.score.best_of_text);
+    if (data.score[1].phase) phaseTexts.push(data.score[1].phase);
+    if (data.score[1].best_of_text) phaseTexts.push(data.score[1].best_of_text);
 
     SetInnerHtml($(".phase"), phaseTexts.join(" - "));
-    SetInnerHtml($("#bestof"), "Best of " + data.score.best_of);
+    SetInnerHtml($("#bestof"), "Best of " + data.score[1].best_of);
   };
-}, []);
+});
 
 startTimeDisplay("time");
