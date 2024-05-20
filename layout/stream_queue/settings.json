@@ -2,7 +2,7 @@
   "assets": {
     "default": {}
   },
-  "stream": "",
+  "stream": "toulouselaststock",
   "default_stream" : "vgbootcamp",
   "force_multistream" : false,
   "display_stream_name" : "multistream",

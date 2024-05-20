@@ -42,8 +42,8 @@ LoadEverything().then(() => {
     let oldData = event.oldData;
 
     for (const [t, team] of [
-      data.score.team["1"],
-      data.score.team["2"],
+      data.score[1].team["1"],
+      data.score[1].team["2"],
     ].entries()) {
       console.log(team);
 
@@ -135,11 +135,11 @@ LoadEverything().then(() => {
 
     SetInnerHtml($(".info.top"), data.tournamentInfo.tournamentName);
 
-    SetInnerHtml($(".match"), data.score.match);
+    SetInnerHtml($(".match"), data.score[1].match);
 
     let phaseTexts = [];
-    if (data.score.phase) phaseTexts.push(data.score.phase);
-    if (data.score.best_of_text) phaseTexts.push(data.score.best_of_text);
+    if (data.score[1].phase) phaseTexts.push(data.score[1].phase);
+    if (data.score[1].best_of_text) phaseTexts.push(data.score[1].best_of_text);
 
     SetInnerHtml($(".phase"), phaseTexts.join(" - "));
   };
