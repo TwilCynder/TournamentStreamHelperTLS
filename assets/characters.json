@@ -105633,45 +105633,6 @@
         ],
         "characterId": null,
         "expand": []
-      },
-      {
-        "id": 2440,
-        "name": "Mr. Krabs",
-        "isCommon": null,
-        "videogameId": 49644,
-        "externalIdMap": null,
-        "images": [
-          {
-            "id": 6606375,
-            "width": 192,
-            "height": 192,
-            "ratio": 1,
-            "type": "icon",
-            "url": "https://images.start.gg/images/character/2440/image-c97fadac1cfaf5606219d5f89f18819f.png?ehk=NgRVOX%2F9CbD%2Fmq%2BI1WBWTLhASV2gSTORPDlSbYIkPWk%3D&ehkOptimized=98O8m8JlnkKLbcX1j2mzUOxvUr%2BHfkLj7oQXV68iM2M%3D",
-            "isOriginal": true,
-            "entity": null,
-            "entityId": null,
-            "uploadedBy": null,
-            "createdAt": null,
-            "updatedAt": null
-          },
-          {
-            "id": 6606376,
-            "width": 64,
-            "height": 64,
-            "ratio": 1,
-            "type": "stockIcon",
-            "url": "https://images.start.gg/images/character/2440/image-7adb6a99ad32aeb27dc8314bc1d3471e.png?ehk=FRp6jUOwqmdo2rBZnwiW4No9RRKSbQlLE0RSRSN8Gzk%3D&ehkOptimized=ElqhMdjD9B9LYGztlQSL22Gbops7AV8rL2jog%2FZm3rk%3D",
-            "isOriginal": true,
-            "entity": null,
-            "entityId": null,
-            "uploadedBy": null,
-            "createdAt": null,
-            "updatedAt": null
-          }
-        ],
-        "characterId": null,
-        "expand": []
       }
     ]
   },
@@ -107877,8 +107838,7 @@
     2436,
     2437,
     2438,
-    2439,
-    2440
+    2439
   ],
   "resultEntity": "character",
   "actionRecords": []
