@@ -67,3 +67,5 @@ logs/*
 Pipfile*
 
 desktop.ini
+
+*.bak
