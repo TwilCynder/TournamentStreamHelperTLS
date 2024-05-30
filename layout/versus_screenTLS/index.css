@@ -4,6 +4,8 @@
 }
 
 :root {
+  --tls-yellow2: rgb(255, 0, 100);
+  --tls-yellow: rgb(255, 0, 100);
   --border-color: var(--tls-yellow2);
 }
 
