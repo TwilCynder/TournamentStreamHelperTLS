@@ -65,7 +65,5 @@ main.spec
 logs/*
 
 Pipfile*
-
+env
 desktop.ini
-
-*.bak
