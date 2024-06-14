@@ -1,10 +1,10 @@
 
 :root{
-  --text-color: black;
+  --text-color: white;
 }
 
 body {
-  font-family: "Dosis";
+  font-family: "LTRemark";
   letter-spacing: 1.2px;
   font-weight: bold;
   opacity: 0;
@@ -56,7 +56,7 @@ body {
   flex-grow: 0;
   width: 100%;
   margin-bottom: 20px;
-  font-family: "Gobold";
+  font-family: "Cinzel";
   font-size: 80px;
 }
 
@@ -65,7 +65,7 @@ body {
   flex-grow: 0;
   width: 100%;
   margin-bottom: 20px;
-  font-family: "Gobold";
+  font-family: "LTRemark";
   font-size: 40px;
 }
 
@@ -105,16 +105,16 @@ body {
 }
 
 #set_count {
-  color: var(--tls-yellow);
+  color: var(--parthenon-orange);
   font-size: 65px;
 }
 
 .player_1 .sponsor {
-  color: var(--tls-yellow);
+  color: var(--parthenon-orange);
 }
 
 .player_2 .sponsor {
-  color: var(--tls-yellow);
+  color: var(--parthenon-orange);
 }
 
 /* Recent Sets Section */
@@ -195,7 +195,6 @@ body {
 }
 
 .score {
-  
   font-size: 70px;
   width: 96px;
   height: 96px;
@@ -218,6 +217,7 @@ body {
   background: #ff3837;
 
 }
+
 
 .lds-ring {
   display: inline-block;
@@ -255,4 +255,9 @@ body {
   100% {
     transform: rotate(360deg);
   }
+}
+
+.score_inner {
+  height: 100%;
+  padding-top: 10px;
 }

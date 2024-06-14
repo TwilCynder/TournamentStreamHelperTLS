@@ -63,8 +63,8 @@ LoadEverything(() => {
         if (count < 5 ){
           recentSetsHtml += `
             <div class="set_container">
-              <div class="${_set.winner == 0 ? "set_winner" : "set_loser"}">
-                ${_set.score[0]}
+              <div class="score ${_set.winner == 0 ? "set_winner" : "set_loser"}">
+                <div class = "score_inner">${_set.score[0]}</div>
               </div>
               <div class="set_info">
                 <div class="set_title">
@@ -91,8 +91,8 @@ LoadEverything(() => {
                     </div>
                   </div>
                 </div>
-                <div class="${_set.winner == 1 ? "set_winner" : "set_loser"}">
-                  ${_set.score[1]}
+                <div class="score ${_set.winner == 1 ? "set_winner" : "set_loser"}">
+                  <div class = "score_inner">${_set.score[1]}</div>
                 </div>
             </div>
           `;
