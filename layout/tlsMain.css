@@ -36,7 +36,8 @@
     --tls-p2-sponsor: var(--tls-purple);
     --tls-yellow-gradient: linear-gradient(135deg, var(--tls-yellow) 0%, var(--tls-yellow2) 100%);
     --tls-purple-gradient: linear-gradient(135deg, var(--tls-purple) 0%, var(--blue) 100%);
-    --tls-font: 'Gobold';
+    --tls-font1: "Gobold";
+    --tls-font2: "Dosis";
 
     --twitter-blue: #1DA1F2;
 }

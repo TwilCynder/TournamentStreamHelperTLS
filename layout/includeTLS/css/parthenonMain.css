@@ -1,0 +1,24 @@
+@font-face {
+    font-family: "CinzelBold";
+    src: url("../../RessourcesTLS/Parthenon/Fonts/Cinzel/Cinzel-Bold.ttf");
+  }
+  
+  @font-face {
+    font-family: "Cinzel";
+    src: url("../../RessourcesTLS/Parthenon/Fonts/Cinzel/Cinzel.ttf");
+  }
+  
+  @font-face {
+    font-family: "LTRemark";
+    src: url("../../RessourcesTLS/Parthenon/Fonts/LTRemark-V2001-2/LTRemark-Regular.otf");
+  }
+
+:root {
+    --parthenon: #717171;
+    --parthenon-orange: #ea5432;
+    --parthenon-yellow: #f5dfbb;
+    --parthenon-dark: #37150f;
+    --tls-font1: 'CinzelBold';
+    --tls-font2: "LTRemark";
+
+}
