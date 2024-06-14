@@ -1,16 +1,16 @@
 @font-face {
     font-family: "CinzelBold";
-    src: url("../../RessourcesTLS/Parthenon/Fonts/Cinzel/Cinzel-Bold.ttf");
+    src: url("../../../RessourcesTLS/Parthenon/Fonts/Cinzel/Cinzel-Bold.ttf");
   }
   
   @font-face {
     font-family: "Cinzel";
-    src: url("../../RessourcesTLS/Parthenon/Fonts/Cinzel/Cinzel.ttf");
+    src: url("../../../RessourcesTLS/Parthenon/Fonts/Cinzel/Cinzel-Regular.ttf");
   }
   
   @font-face {
     font-family: "LTRemark";
-    src: url("../../RessourcesTLS/Parthenon/Fonts/LTRemark-V2001-2/LTRemark-Regular.otf");
+    src: url("../../../RessourcesTLS/Parthenon/Fonts/LTRemark-V2001-2/LTRemark-Regular.otf");
   }
 
 :root {

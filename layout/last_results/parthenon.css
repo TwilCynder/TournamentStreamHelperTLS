@@ -1,0 +1,43 @@
+body {
+    color: black;
+    padding: 5vh;
+    font-size: 6vh;
+    font-family: CinzelBold;
+}
+
+.titel {
+    background-color: rgba(0, 0, 0, 0.85);
+    border-radius: 25px;
+    padding: 3vh;
+    font-size: 8vh;
+    color: aliceblue;
+}
+
+.result {
+    background: linear-gradient(to right, var(--parthenon-orange), var(--parthenon-yellow));
+    border-radius: 25px;
+    margin-left: 5vh;
+    margin-right: 5vh;
+    margin-top: 1.5vh;
+    padding: 3vh;
+    display: flex;
+    justify-content: space-between;
+}
+
+.winner {
+    display: flex;
+    justify-content: flex-start;
+}
+
+.winner .score {
+    margin-right: 10vh;
+}
+
+.loser {
+    display: flex;
+    justify-content: flex-end;
+}
+
+.loser .score {
+    margin-left: 10vh;
+}

@@ -111,7 +111,7 @@ Promise.all([
     
     .then(([config, tsh_settings]) => {
         if (tsh_settings && tsh_settings.TOURNAMENT_URL){
-            config.event = tsh_settings.TOURNAMENT_URL;
+            config.event = config.event ?? tsh_settings.TOURNAMENT_URL;
         }
 
         if (!config.event) return;
