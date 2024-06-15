@@ -144,7 +144,6 @@ LoadEverything().then(() => {
                   anim_in: {
                     duration: 0.4,
                     x: zIndexMultiplyier * 0 + "px",
-                    z: -30 + "px",
                     ease: "in",
                     autoAlpha: 1,
                     stagger: 0.1,
