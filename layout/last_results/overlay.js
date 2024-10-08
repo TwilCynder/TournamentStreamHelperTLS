@@ -48,8 +48,6 @@ $(() => {
             </div>
             </div>
         `
-        console.log(setsContainer);
-        console.log(setsContainer.html)
         setsContainer.append(res);
     }
 
@@ -80,7 +78,7 @@ $(() => {
             if (!data.data || !data.data.event){
                 throw data;
             }
-            for (let i = 1; i < data.data.event.sets.nodes.length; i++){
+            for (let i = 0; i < data.data.event.sets.nodes.length; i++){
                 let set = data.data.event.sets.nodes[i];
                 let p1 = set.slots[0].entrant.name;
                 let p1score = set.slots[0].standing.stats.score.value;

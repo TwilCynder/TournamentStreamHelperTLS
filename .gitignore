@@ -67,3 +67,5 @@ logs/*
 Pipfile*
 env
 desktop.ini
+
+layout/*/config.json
