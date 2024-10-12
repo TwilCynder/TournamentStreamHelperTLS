@@ -1,0 +1,100 @@
+@font-face {
+  font-family: "Medieval";
+  src: url("../../RessourcesTLS/RetourDuRoi/Fonts/MedievalSharp-Regular.ttf");
+}
+
+:root {
+  --text-color: #5E1C1C ;
+}
+
+body {
+  color: var(--text-color);
+  font-weight: bold;
+  opacity: 0;
+  overflow: hidden;
+  margin: 0;
+  letter-spacing: 1px;
+}
+
+.container {
+  display: flex;
+  flex-direction: row;
+  justify-content: space-around;
+  align-content: center;
+  width: 100%;
+  gap: 16px;
+  color: var(--tls-black);
+  flex-wrap: wrap;
+  position: absolute;
+  bottom: 50px;
+}
+
+.commentator_container {
+  max-width: 400px;
+  /*border-radius: var(--border-radius);*/
+  display: flex;
+  flex-direction: column; 
+  justify-content: center;
+  padding: 10px 30px;
+  /*box-sizing: border-box;*/
+  overflow: hidden;
+  /*border-radius: 12px;*/
+  background-size: 100% 100%;
+  background-image: url("../../RessourcesTLS/RetourDuRoi/Overlay/Caster.png");
+  font-family: Medieval;
+}
+
+.mic_icon {
+  display: inline-block;
+  height: 50px;
+  width: 50px;
+  -webkit-mask-image: url(./icon_mic.svg);
+  -webkit-mask-size: contain;
+  -webkit-mask-repeat: no-repeat;
+  -webkit-mask-position: center;
+  background: var(--text-color);
+}
+
+.name {
+  font-size: 60px;
+  color: var(--text-color);
+  font-weight: bolder;
+  
+}
+
+.team {
+  opacity: 0.6;
+}
+
+.twitter {
+  font-size: 40px;
+}
+
+.pronoun {
+  font-size: 25px;
+}
+
+.icon {
+  width: 128px;
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+  flex-grow: 1;
+}
+
+.index_display {
+  position: absolute;
+  bottom: 8px;
+  right: 32px;
+  z-index: 999;
+  color: white;
+  font-size: 100px;
+}
+
+.logos {
+  position: absolute;
+  bottom: 40px;
+  left: 865;
+  width: 138px;
+  height: 138px;
+}

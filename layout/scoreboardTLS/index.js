@@ -53,6 +53,8 @@ LoadEverything().then(() => {
 
   let config = _.defaultsDeep(window.config, default_config);
 
+  console.log(config.teamNameSeparator)
+
   initAlternatingLogos($, logo_interval);
 
   gsap.config({ nullTargetWarn: false, trialWarn: false });
@@ -162,7 +164,8 @@ LoadEverything().then(() => {
                 ${config.display.sponsor ? `
                   <span class="sponsor">
                     ${player.team ? player.team : ""}
-                  </span>` 
+                    ${config.teamNameSeparator ? config.teamNameSeparator : ""}
+                  </span> ` 
                   : ""
                 }
                 ${await Transcript(player.name)}
@@ -173,7 +176,7 @@ LoadEverything().then(() => {
                   : ""
                 }
                 
-                ${team.losers ? "<span class='losers'>L</span>" : ""}
+                ${team.losers ? (config.inlineLosers ? " [L]" : "<span class='losers'>L</span>") : ""}
               `
             );
 
