@@ -422,6 +422,7 @@ body {
 .score {
   width: 64px;
   height: 50px;
+  top: 26px;
   font-size: 45px;
   color: var(--tls-purple);
   flex-grow: 0;
@@ -433,12 +434,10 @@ body {
 
 .p1.score {
   left: 763px;
-  top: 26px;
 }
 
 .p2.score {
   right: 800px;
-  top: 26px;
 }
 
 .pronoun {
@@ -450,10 +449,7 @@ body {
   margin-bottom: 4px;
 }
 
-.p1 .score {
-  color: var(--tls-purple);
-  /*background: var(--tls-yellow);*/
-}
+
 
 .sponsor {
   margin-right: 6px;
@@ -465,13 +461,6 @@ body {
 
 .pronoun {
   color: var(--text-color);
-}
-
-.p2 .score {
-  color: var(--tls-purple);
-  /*margin-left: -8px;
-  margin-right: 0;*/
-  /*background: var(--p2-score-bg-color);*/
 }
 
 .losers {
