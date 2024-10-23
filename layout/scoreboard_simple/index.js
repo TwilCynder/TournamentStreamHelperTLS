@@ -110,6 +110,7 @@ LoadEverything().then(() => {
             $(`.t${t + 1}.p${p + 1} .flagcountry`),
             player.country.asset
               ? `
+                <div class='flagname'>${player.country.code}</div>
                 <div class='flag' style='background-image: url(../../${player.country.asset.toLowerCase()})'></div>
               `
               : ""
@@ -119,6 +120,7 @@ LoadEverything().then(() => {
             $(`.t${t + 1}.p${p + 1} .flagstate`),
             player.state.asset
               ? `
+                <div class='flagname'>${player.state.code}</div>
                 <div class='flag' style='background-image: url(../../${player.state.asset})'></div>
               `
               : ""
@@ -143,7 +145,7 @@ LoadEverything().then(() => {
             `<div class='sponsor-logo' style='background-image: url(../../${player.sponsor_logo})'></div>`
           );
         }
-        if(team.color) {
+        if(team.color && !tsh_settings["forceDefaultScoreColors"]) {
           document.querySelector(':root').style.setProperty(`--p${t + 1}-score-bg-color`, team.color);
         }
       }

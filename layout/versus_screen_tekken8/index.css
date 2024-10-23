@@ -34,7 +34,6 @@ body {
   background-size: cover;
   background-position: center;
   background-repeat: no-repeat;
-  background-image: url(./bg.png);
   filter: blur(5px) contrast(1.6) saturate(0.5) brightness(0.8);
 }
 
@@ -332,6 +331,7 @@ body {
   background-position: center;
   width: 32px;
   height: 20px;
+  align-self: center;
 }
 
 .score {
@@ -357,7 +357,7 @@ body {
   position: absolute;
   overflow: visible;
   left: 0px;
-  width: 45vw;
+  width: 50vw;
   top: 0;
   height: 100vh;
   perspective: 1000px;
@@ -601,4 +601,6 @@ body {
 .table_info .text {
   justify-content: left;
   padding: 0 16px;
+  display: flex;
+  align-items: center;
 }
