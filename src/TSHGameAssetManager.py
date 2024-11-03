@@ -311,7 +311,7 @@ class TSHGameAssetManager(QObject):
                         for assetsKey in list(gameObj.get("assets", {}).keys()):
                             if assetsKey != "base_files" and assetsKey != "stage_icon":
                                 try:
-                                    if len(widths[assetsKey]) > 0 and len(heights[assetsKey]) > 0:
+                                    if len(widths.get(assetsKey, [])) > 0 and len(heights.get(assetsKey, [])) > 0:
                                         gameObj["assets"][assetsKey]["average_size"] = {
                                             "x": sum(widths[assetsKey])/len(widths[assetsKey]),
                                             "y": sum(heights[assetsKey])/len(heights[assetsKey])
