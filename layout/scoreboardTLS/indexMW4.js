@@ -6,34 +6,30 @@ import { startTimeDisplay } from "../includeTLS/timeDisplayManager.js";
 update_delay = 2000;
 let logo_interval = 10000;
 
-let SLTTeams = {};
-let SLTTeamNames = {};
+let mw4Players = {};
 
-let teamsPromise = fetch('./Equipes.json')
+let teamsPromise = fetch('./data/MW4/seasons.json')
   .then( res => res.json())
-  .then( json => {
-    SLTTeams = json;
-});
+  .then( teams => {
+    for (let team of teams){
+      for (let player of team.players){
+        mw4Players[player.trim().toLowerCase()] = team;
+      }
+    }
 
-let teamNamesPromise = fetch('./TeamNames.json')
-  .then (res => res.json())
-  .then (json => {
-    SLTTeamNames = json;
-  })
+  } )
 
-async function updateSLTTeam(teamN, playerName){
-  await Promise.all([teamsPromise, teamNamesPromise]);
-  let team = SLTTeams[playerName];
-  team = SLTTeamNames[team] || team;
-  console.log("SLT TEAM", playerName, team);
+
+async function updateSeasonsColors(selector, playerName){
+  await teamsPromise;
+  
+  let team = mw4Players[playerName.trim().toLowerCase()];
+  console.log("SEASON", playerName, team);
   if (team){
-    SetInnerHtml(
-      $(`.p${teamN + 1} .team_name`),
-      team
-    );
-    $(`.p${teamN + 1}.league_team`).show();
+    $(selector).show()
+    $(selector).css("background-color",team.color);
   } else {
-    $(`.p${teamN + 1}.league_team`).hide();
+    $(selector).hide();
   }
 }
 
@@ -180,7 +176,7 @@ LoadEverything().then(() => {
               `
             );
 
-            //updateSLTTeam(t, player.name);
+            updateSeasonsColors(`.p${t+1}.season`, player.name)
 
             SetInnerHtml(
               $(`.p${t + 1} .flagcountry`),

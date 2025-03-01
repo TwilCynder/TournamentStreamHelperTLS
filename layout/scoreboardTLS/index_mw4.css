@@ -1,10 +1,10 @@
 @font-face {
-    font-family: "Trajan";
-    src: url("../../RessourcesTLS/MW/Fonts/Trajan\ Pro\ Regular.ttf");
+    font-family: "FPTHeavy";
+    src: url("../../RessourcesTLS/MW4/Fonts/Futura\ PT\ Heavy.ttf");
 }
 
 body {
-    font-family: Trajan;
+    font-family: FPTHeavy;
     font-weight: bold;
     opacity: 0;
     overflow: hidden;
@@ -552,3 +552,19 @@ body {
     color: var(--tls-yellow);
   }
   
+.season {
+  position: absolute;
+  width: 51px;
+  height: 63px;
+  top: 6px;
+}
+
+.p1.season {
+  left: 356px;
+  display: none;
+}
+
+.p2.season {
+  right: 356px;
+  display: none;
+}
