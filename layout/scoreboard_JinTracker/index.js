@@ -12,7 +12,108 @@ LoadEverything().then(() => {
   let newPlayer1; // P1 object after an update takes place
   let newPlayer2; // P2 object after an update takes place
   let swapDetected = false; // Variable that holds a boolean of whether a swap took place, initially set to false
-  let startingAnimation = gsap.timeline({ paused: true });
+  let startingAnimation = gsap.timeline({ paused: true })
+    .from(
+      [".fade"],
+      {
+        duration: 0.2,
+        autoAlpha: 0,
+        ease: "power2.out",
+      },
+      0
+    )
+    .from(
+      [".p1.under_chips .fade_stagger_reverse:not(.text_empty)"],
+      {
+        autoAlpha: 0,
+        stagger: {
+          each: 0.05,
+          from: 'start',
+          opacity: 0,
+        },
+        duration: 0.2,
+      },
+      0
+    )
+    .from(
+      [".p1.chips .fade_stagger_reverse:not(.text_empty)"],
+      {
+        autoAlpha: 0,
+        stagger: {
+          each: 0.05,
+          from: 'start',
+          opacity: 0,
+        },
+        duration: 0.2,
+      },
+      0
+    )
+    .from(
+      [".p2.under_chips .fade_stagger_reverse:not(.text_empty)"],
+      {
+        autoAlpha: 0,
+        stagger: {
+          each: 0.05,
+          from: 'start',
+          opacity: 0,
+        },
+        duration: 0.2,
+      },
+      0
+    )
+    .from(
+      [".p2.chips .fade_stagger_reverse:not(.text_empty)"],
+      {
+        autoAlpha: 0,
+        stagger: {
+          each: 0.05,
+          from: 'start',
+          opacity: 0,
+        },
+        duration: 0.2,
+      },
+      0
+    )
+    .from(
+      [".fade_down"],
+      {
+        duration: 0.2,
+        y: "-20px",
+        ease: "power2.out",
+        autoAlpha: 0,
+      },
+      0
+    )
+    .from(
+      [".fade_right"],
+      {
+        duration: 0.2,
+        x: "-20px",
+        ease: "power2.out",
+        autoAlpha: 0,
+      },
+      0
+    )
+    .from(
+      [".fade_left"],
+      {
+        duration: 0.2,
+        x: "+20px",
+        ease: "power2.out",
+        autoAlpha: 0,
+      },
+      0
+    )
+    .from(
+      [".fade_up"],
+      {
+        duration: 0.2,
+        y: "+20px",
+        ease: "power2.out",
+        autoAlpha: 0,
+      },
+      0
+    );
 
   Start = async () => {
     startingAnimation.restart();
@@ -47,6 +148,13 @@ LoadEverything().then(() => {
                 ""
               );
             }
+
+            SetInnerHtml(
+              $(`.p${t + 1}.container .sponsor_icon`),
+              player.sponsor_logo
+                ? `<div style='background-image: url(../../${player.sponsor_logo})'></div>`
+                : ""
+            );
 
             SetInnerHtml(
               $(`.p${t + 1}.container .name`),
@@ -85,25 +193,6 @@ LoadEverything().then(() => {
               player.pronoun ? player.pronoun : ""
             );
 
-            // Get the name of the state instead of the flag and put it next to the location pin logo.
-            SetInnerHtml(
-              $(`.p${t + 1} .flagstate`),
-              player.state.name
-                ? `<span class="location_logo symbol"></span>${String(
-                    player.state.name
-                  )}`
-                : ""
-            );
-
-            SetInnerHtml(
-              $(`.p${t + 1} .twitter`),
-              player.twitter
-                ? `<span class="twitter_logo symbol"></span>${String(
-                    player.twitter
-                  )}`
-                : ""
-            );
-
             document
               .querySelector(`.p${t + 1}.character_container`)
               .classList.add("unhidden");
@@ -131,8 +220,9 @@ LoadEverything().then(() => {
               },
               event
             );
+            UpdateColor(player, t);
           }
-          if (team.color) {
+          if (team.color && !tsh_settings["forceDefaultScoreColors"]) {
             document
               .querySelector(":root")
               .style.setProperty(`--p${t + 1}-score-bg-color`, team.color);
@@ -182,15 +272,18 @@ LoadEverything().then(() => {
             .classList.remove("unhidden");
 
           document.querySelector(`.p${t + 1}.bg`).classList.remove("unhidden");
+          document
+            .querySelector(`.p${t + 1}.light`)
+            .classList.remove("unhidden");
 
           SetInnerHtml($(`.p${t + 1} .seed`), "");
           SetInnerHtml($(`.p${t + 1} .flagcountry`), "");
-          SetInnerHtml($(`.p${t + 1} .flagstate`), "");
-          SetInnerHtml($(`.p${t + 1} .twitter`), "");
           SetInnerHtml($(`.p${t + 1} .pronoun`), "");
           SetInnerHtml($(`.p${t + 1}.container .placeholder_container`), "");
+          SetInnerHtml($(`.p${t + 1}.container .sponsor_icon`), "");
           SetInnerHtml($(`.p${t + 1} .score`), String(team.score));
-          if (team.color) {
+          UpdateColorAlternate(player, t);
+          if (team.color && !tsh_settings["forceDefaultScoreColors"]) {
             document
               .querySelector(":root")
               .style.setProperty(`--p${t + 1}-score-bg-color`, team.color);
@@ -615,3 +708,509 @@ function compareObjectsForTeam(obj1, obj2) {
   // If all properties and their values are the same, return true
   return true;
 }
+
+async function firstFunction(player, t) {
+  SetInnerHtml(
+    $(`.p${t + 1} .flagstate`),
+    player.state.name
+      ? `<div class="location_logo symbol"></div>${String(player.state.name)}`
+      : ""
+  );
+}
+
+async function firstAlternateFunction(player, t) {
+  SetInnerHtml($(`.p${t + 1} .flagstate`), "");
+}
+
+async function secondFunction(player, t) {
+  SetInnerHtml(
+    $(`.p${t + 1} .twitter`),
+    player.twitter
+      ? `<div class="twitter_logo symbol"></div>${String(player.twitter)}`
+      : ""
+  );
+}
+
+async function secondAlternateFunction(player, t) {
+  SetInnerHtml($(`.p${t + 1} .twitter`), "");
+}
+
+async function UpdateColor(player, t) {
+  await firstFunction(player, t);
+  await secondFunction(player, t);
+  await thirdFunction(t);
+}
+
+async function UpdateColorAlternate(player, t) {
+  await firstAlternateFunction(player, t);
+  await secondAlternateFunction(player, t);
+  await thirdAlternateFunction(t);
+}
+
+async function thirdFunction(t) {
+  let stylesheet = document.styleSheets[1];
+
+  console.log("Stylesheet:");
+  console.log(stylesheet);
+
+  var divs = document.getElementsByClassName(`p${t + 1} container`);
+
+  var chips = document.getElementsByClassName(`p${t + 1} chips`);
+
+  var camera_border_light = document.querySelector(`.p${t + 1}.light`);
+
+  // Assuming there's only one div with the class "myDiv", you can directly access it
+  var div = divs[0];
+
+  var chip = chips[0];
+
+  var score_container_element = div.querySelector(".score_container");
+  var score_element = score_container_element.querySelector(".score");
+  var name_element = div.querySelector(".name");
+
+  var symbol_elements = chip.getElementsByClassName("symbol");
+
+  var twitter = chip.querySelector(".twitter");
+
+  var twitter_text = twitter.querySelector(".text");
+
+  var twitter_logo = twitter_text.querySelector(".twitter_logo");
+
+  var location = chip.querySelector(".flagstate");
+
+  var location_text = location.querySelector(".text");
+
+  var location_logo = location_text.querySelector(".location_logo");
+
+  var chip_elements = chip.getElementsByClassName("chip");
+
+  // Get the background color of the div
+  var color = window
+    .getComputedStyle(score_container_element, null)
+    .getPropertyValue("background-color");
+
+  var components = color.match(/^rgb\((\d+),\s*(\d+),\s*(\d+)\)$/);
+
+  if (components) {
+    // Extract the individual RGB components
+    var red = parseInt(components[1]);
+    var green = parseInt(components[2]);
+    var blue = parseInt(components[3]);
+
+    // Display the color
+    console.log("The background color of the div is: " + color);
+    console.log("Red: " + red);
+    console.log("Green: " + green);
+    console.log("Blue: " + blue);
+
+    var intensity = red * 0.299 + green * 0.587 + blue * 0.114;
+    console.log("The intensity is: " + intensity);
+
+    if (intensity > 142) {
+      console.log("Word should be black");
+
+      // Change the text color
+      score_element.style.color = "rgb(24, 24, 27)";
+      name_element.style.color = "white";
+      div.style.backgroundColor = "rgb(24, 24, 27)";
+
+      changeStylesheetRule(
+        stylesheet,
+        `.p${t + 1} .twitter_logo`,
+        "background-image",
+        "url(./X_twitter_black.png)"
+      );
+
+      changeStylesheetRule(
+        stylesheet,
+        `.p${t + 1} .location_logo`,
+        "background-image",
+        "url(./map_pin_black.png)"
+      );
+
+      changeStylesheetRule(
+        stylesheet,
+        `.p${t + 1} .chip .text:not(.text_empty)`,
+        "text-shadow",
+        "none"
+      );
+
+      changeStylesheetRule(
+        stylesheet,
+        `.p${t + 1} .score`,
+        "text-shadow",
+        "none"
+      );
+
+      changeStylesheetRule(
+        stylesheet,
+        `.p${t + 1}.container`,
+        "filter",
+        "none"
+      );
+
+      changeStylesheetRule(
+        stylesheet,
+        `.p${t + 1}.under_chips`,
+        "filter",
+        "none"
+      );
+
+      camera_border_light.classList.remove("unhidden");
+
+      for (key in chip_elements) {
+        chip_elements.item(key).style.color = "rgb(24, 24, 27)";
+      }
+    } else if (intensity > 75) {
+      console.log("In the middle");
+
+      // Change the text color
+      score_element.style.color = "white";
+      name_element.style.color = "white";
+      div.style.backgroundColor = "rgb(24, 24, 27)";
+
+      changeStylesheetRule(
+        stylesheet,
+        `.p${t + 1} .twitter_logo`,
+        "background-image",
+        "url(./X_twitter_white.png)"
+      );
+
+      changeStylesheetRule(
+        stylesheet,
+        `.p${t + 1} .location_logo`,
+        "background-image",
+        "url(./map_pin_white.png)"
+      );
+
+      changeStylesheetRule(
+        stylesheet,
+        `.p${t + 1} .chip .text:not(.text_empty)`,
+        "text-shadow",
+        "0em 0em 0.2em #000"
+      );
+
+      changeStylesheetRule(
+        stylesheet,
+        `.p${t + 1} .score`,
+        "text-shadow",
+        "0em 0em 0.2em #000"
+      );
+
+      changeStylesheetRule(
+        stylesheet,
+        `.p${t + 1}.container`,
+        "filter",
+        "none"
+      );
+
+      changeStylesheetRule(
+        stylesheet,
+        `.p${t + 1}.under_chips`,
+        "filter",
+        "none"
+      );
+
+      camera_border_light.classList.remove("unhidden");
+
+      for (key in chip_elements) {
+        chip_elements.item(key).style.color = "white";
+      }
+    } else if (intensity <= 75) {
+      // Change the text color
+      score_element.style.color = "white";
+      name_element.style.color = "rgb(24, 24, 27)";
+      div.style.backgroundColor = "rgba(255, 255, 255)";
+
+      changeStylesheetRule(
+        stylesheet,
+        `.p${t + 1} .twitter_logo`,
+        "background-image",
+        "url(./X_twitter_white.png)"
+      );
+
+      changeStylesheetRule(
+        stylesheet,
+        `.p${t + 1} .location_logo`,
+        "background-image",
+        "url(./map_pin_white.png)"
+      );
+
+      changeStylesheetRule(
+        stylesheet,
+        `.p${t + 1} .chip .text:not(.text_empty)`,
+        "text-shadow",
+        "0em 0em 0.2em #000"
+      );
+
+      changeStylesheetRule(
+        stylesheet,
+        `.p${t + 1} .score`,
+        "text-shadow",
+        "0em 0em 0.2em #000"
+      );
+
+      changeStylesheetRule(
+        stylesheet,
+        `.p${t + 1}.container`,
+        "filter",
+        "drop-shadow(0 0px 2px rgba(255, 255, 255, 0.85))"
+      );
+
+      changeStylesheetRule(
+        stylesheet,
+        `.p${t + 1}.under_chips`,
+        "filter",
+        "drop-shadow(0 0px 2px rgba(255, 255, 255, 0.85))"
+      );
+
+      camera_border_light.classList.add("unhidden");
+
+      for (key in chip_elements) {
+        chip_elements.item(key).style.color = "white";
+      }
+    }
+  }
+}
+
+async function thirdAlternateFunction(t) {
+  let stylesheet = document.styleSheets[1];
+
+  var divs = document.getElementsByClassName(`p${t + 1} container`);
+
+  var chips = document.getElementsByClassName(`p${t + 1} chips`);
+
+  var camera_border_light = document.querySelector(`.p${t + 1}.light`);
+
+  // Assuming there's only one div with the class "myDiv", you can directly access it
+  var div = divs[0];
+
+  var chip = chips[0];
+
+  var score_container_element = div.querySelector(".score_container");
+  var score_element = score_container_element.querySelector(".score");
+  var name_element = div.querySelector(".name");
+
+  var symbol_elements = chip.getElementsByClassName("symbol");
+
+  var twitter = chip.querySelector(".twitter");
+
+  var twitter_text = twitter.querySelector(".text");
+
+  var twitter_logo = twitter_text.querySelector(".twitter_logo");
+
+  var location = chip.querySelector(".flagstate");
+
+  var location_text = location.querySelector(".text");
+
+  var location_logo = location_text.querySelector(".location_logo");
+
+  var chip_elements = chip.getElementsByClassName("chip");
+
+  // Get the background color of the div
+  var color = window
+    .getComputedStyle(score_container_element, null)
+    .getPropertyValue("background-color");
+
+  var components = color.match(/^rgb\((\d+),\s*(\d+),\s*(\d+)\)$/);
+
+  if (components) {
+    // Extract the individual RGB components
+    var red = parseInt(components[1]);
+    var green = parseInt(components[2]);
+    var blue = parseInt(components[3]);
+
+    // Display the color
+    console.log("The background color of the div is: " + color);
+    console.log("Red: " + red);
+    console.log("Green: " + green);
+    console.log("Blue: " + blue);
+
+    var intensity = red * 0.299 + green * 0.587 + blue * 0.114;
+    console.log("The intensity is: " + intensity);
+
+    if (intensity > 142) {
+      console.log("Word should be black");
+
+      // Change the text color
+      score_element.style.color = "rgb(24, 24, 27)";
+      name_element.style.color = "white";
+      div.style.backgroundColor = "rgb(24, 24, 27)";
+
+      changeStylesheetRule(
+        stylesheet,
+        `.p${t + 1} .twitter_logo`,
+        "background-image",
+        "url(./X_twitter_black.png)"
+      );
+
+      changeStylesheetRule(
+        stylesheet,
+        `.p${t + 1} .location_logo`,
+        "background-image",
+        "url(./map_pin_black.png)"
+      );
+
+      changeStylesheetRule(
+        stylesheet,
+        `.p${t + 1} .chip .text:not(.text_empty)`,
+        "text-shadow",
+        "none"
+      );
+
+      changeStylesheetRule(
+        stylesheet,
+        `.p${t + 1} .score`,
+        "text-shadow",
+        "none"
+      );
+
+      changeStylesheetRule(
+        stylesheet,
+        `.p${t + 1}.container`,
+        "filter",
+        "none"
+      );
+
+      changeStylesheetRule(
+        stylesheet,
+        `.p${t + 1}.under_chips`,
+        "filter",
+        "none"
+      );
+
+      for (key in chip_elements) {
+        chip_elements.item(key).style.color = "rgb(24, 24, 27)";
+      }
+    } else if (intensity > 75) {
+      console.log("In the middle");
+
+      // Change the text color
+      score_element.style.color = "white";
+      name_element.style.color = "white";
+      div.style.backgroundColor = "rgb(24, 24, 27)";
+
+      changeStylesheetRule(
+        stylesheet,
+        `.p${t + 1} .twitter_logo`,
+        "background-image",
+        "url(./X_twitter_white.png)"
+      );
+
+      changeStylesheetRule(
+        stylesheet,
+        `.p${t + 1} .location_logo`,
+        "background-image",
+        "url(./map_pin_white.png)"
+      );
+
+      changeStylesheetRule(
+        stylesheet,
+        `.p${t + 1} .chip .text:not(.text_empty)`,
+        "text-shadow",
+        "0em 0em 0.2em #000"
+      );
+
+      changeStylesheetRule(
+        stylesheet,
+        `.p${t + 1} .score`,
+        "text-shadow",
+        "0em 0em 0.2em #000"
+      );
+
+      changeStylesheetRule(
+        stylesheet,
+        `.p${t + 1}.container`,
+        "filter",
+        "none"
+      );
+
+      changeStylesheetRule(
+        stylesheet,
+        `.p${t + 1}.under_chips`,
+        "filter",
+        "none"
+      );
+
+      camera_border_light.classList.remove("unhidden");
+
+      for (key in chip_elements) {
+        chip_elements.item(key).style.color = "white";
+      }
+    } else if (intensity <= 75) {
+      console.log("Word should be white.");
+
+      // Change the text color
+      score_element.style.color = "white";
+      name_element.style.color = "rgb(24, 24, 27)";
+      div.style.backgroundColor = "rgba(255, 255, 255)";
+
+      changeStylesheetRule(
+        stylesheet,
+        `.p${t + 1} .twitter_logo`,
+        "background-image",
+        "url(./X_twitter_white.png)"
+      );
+
+      changeStylesheetRule(
+        stylesheet,
+        `.p${t + 1} .location_logo`,
+        "background-image",
+        "url(./map_pin_white.png)"
+      );
+
+      changeStylesheetRule(
+        stylesheet,
+        `.p${t + 1} .chip .text:not(.text_empty)`,
+        "text-shadow",
+        "0em 0em 0.2em #000"
+      );
+
+      changeStylesheetRule(
+        stylesheet,
+        `.p${t + 1} .score`,
+        "text-shadow",
+        "0em 0em 0.2em #000"
+      );
+
+      changeStylesheetRule(
+        stylesheet,
+        `.p${t + 1}.container`,
+        "filter",
+        "drop-shadow(0 0px 2px rgba(255, 255, 255, 0.85))"
+      );
+
+      changeStylesheetRule(
+        stylesheet,
+        `.p${t + 1}.under_chips`,
+        "filter",
+        "drop-shadow(0 0px 2px rgba(255, 255, 255, 0.85))"
+      );
+
+      for (key in chip_elements) {
+        chip_elements.item(key).style.color = "white";
+      }
+    }
+  }
+}
+
+function changeStylesheetRule(stylesheet, selector, property, value) {
+  // Make the strings lowercase
+  selector = selector.toLowerCase();
+  property = property.toLowerCase();
+  value = value.toLowerCase();
+
+  // Change it if it exists
+  for (var i = 0; i < stylesheet.cssRules.length; i++) {
+    var rule = stylesheet.cssRules[i];
+    if (rule.selectorText === selector) {
+      rule.style[property] = value;
+      return;
+    }
+  }
+
+  // Add it if it does not
+  stylesheet.insertRule(selector + " { " + property + ": " + value + "; }", 0);
+}
+// Used like so:
+// changeStylesheetRule(s, "body", "color", "rebeccapurple");
