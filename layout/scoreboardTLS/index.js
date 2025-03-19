@@ -180,7 +180,7 @@ LoadEverything().then(() => {
               `
             );
 
-            updateSLTTeam(t, player.name);
+            //updateSLTTeam(t, player.name);
 
             SetInnerHtml(
               $(`.p${t + 1} .flagcountry`),

@@ -1,0 +1,14 @@
+TYPOGRAPHIE :
+
+FUTURA PT HEAVY
+FUTURA PT LIGHT
+
+
+
+Pour les fichiers "OVERLAY GRIS.png", "OVERLAY COLOR 1.png" et "OVERLAY COLOR 2.png" :
+
+Le choix de la couleurs est en rapport avec la features du tournoi. Chaque joueur se voit attribuer une couleur au check-in et
+chaque up-set fait par un joueur rapporte des points à sa couleur. Sur l'overlay il faudrait donc afficher la couleur des joueurs en stream.
+
+
+Merci la team !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!

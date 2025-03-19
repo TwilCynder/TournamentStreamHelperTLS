@@ -29,12 +29,14 @@ class TSHGameAssetManager(QObject):
         self.signals = TSHGameAssetManagerSignals()
         self.games = {}
         self.characters = {}
+        self.variants = {}
         self.selectedGame = {}
         self.stockIcons = {}
         self.startgg_id_to_character = {}
 
         self.characterModel = QStandardItemModel()
         self.skinModels = {}
+        self.variantModel = QStandardItemModel()
         self.stageModel = QStandardItemModel()
 
         StateManager.Set(f"game", {})
@@ -94,7 +96,19 @@ class TSHGameAssetManager(QObject):
                                   "/base_files/config.json", "rb") as f:
                             self.parent().games[game] = orjson.loads(f.read())
 
-                        if os.path.isfile("./user_data/games/"+game+"/base_files/logo.png"):
+                        # Try logo_small, if it doesn't exist use logo
+                        if os.path.isfile("./user_data/games/"+game+"/base_files/logo_small.png"):
+                            self.parent().games[game]["logo"] = QIcon(
+                                QPixmap(
+                                    QImage("./user_data/games/"+game+"/base_files/logo_small.png").scaled(
+                                        64,
+                                        64,
+                                        Qt.AspectRatioMode.KeepAspectRatio,
+                                        Qt.TransformationMode.SmoothTransformation
+                                    )
+                                )
+                            )
+                        elif os.path.isfile("./user_data/games/"+game+"/base_files/logo.png"):
                             self.parent().games[game]["logo"] = QIcon(
                                 QPixmap(
                                     QImage("./user_data/games/"+game+"/base_files/logo.png").scaled(
@@ -151,20 +165,44 @@ class TSHGameAssetManager(QObject):
         gameLoaderThread.start()
 
     def SetGameFromStartGGId(self, gameid):
+        def detect_smashgg_id_match(game, id):
+            result = str(game.get("smashgg_game_id", "")) == str(id)
+            if not result:
+                alternates = game.get("alternate_versions", [])
+                alternates_ids = []
+                for alternate in alternates:
+                    if alternate.get("smashgg_game_id"):
+                        alternates_ids.append(
+                            str(alternate.get("smashgg_game_id")))
+                result = str(id) in alternates_ids
+            return (result)
+
         if len(self.games.keys()) == 0:
             return
 
         for i, game in enumerate(self.games.values()):
-            if str(game.get("smashgg_game_id")) == str(gameid):
+            if detect_smashgg_id_match(game, gameid):
                 self.LoadGameAssets(i+1)
                 break
 
     def SetGameFromChallongeId(self, gameid):
+        def detect_challonge_id_match(game, id):
+            result = str(game.get("challonge_game_id", "")) == str(id)
+            if not result:
+                alternates = game.get("alternate_versions", [])
+                alternates_ids = []
+                for alternate in alternates:
+                    if alternate.get("challonge_game_id"):
+                        alternates_ids.append(
+                            str(alternate.get("challonge_game_id")))
+                result = str(id) in alternates_ids
+            return (result)
+
         if len(self.games.keys()) == 0:
             return
 
         for i, game in enumerate(self.games.values()):
-            if str(game.get("challonge_game_id")) == str(gameid):
+            if detect_challonge_id_match(game, gameid):
                 self.LoadGameAssets(i+1)
                 break
 
@@ -201,6 +239,7 @@ class TSHGameAssetManager(QObject):
 
                     if gameObj != None:
                         self.parent().characters = gameObj.get("character_to_codename", {})
+                        self.parent().variants = gameObj.get("variant_to_codename", {})
 
                         assetsKey = ""
                         if len(list(gameObj.get("assets", {}).keys())) > 0:
@@ -240,11 +279,14 @@ class TSHGameAssetManager(QObject):
                                 except:
                                     logger.error(f)
                                     pass
-                                self.parent().stockIcons[c][number] = QImage(
-                                    './user_data/games/'+game+'/'+assetsKey+'/'+f).scaledToWidth(
-                                        32,
-                                        Qt.TransformationMode.SmoothTransformation
-                                )
+                                try:
+                                    self.parent().stockIcons[c][number] = QImage(
+                                        './user_data/games/'+game+'/'+assetsKey+'/'+f).scaledToWidth(
+                                            32,
+                                            Qt.TransformationMode.SmoothTransformation
+                                    )
+                                except:
+                                    logger.error(traceback.format_exc())
 
                         logger.info("Loaded stock icons")
 
@@ -286,36 +328,15 @@ class TSHGameAssetManager(QObject):
 
                                     packSkinMask[c][assetsKey].add(number)
 
-                                    # Get image dimensions
-                                    imgfile = QImageReader(
-                                        './user_data/games/'+game+'/'+assetsKey+'/'+f)
-
-                                    size = imgfile.size()
-
-                                    if not assetsKey in widths:
-                                        widths[assetsKey] = []
-
-                                    if size.width() != -1:
-                                        widths[assetsKey].append(size.width())
-
-                                    if not assetsKey in heights:
-                                        heights[assetsKey] = []
-
-                                    if size.height() != -1:
-                                        heights[assetsKey].append(
-                                            size.height())
                             logger.info("Character "+c+" has " +
                                         str(len(self.parent().skins[c]))+" skins")
 
                         # Set average size
                         for assetsKey in list(gameObj.get("assets", {}).keys()):
-                            if assetsKey != "base_files" and assetsKey != "stage_icon":
+                            if assetsKey != "base_files" and assetsKey not in ["stage_icon", "variant_icon"]:
                                 try:
                                     if len(widths.get(assetsKey, [])) > 0 and len(heights.get(assetsKey, [])) > 0:
-                                        gameObj["assets"][assetsKey]["average_size"] = {
-                                            "x": sum(widths[assetsKey])/len(widths[assetsKey]),
-                                            "y": sum(heights[assetsKey])/len(heights[assetsKey])
-                                        }
+                                        gameObj["assets"][assetsKey]["average_size"] = assetsObj.get("average_size")
                                 except:
                                     logger.error(traceback.format_exc())
 
@@ -341,7 +362,7 @@ class TSHGameAssetManager(QObject):
                         biggestAverage = 0
 
                         for asset in list(gameObj.get("assets", {}).keys()):
-                            if gameObj["assets"][asset].get("complete") and gameObj["assets"][asset].get("average_size"):
+                            if gameObj["assets"][asset].get("complete") and gameObj["assets"][asset].get("average_size") and asset not in ["stage_icon", "variant_icon"]:
                                 size = sum(gameObj["assets"][asset].get(
                                     "average_size").values())
 
@@ -414,15 +435,57 @@ class TSHGameAssetManager(QObject):
                         except:
                             logger.error(traceback.format_exc())
 
+                        
+                        # Load translations for variants
+                        try:
+                            for c in self.parent().variants.keys():
+                                display_name = c
+                                export_name = c
+                                en_name = c
+
+                                if self.parent().variants[c].get("locale"):
+                                    locale = TSHLocaleHelper.programLocale
+                                    if locale.replace("-", "_") in self.parent().variants[c]["locale"]:
+                                        display_name = self.parent().variants[
+                                            c]["locale"][locale.replace("-", "_")]
+                                    elif re.split("-|_", locale)[0] in self.parent().variants[c]["locale"]:
+                                        display_name = self.parent().variants[
+                                            c]["locale"][re.split("-|_", locale)[0]]
+                                    elif TSHLocaleHelper.GetRemaps(TSHLocaleHelper.programLocale) in self.parent().variants[c]["locale"]:
+                                        display_name = self.parent().variants[c]["locale"][TSHLocaleHelper.GetRemaps(
+                                            TSHLocaleHelper.programLocale)]
+
+                                    locale = TSHLocaleHelper.exportLocale
+                                    if locale.replace("-", "_") in self.parent().variants[c]["locale"]:
+                                        export_name = self.parent().variants[
+                                            c]["locale"][locale.replace("-", "_")]
+                                    elif re.split("-|_", locale)[0] in self.parent().variants[c]["locale"]:
+                                        export_name = self.parent().variants[
+                                            c]["locale"][re.split("-|_", locale)[0]]
+                                    elif TSHLocaleHelper.GetRemaps(TSHLocaleHelper.exportLocale) in self.parent().variants[c]["locale"]:
+                                        export_name = self.parent().variants[c]["locale"][TSHLocaleHelper.GetRemaps(
+                                            TSHLocaleHelper.exportLocale)]
+
+                                self.parent(
+                                ).variants[c]["display_name"] = display_name
+                                self.parent(
+                                ).variants[c]["export_name"] = export_name
+                                self.parent(
+                                ).variants[c]["en_name"] = en_name
+                        except:
+                            logger.error(traceback.format_exc())
+
                     StateManager.Set(f"game", {
                         "name": self.parent().selectedGame.get("name"),
                         "smashgg_id": self.parent().selectedGame.get("smashgg_game_id"),
                         "codename": self.parent().selectedGame.get("codename"),
-                        "logo": self.parent().selectedGame.get("path")+"/base_files/logo.png",
+                        "logo": self.parent().selectedGame.get("path", "")+"/base_files/logo.png",
+                        "defaults": self.parent().selectedGame.get("defaults"),
                     })
 
                     self.parent().UpdateCharacterModel()
                     self.parent().UpdateSkinModel()
+                    self.parent().UpdateVariantModel()
                     self.parent().UpdateStageModel()
                     self.parent().signals.onLoad.emit()
                 except:
@@ -584,6 +647,58 @@ class TSHGameAssetManager(QObject):
         except:
             logger.error(traceback.format_exc())
 
+    def UpdateVariantModel(self):
+        try:
+            self.variantModel = QStandardItemModel()
+
+            # Add one empty
+            item = QStandardItem("")
+            self.variantModel.appendRow(item)
+
+            for c in self.variants.keys():
+                item = QStandardItem()
+                item.setData(c, Qt.ItemDataRole.EditRole)
+                print(c)
+
+                data = {
+                    "name": self.variants[c].get("export_name"),
+                    "en_name": c,
+                    "display_name": self.variants[c].get("display_name"),
+                    "codename": self.variants[c].get("codename")
+                }
+
+                
+                data["icon_path"] = self.GetVariantIconPath(data["codename"])
+                if data["icon_path"]:
+                    item.setIcon(QIcon(QPixmap.fromImage(QImage(data["icon_path"])))
+                    )
+                else:
+                    item.setIcon(QIcon(QPixmap.fromImage(QImage('./assets/icons/cancel.svg')))
+                    )
+
+                if self.variants[c].get("display_name") != c:
+                    item.setData(
+                        f'{self.variants[c].get("display_name")} / {c}', Qt.ItemDataRole.EditRole)
+
+                item.setData(data, Qt.ItemDataRole.UserRole)
+                self.variantModel.appendRow(item)
+
+            self.variantModel.sort(0)
+        except:
+            logger.error(traceback.format_exc())
+
+    def GetVariantIconPath(self, variant_codename):
+        game_codename = self.selectedGame.get("codename")
+        icon_path, asset_root_path = "", "./user_data/games"
+        icon_config_path = f"{asset_root_path}/{game_codename}/variant_icon/config.json"
+        if os.path.isfile(icon_config_path):
+            with open(icon_config_path, "rt", encoding="utf-8") as icon_config_file:
+                icon_config = json.loads(icon_config_file.read())
+            icon_filename = f"{asset_root_path}/{game_codename}/variant_icon/{icon_config.get('prefix')}{variant_codename}{icon_config.get('postfix')}.png"
+            if os.path.isfile(icon_filename):
+                icon_path = icon_filename
+        return(icon_path)
+
     def UpdateSkinModel(self):
         self.skinModels = {}
 
@@ -644,8 +759,9 @@ class TSHGameAssetManager(QObject):
                 except:
                     logger.error(traceback.format_exc())
 
-                assetData["name"] = skin_name
-                assetData["en_name"] = skin_name_en
+                if skinNameData.get(skinIndex, {}).get("is_different_character", False):
+                    assetData["name"] = skin_name
+                    assetData["en_name"] = skin_name_en
 
                 item.setData(skin_name if skin_name else skinIndex,
                              Qt.ItemDataRole.EditRole)
@@ -836,10 +952,10 @@ class TSHGameAssetManager(QObject):
                 try:
                     # Skip stage icon asset packs
                     if type(asset.get("type")) == list:
-                        if "stage_icon" in asset.get("type"):
+                        if "stage_icon" in asset.get("type") or "variant_icon" in asset.get("type"):
                             continue
                     elif type(asset.get("type")) == str:
-                        if asset.get("type") == "stage_icon":
+                        if asset.get("type") in ["stage_icon", "variant_icon"]:
                             continue
 
                     assetPath = f'{self.selectedGame.get("path")}/{assetKey}/'

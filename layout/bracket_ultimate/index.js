@@ -1170,14 +1170,14 @@ LoadEverything().then(() => {
             SetInnerHtml(
               $(element).find(`.flagcountry`),
               player && player.country.asset
-                ? `<div class='flag' style='background-image: url(../../${player.country.asset.toLowerCase()})'></div>`
+                ? `<div class='flag' style="background-image: url('../../${player.country.asset.toLowerCase()}')"></div>`
                 : ""
             );
 
             SetInnerHtml(
               $(element).find(`.flagstate`),
               player && player.state.asset
-                ? `<div class='flag' style='background-image: url(../../${player.state.asset})'></div>`
+                ? `<div class='flag' style="background-image: url('../../${player.state.asset}')"></div>`
                 : ""
             );
 
@@ -1192,7 +1192,7 @@ LoadEverything().then(() => {
             SetInnerHtml(
               $(element).find(`.sponsor_icon`),
               player && player.sponsor_logo
-                ? `<div style='background-image: url(../../${player.sponsor_logo})'></div>`
+                ? `<div style="background-image: url('../../${player.sponsor_logo}')"></div>`
                 : "<div></div>"
             );
 
@@ -1219,9 +1219,7 @@ LoadEverything().then(() => {
 
             SetInnerHtml(
               $(element).find(`.sponsor-container`),
-              `<div class='sponsor-logo' style='background-image: url(../../${
-                player ? player.sponsor_logo : ""
-              })'></div>`
+              `<div class='sponsor-logo' style="background-image: url('../../${player ? player.sponsor_logo : ""}')"></div>`
             );
           }
         }
@@ -1251,6 +1249,9 @@ LoadEverything().then(() => {
                 load_settings_path: "icon",
                 slice_character: [0, 1],
                 source: `bracket.players.slot.${teamId}`,
+                scale_fill_x: true,
+                scale_fill_y: true,
+                custom_zoom: 1.0
               },
               event
             );
@@ -1498,6 +1499,9 @@ LoadEverything().then(() => {
                       load_settings_path: "icon",
                       slice_character: [0, 1],
                       source: `bracket.players.slot.${teamId}`,
+                      scale_fill_x: true,
+                      scale_fill_y: true,
+                      custom_zoom: 1.0
                     },
                     event
                   );

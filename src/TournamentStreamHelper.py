@@ -2,8 +2,10 @@
 # -*- coding: utf-8 -*-
 
 from .Helpers.TSHLocaleHelper import TSHLocaleHelper
+from .Helpers.TSHDirHelper import TSHResolve
+import faulthandler
 import shutil
-import tarfile
+import zipfile
 import qdarktheme
 import requests
 import urllib
@@ -22,6 +24,12 @@ from qtpy.QtWidgets import *
 from qtpy.QtCore import *
 from packaging.version import parse
 from loguru import logger
+from pathlib import Path
+
+crashpath = Path('./logs/tsh-crash.log').resolve()
+Path.mkdir(crashpath.parent, exist_ok=True)
+crashlog = crashpath.open(mode='w')
+faulthandler.enable(crashlog)
 
 QCoreApplication.setAttribute(Qt.AA_ShareOpenGLContexts)
 
@@ -98,6 +106,7 @@ logger.info("QApplication successfully initialized")
 from .Settings.TSHSettingsWindow import TSHSettingsWindow
 from .TSHHotkeys import TSHHotkeys
 from .TSHPlayerListWidget import TSHPlayerListWidget
+from .TSHNotesWidget import TSHNotesWidget
 from .TSHCommentaryWidget import TSHCommentaryWidget
 from .TSHGameAssetManager import TSHGameAssetManager
 from .TSHBracketWidget import TSHBracketWidget
@@ -194,28 +203,33 @@ def UpdateProcedure():
 def ExtractUpdate():
     try:
         updateLog = []
-        tar = tarfile.open("update.tar.gz")
+        with zipfile.ZipFile("update.zip", "r") as z:
+            # backup exe
+            os.rename("./TSH.exe", "./TSH_old.exe")
 
-        # backup exe
-        os.rename("./TSH.exe", "./TSH_old.exe")
+            for filename in z.namelist():
+                if "/" in filename:
+                    fullname = filename.split("/", 1)[1]
+                    if fullname.endswith("/"):
+                        updateLog.append(f"Create directory {fullname}")
+                        try:
+                            os.makedirs(os.path.dirname(fullname), exist_ok=True)
+                        except Exception:
+                            updateLog.append(f"Failed to create {filename} - {traceback.format_exc()}")
+                    else:
+                        updateLog.append(f"Extract {filename} -> {fullname}")
+                        try:
+                            z.extract(filename, path=os.path.dirname(fullname))
+                        except Exception:
+                            updateLog.append(f"Failed to extract {filename} - {traceback.format_exc()}")
 
-        for m in tar.getmembers():
-            if "/" in m.name:
-                m.name = m.name.split("/", 1)[1]
-                try:
-                    tar.extract(m)
-                    updateLog.append(f"Extract {m}")
-                except Exception:
-                    updateLog.append(f"Failed to extract {m} - {traceback.format_exc()}")
+            try:
+                with open("assets/update_log.txt", "w") as f:
+                    f.writelines(updateLog)
+            except:
+                logger.error(traceback.format_exc())
 
-        try:
-            with open("assets/update_log.txt", "w") as f:
-                f.writelines(updateLog)
-        except:
-            logger.error(traceback.format_exc())
-
-        tar.close()
-        os.remove("update.tar.gz")
+        os.remove("update.zip")
     except Exception as e:
         logger.error(traceback.format_exc())
 
@@ -236,7 +250,7 @@ class WindowSignals(QObject):
 class Window(QMainWindow):
     signals = WindowSignals()
 
-    def __init__(self, loop):
+    def __init__(self, loop=None):
         super().__init__()
 
         StateManager.loop = loop
@@ -283,7 +297,7 @@ class Window(QMainWindow):
 
         try:
             version = json.load(
-                open('./assets/versions.json', encoding='utf-8')).get("program", "?")
+                open(TSHResolve('./assets/versions.json'), encoding='utf-8')).get("program", "?")
         except Exception as e:
             version = "?"
 
@@ -361,6 +375,11 @@ class Window(QMainWindow):
         playerList.setObjectName(QApplication.translate("app", "Player List"))
         self.addDockWidget(Qt.DockWidgetArea.BottomDockWidgetArea, playerList)
         self.dockWidgets.append(playerList)
+        
+        notes = TSHNotesWidget()
+        notes.setObjectName(QApplication.translate("app", "Additional Notes"))
+        self.addDockWidget(Qt.DockWidgetArea.BottomDockWidgetArea, notes)
+        self.dockWidgets.append(notes)
 
         self.tabifyDockWidget(self.scoreboard, self.stageWidget)
         self.tabifyDockWidget(self.scoreboard, commentary)
@@ -368,6 +387,7 @@ class Window(QMainWindow):
         self.tabifyDockWidget(self.scoreboard, thumbnailSetting)
         self.tabifyDockWidget(self.scoreboard, playerList)
         self.tabifyDockWidget(self.scoreboard, bracket)
+        self.tabifyDockWidget(self.scoreboard, notes)
         self.scoreboard.raise_()
 
         # Game
@@ -471,6 +491,7 @@ class Window(QMainWindow):
         toggleWidgets.addAction(tournamentInfo.toggleViewAction())
         toggleWidgets.addAction(playerList.toggleViewAction())
         toggleWidgets.addAction(bracket.toggleViewAction())
+        toggleWidgets.addAction(notes.toggleViewAction())
 
         self.optionsBt.menu().addSeparator()
 
@@ -668,6 +689,8 @@ class Window(QMainWindow):
         )
         TSHTournamentDataProvider.instance.signals.tournament_changed.connect(
             self.SetGame)
+        TSHTournamentDataProvider.instance.signals.tournament_url_update.connect(
+            self.Signal_GameChange)
 
         pre_base_layout.addLayout(base_layout)
         hbox.addWidget(self.gameSelect)
@@ -735,6 +758,11 @@ class Window(QMainWindow):
             "name") or self.gameSelect.itemText(i) == TSHGameAssetManager.instance.selectedGame.get("codename")), None)
         if index is not None:
             self.gameSelect.setCurrentIndex(index)
+    
+    def Signal_GameChange(self, url):
+        if url == "":
+            self.gameSelect.setCurrentIndex(0)
+            TSHGameAssetManager.instance.selectedGame = {}
 
     def UpdateUserSetButton(self):
         if SettingsManager.Get("StartGG_user"):
@@ -764,8 +792,17 @@ class Window(QMainWindow):
     def closeEvent(self, event):
         self.qtSettings.setValue("geometry", self.saveGeometry())
         self.qtSettings.setValue("windowState", self.saveState())
-        if os.path.isdir("./tmp"):
-            shutil.rmtree("./tmp")
+
+        tmpDir = TSHResolve("tmp")
+        if os.path.isdir(tmpDir):
+            shutil.rmtree(tmpDir)
+
+        try:
+            crashlog.close()
+            if crashpath.stat().st_size == 0:
+                crashpath.unlink()
+        except:
+            pass
 
     def ReloadGames(self):
         logger.info("Reload games")
@@ -788,9 +825,20 @@ class Window(QMainWindow):
         self.SetGame()
 
     def DetectGameFromId(self, id):
+        def detect_smashgg_id_match(games, game, id):
+            result = str(games[game].get("smashgg_game_id", "")) == str(id)
+            if not result:
+                alternates = games[game].get("alternate_versions")
+                alternates_ids = []
+                for alternate in alternates:
+                    if alternate.get("smashgg_game_id"):
+                        alternates_ids.append(str(alternate.get("smashgg_game_id")))
+                result = str(id) in alternates_ids
+            return(result)
+
         game = next(
             (i+1 for i, game in enumerate(self.games)
-             if str(self.games[game].get("smashgg_game_id", "")) == str(id)),
+             if detect_smashgg_id_match(self.games,game,id)),
             None
         )
 
@@ -817,7 +865,7 @@ class Window(QMainWindow):
 
         try:
             versions = json.load(
-                open('./assets/versions.json', encoding='utf-8'))
+                open(TSHResolve('./assets/versions.json'), encoding='utf-8'))
         except Exception as e:
             logger.error("Local version file not found")
 
@@ -863,11 +911,19 @@ class Window(QMainWindow):
                         self.downloadDialogue.show()
 
                         def worker(progress_callback, cancel_event):
-                            with open("update.tar.gz", 'wb') as downloadFile:
+                            with open("./update.zip", 'wb') as downloadFile:
                                 downloaded = 0
 
-                                response = urllib.request.urlopen(
-                                    release["tarball_url"])
+                                dl_url = release["zipball_url"]
+
+                                if os.name == 'nt':
+                                    assets = release["assets"] if "assets" in release else []
+                                    for i in range(len(assets)):
+                                        if assets[i]["name"] == "release.zip":
+                                            dl_url = assets[i]["url"]
+                                            break
+
+                                response = urllib.request.urlopen(dl_url)
 
                                 while (True):
                                     chunk = response.read(1024*1024)
