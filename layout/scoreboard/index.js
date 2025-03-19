@@ -201,6 +201,9 @@ LoadEverything().then(() => {
               {
                 asset_key: "base_files/icon",
                 source: `score.${window.scoreboardNumber}.team.${t + 1}`,
+                scale_fill_x: true,
+                scale_fill_y: true,
+                custom_zoom: 1.0
               },
               event
             );
@@ -208,7 +211,7 @@ LoadEverything().then(() => {
             SetInnerHtml(
               $(`.p${t + 1}.container .sponsor_icon`),
               player.sponsor_logo
-                ? `<div style='background-image: url(../../${player.sponsor_logo})'></div>`
+                ? `<div style="background-image: url('../../${player.sponsor_logo}')"></div>`
                 : ""
             );
 
@@ -247,7 +250,7 @@ LoadEverything().then(() => {
 
             SetInnerHtml(
               $(`.p${t + 1}.container .sponsor-container`),
-              `<div class='sponsor-logo' style='background-image: url(../../${player.sponsor_logo})'></div>`
+              `<div class='sponsor-logo' style="background-image: url('../../${player.sponsor_logo}')"></div>`
             );
 
             if ($(".sf6.online").length > 0) {
@@ -302,6 +305,9 @@ LoadEverything().then(() => {
             asset_key: "base_files/icon",
             source: `score.${window.scoreboardNumber}.team.${t + 1}`,
             slice_character: [0, 1],
+            scale_fill_x: true,
+            scale_fill_y: true,
+            custom_zoom: 1.0
           },
           event
         );

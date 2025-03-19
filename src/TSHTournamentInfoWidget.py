@@ -11,6 +11,7 @@ from .TSHPlayerDB import TSHPlayerDB
 from .TSHTournamentDataProvider import TSHTournamentDataProvider
 from .SettingsManager import SettingsManager
 from .Helpers.TSHLocaleHelper import TSHLocaleHelper
+from .Helpers.TSHDirHelper import TSHResolve
 import traceback
 import os
 import shutil
@@ -22,7 +23,7 @@ class TSHTournamentInfoWidget(QDockWidget):
     def __init__(self, *args):
         super().__init__(*args)
 
-        uic.loadUi("src/layout/TSHTournamentInfo.ui", self)
+        uic.loadUi(TSHResolve("src/layout/TSHTournamentInfo.ui"), self)
 
         TSHTournamentDataProvider.instance.signals.tournament_data_updated.connect(
             self.UpdateData)
@@ -117,7 +118,16 @@ class TSHTournamentInfoWidget(QDockWidget):
         try:
             url = TSHTournamentDataProvider.instance.provider.GetIconURL()
 
-            response = urllib.request.urlopen(url)
+            logger.info(f"Icon URL: {url}")
+
+            headers = {
+                "client-version": "20",
+                "Content-Type": "application/json",
+                "User-Agent": "Mozilla/5.0 (Linux; Android 6.0; Nexus 5 Build/MRA58N) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/119.0.0.0 Mobile Safari/537.36"
+            }
+
+            request = urllib.request.Request(url, headers=headers)
+            response = urllib.request.urlopen(request, timeout=5)
             data = response.read()
 
             pix = QPixmap()
@@ -181,6 +191,17 @@ class TSHTournamentInfoWidget(QDockWidget):
                         # Convert date into QDate object
                         d = QDate.fromString(local_date, "yyyy-MM-dd")
                         widget.setDate(d)
+                else:
+                    exceptions = ["endAt", "eventStartAt", "eventEndAt"]
+                    info = data.get(key)
+
+                    if key in exceptions and data.get(key) != "":
+                        unix_timestamp = float(data[key])
+                        local_datetime = time.strftime("%x", time.localtime(
+                            unix_timestamp))
+                        info = local_datetime
+                    
+                    StateManager.Set(f"tournamentInfo.{key}", info)
             except:
                 logger.error(traceback.format_exc())
                 SettingsManager.Set("TOURNAMENT_URL", '')

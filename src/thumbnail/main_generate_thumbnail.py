@@ -20,6 +20,7 @@ from src.TSHGameAssetManager import TSHGameAssetManager
 from src.Helpers.TSHLocaleHelper import TSHLocaleHelper
 from src.Helpers.TSHDictHelper import *
 from src.Helpers.TSHAltTextHelper import generate_youtube
+from src.Helpers.TSHDirHelper import TSHResolve
 
 is_preview = False
 
@@ -349,29 +350,44 @@ def paste_image_matrix(thumbnail, path_matrix, max_size, paste_coordinates, eyes
 
             if not uncropped_edge:
                 if zoom_x > zoom_y:
-                    min_zoom = zoom_x * rescaling_factor
+                    min_zoom = zoom_x * proportional_zoom * rescaling_factor
                 else:
-                    min_zoom = zoom_y * rescaling_factor
+                    min_zoom = zoom_y * proportional_zoom * rescaling_factor
             else:
                 if 'u' in uncropped_edge and 'd' in uncropped_edge and 'l' in uncropped_edge and 'r' in uncropped_edge:
                     min_zoom = customZoom * proportional_zoom * rescaling_factor
                 elif not 'l' in uncropped_edge and not 'r' in uncropped_edge:
-                    min_zoom = zoom_x * rescaling_factor
+                    min_zoom = zoom_x * proportional_zoom * rescaling_factor
                 elif not 'u' in uncropped_edge and not 'd' in uncropped_edge:
-                    min_zoom = zoom_y * rescaling_factor
+                    min_zoom = zoom_y * proportional_zoom * rescaling_factor
                 else:
                     min_zoom = customZoom * proportional_zoom * rescaling_factor
 
             global scale_fill_x, scale_fill_y
             # print("scale_fill", scale_fill_x, scale_fill_y)
             if scale_fill_x and not scale_fill_y:
-                min_zoom = zoom_x
+                min_zoom = zoom_x  * proportional_zoom * rescaling_factor
             elif scale_fill_y and not scale_fill_x:
-                min_zoom = zoom_y
+                min_zoom = zoom_y  * proportional_zoom * rescaling_factor
             elif scale_fill_x and scale_fill_y:
-                min_zoom = max(zoom_x, zoom_y)
+                min_zoom = max(zoom_x, zoom_y) * rescaling_factor
 
             zoom = max(min_zoom, customZoom * min_zoom)
+            if (not 'l' in uncropped_edge and not 'r' in uncropped_edge) or (not 'u' in uncropped_edge and not 'd' in uncropped_edge):
+                minZoomWidth = min_zoom*tmpWidth
+                minZoomHeight = min_zoom*tmpHeight
+                if (not 'l' in uncropped_edge and not 'r' in uncropped_edge) and minZoomWidth != max_size[0]:
+                    correction_ratio = max_size[0] / minZoomWidth
+                    minZoomWidth = minZoomWidth * correction_ratio
+                    minZoomHeight = minZoomHeight * correction_ratio
+                    if (not (not 'u' in uncropped_edge and not 'd' in uncropped_edge)) or ((not 'u' in uncropped_edge and not 'd' in uncropped_edge) and minZoomHeight >= max_size[1]):
+                        zoom = zoom * correction_ratio
+                if (not 'u' in uncropped_edge and not 'd' in uncropped_edge) and minZoomHeight != max_size[1]:
+                    correction_ratio = max_size[1] / minZoomHeight
+                    minZoomWidth = minZoomWidth * correction_ratio
+                    minZoomHeight = minZoomHeight * correction_ratio
+                    if (not (not 'l' in uncropped_edge and not 'r' in uncropped_edge)) or ((not 'l' in uncropped_edge and not 'r' in uncropped_edge) and minZoomWidth >= max_size[0]):
+                        zoom = zoom * correction_ratio
             # print("zoom", zoom)
 
             xx = 0
@@ -1249,7 +1265,7 @@ def createFalseData(gameAssetManager: TSHGameAssetManager = None, used_assets: s
 
 
 def remove_special_chars(input_str: str):
-    invalid = '<>:"/\|?* '
+    invalid = '<>:"/\\|?* '
     for char in invalid:
         input_str = input_str.replace(char, "")
     return input_str
@@ -1273,8 +1289,8 @@ def generate(settingsManager, isPreview=False, gameAssetManager=None, scoreboard
     is_preview = isPreview
 
     data_path = "./out/program_state.json"
-    out_path = "./out/thumbnails" if not isPreview else "./tmp/thumbnail"
-    tmp_path = "./tmp"
+    out_path = "./out/thumbnails" if not isPreview else TSHResolve("tmp/thumbnail")
+    tmp_path = TSHResolve("tmp")
 
     # IMG PATH
     foreground_path = settings.get("foreground_path")
@@ -1502,7 +1518,7 @@ def generate(settingsManager, isPreview=False, gameAssetManager=None, scoreboard
         logger.info(
             f"Thumbnail successfully saved as {out_path}/{thumbnail_filename}.png and {out_path}/{thumbnail_filename}.jpg")
         yt_title, yt_description = generate_youtube(
-            scoreboardNumber, display_phase)
+            scoreboardNumber, display_phase, replace_characters=[["<", "❮"], [">", "❯"]])
         with open(f"{out_path}/{thumbnail_filename}_title.txt", "wt", encoding="utf-8") as txt_file:
             txt_file.write(yt_title)
         with open(f"{out_path}/{thumbnail_filename}_desc.txt", "wt", encoding="utf-8") as txt_file:
