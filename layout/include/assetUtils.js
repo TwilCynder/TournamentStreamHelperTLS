@@ -34,15 +34,40 @@ function GetCharacterAsset(asset, character) {
 // Gets recommended zoom
 // For uncropped assets, we add some zoom since they're usually full body arts
 // and most times we want some focus on the characters' faces
-function GetRecommendedZoom(asset) {
+function GetRecommendedZoom(asset, width, height) {
   if (asset.uncropped_edge) {
     if (
       asset.uncropped_edge.includes("u") &&
       asset.uncropped_edge.includes("d") &&
       asset.uncropped_edge.includes("l") &&
       asset.uncropped_edge.includes("r")
-    )
+    ){
       return 1.2;
+    }
+    else if(
+      (
+        (asset.uncropped_edge.includes("l") &&
+        !asset.uncropped_edge.includes("r")) ||
+        (!asset.uncropped_edge.includes("l") &&
+        asset.uncropped_edge.includes("r")) 
+      ) 
+      &&
+        width > height
+      ) {
+      return width/height;
+    }
+    else if(
+      (
+        (asset.uncropped_edge.includes("u") &&
+        !asset.uncropped_edge.includes("d")) ||
+        (!asset.uncropped_edge.includes("u") &&
+        asset.uncropped_edge.includes("d")) 
+      ) 
+      &&
+        height > width
+      ) {
+      return height/width;
+    }
   }
   return 1;
 }
@@ -174,13 +199,19 @@ async function updateCharacterContainer(e, event) {
   let anim_in = { autoAlpha: 1, duration: 0.5, stagger: 0.1 };
 
   if (settings.anim_in) {
-    anim_in = settings.anim_in;
+    anim_in = _.defaultsDeep(
+      Object.assign({}, anim_in),
+      Object.assign({}, settings.anim_in)
+    );
   }
 
   let anim_out = { autoAlpha: 0, duration: 0.5, stagger: 0.1 };
 
   if (settings.anim_out) {
-    anim_out = settings.anim_out;
+    anim_out = _.defaultsDeep(
+      Object.assign({}, anim_out),
+      Object.assign({}, settings.anim_out)
+    );
   }
 
   // Forces latest call to overwrite any ongoing animation
@@ -237,7 +268,7 @@ async function updateCharacterContainer(e, event) {
 
             console.log(settingsClone);
             if (!settingsClone.custom_zoom)
-              settingsClone.custom_zoom = GetRecommendedZoom(asset);
+              settingsClone.custom_zoom = GetRecommendedZoom(asset, $(e).width(), $(e).height());
 
             if (asset.asset.endsWith(".webm")) {
               loads.push(
@@ -255,7 +286,11 @@ async function updateCharacterContainer(e, event) {
       }
 
       await Promise.allSettled(loads);
-      gsap.fromTo($(e).children(".tsh_character"), anim_out, anim_in);
+
+      if($(e) && $(e).children(".tsh_character").length > 0){
+        anim_out.onComplete = null;
+        gsap.fromTo($(e).children(".tsh_character"), anim_out, anim_in);
+      }
     };
 
     if (firstRun) {
@@ -263,7 +298,12 @@ async function updateCharacterContainer(e, event) {
       await callback();
     } else {
       // Fade out, then change data and fade in
-      gsap.to($(e).children(".tsh_character"), anim_out).then(callback);
+      if($(e) && $(e).children(".tsh_character").length > 0){
+        anim_out.onComplete = ()=>callback();
+        await gsap.fromTo($(e).children(".tsh_character"), anim_in, anim_out)
+      } else {
+        await callback();
+      }
     }
   }
 }
