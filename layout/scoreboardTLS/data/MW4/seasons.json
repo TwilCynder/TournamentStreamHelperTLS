@@ -1,14 +1,76 @@
 [
     {
+        "name": "Jaune",
         "color": "#cee155",
         "players": [
-            "Talinesh"
+            "tatshpls",
+            "shuunx7",
+            "LeDjo",
+            "Azure",
+            "Djol",
+            "Kealyr",
+            "Artoupix",
+            "Licane",
+            "Raven",
+            "Maskime",
+            "Uzri",
+            "jemlaraklet",
+            "optimhuss"
         ]
     },
     {
+        "name": "Orange",
         "color": "#f78340",
         "players": [
-            "Burstate"
+            "Elie",
+            "babyman",
+            "lycan",
+            "monori",
+            "shapo",
+            "kiyo",
+            "guts",
+            "ouhpa",
+            "other",
+            "cross",
+            "naygis",
+            "djindjeur"
+        ]
+    },
+    {
+        "name": "Vert",
+        "color": "#39fe74",
+        "players": [
+            "Evolt",
+            "Saka",
+            "Ganymède",
+            "Talinesh",
+            "alcatrazz",
+            "jojito",
+            "blou",
+            "quche",
+            "cyrano du sud",
+            "TheMasterStorm",
+            "amael",
+            "skupcer"
+        ]
+    },
+    {
+        "name": "bleu",
+        "color": "#47cef0",
+        "players": [
+            "Burstate",
+            "Shirolebg",
+            "Famoflo",
+            "Julos",
+            "Amine",
+            "Dolby",
+            "yarnos",
+            "zang up",
+            "zuwuu",
+            "pendragon",
+            "k!no",
+            "Imagine",
+            "jinyag"
         ]
     }
 ]
