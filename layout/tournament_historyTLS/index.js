@@ -8,7 +8,7 @@ LoadEverything().then(() => {
   let startingAnimation = gsap.timeline({ paused: true });
 
   Start = async (event) => {
-    startingAnimation.restart();
+    startingAnimation.start();
   };
 
   function getNumberOrdinal(n) {
@@ -26,6 +26,9 @@ LoadEverything().then(() => {
       JSON.stringify(data.score[1].history_sets) !=
         JSON.stringify(oldData.score[1].history_sets)
     ) {
+      console.log("-----------------------------")
+      console.log(data.score[1].history_sets, window.PLAYER);
+
       tournament_html = "";
       Object.values(data.score[1].history_sets[window.PLAYER])
         .slice(0, 6)
@@ -49,6 +52,7 @@ LoadEverything().then(() => {
       )
         .slice(0, 6)
         .entries()) {
+          console.log("PROCESSING SET", s, tournament)
         SetInnerHtml(
           $(
             `.player1_content .tournament${
@@ -78,11 +82,13 @@ LoadEverything().then(() => {
               tournament.placement
             )}</span><span class="num_entrants">/${tournament.entrants}</span>`
         );
-        gsap.from(
+        startingAnimation = gsap.timeline({ paused: true });
+        startingAnimation.from(
           $(`.tournament${s + 1}`),
           { x: -100, autoAlpha: 0, duration: 0.3 },
           0.2 + 0.2 * s
         );
+        startingAnimation.restart();
       }
     }
   };

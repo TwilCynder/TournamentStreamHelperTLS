@@ -112341,6 +112341,84 @@
         ],
         "characterId": null,
         "expand": []
+      },
+      {
+        "id": 2617,
+        "name": "Iroh",
+        "isCommon": null,
+        "videogameId": 49644,
+        "externalIdMap": null,
+        "images": [
+          {
+            "id": 8000262,
+            "width": 2048,
+            "height": 2048,
+            "ratio": 1,
+            "type": "icon",
+            "url": "https://images.start.gg/images/character/2617/image-c1a4ea644699036889706a219b3f6c0a.png",
+            "isOriginal": true,
+            "entity": null,
+            "entityId": null,
+            "uploadedBy": null,
+            "createdAt": null,
+            "updatedAt": null
+          },
+          {
+            "id": 8000263,
+            "width": 64,
+            "height": 64,
+            "ratio": 1,
+            "type": "stockIcon",
+            "url": "https://images.start.gg/images/character/2617/image-92ebb848594043eb52a4260bd945fac1.png",
+            "isOriginal": true,
+            "entity": null,
+            "entityId": null,
+            "uploadedBy": null,
+            "createdAt": null,
+            "updatedAt": null
+          }
+        ],
+        "characterId": null,
+        "expand": []
+      },
+      {
+        "id": 2618,
+        "name": "T-1000",
+        "isCommon": null,
+        "videogameId": 48599,
+        "externalIdMap": null,
+        "images": [
+          {
+            "id": 8008834,
+            "width": 512,
+            "height": 512,
+            "ratio": 1,
+            "type": "icon",
+            "url": "https://images.start.gg/images/character/2618/image-9c2dbab2e05ba93c3dbbffe73933b568.png",
+            "isOriginal": true,
+            "entity": null,
+            "entityId": null,
+            "uploadedBy": null,
+            "createdAt": null,
+            "updatedAt": null
+          },
+          {
+            "id": 8008835,
+            "width": 512,
+            "height": 512,
+            "ratio": 1,
+            "type": "stockIcon",
+            "url": "https://images.start.gg/images/character/2618/image-3736ef948ca9e67f42e92a558eb0827e.png",
+            "isOriginal": true,
+            "entity": null,
+            "entityId": null,
+            "uploadedBy": null,
+            "createdAt": null,
+            "updatedAt": null
+          }
+        ],
+        "characterId": null,
+        "expand": []
       }
     ]
   },
@@ -114718,7 +114796,9 @@
     2613,
     2614,
     2615,
-    2616
+    2616,
+    2617,
+    2618
   ],
   "resultEntity": "character",
   "actionRecords": []
