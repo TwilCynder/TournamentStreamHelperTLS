@@ -5058,5 +5058,67 @@
       }
     },
     "expand": []
+  },
+  {
+    "type": "deck",
+    "cardDupeLimit": null,
+    "deckLimit": 1,
+    "cardLimit": null,
+    "maxOverlap": null,
+    "minOverlapWithPrimary": null,
+    "allowCharacterDupes": false,
+    "classSelectionCount": null,
+    "decksPerClass": null,
+    "requirePrimaryDeck": null,
+    "deckExternalLinkRegex": null,
+    "id": 209,
+    "videogameId": 103900,
+    "name": "Battle Aces",
+    "description": "Battle Aces ruleset",
+    "isDefault": true,
+    "gameMode": 1,
+    "settings": {
+      "gameSetup": true
+    },
+    "eventSettings": {
+      "deckDeadlineBehavior": {
+        "label": "Deck Deadline Behavior",
+        "isRequired": true,
+        "defaultValue": 1,
+        "component": "FormsySelectElement",
+        "componentProps": {
+          "options": [
+            {
+              "name": "Remove Entrant From Bracket",
+              "value": 0
+            },
+            {
+              "name": "Do Not Remove Entrant",
+              "value": 1
+            }
+          ]
+        }
+      },
+      "deckUploadMethod": {
+        "label": "Deck Upload Method",
+        "description": "Defines how players must display their decks.",
+        "isRequired": true,
+        "defaultValue": 1,
+        "component": "FormsySelectElement",
+        "componentProps": {
+          "options": [
+            {
+              "name": "Players upload images of their deck",
+              "value": 1
+            },
+            {
+              "name": "Disable decks",
+              "value": 0
+            }
+          ]
+        }
+      }
+    },
+    "expand": []
   }
 ]
