@@ -19,7 +19,6 @@ layout_custom*
 .DS_Store
 
 OBSDirs/
-RessourcesTLS/OBS assets/
 tournament.json
 
 build
