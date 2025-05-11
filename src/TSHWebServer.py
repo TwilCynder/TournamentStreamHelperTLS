@@ -471,10 +471,21 @@ class WebServer(QThread):
     def ws_set_tournament(message):
         emit('set_tournament', WebServer.actions.load_tournament(request.args.get('url')))
 
+    @app.route('/Assets/<path:filename>')
+    def assets(filename):
+        logger.info("----------- ASSETS ----------")
+        logger.info(filename)
+        logger.info(os.path.abspath('..'))
+        try:
+            return send_from_directory(os.path.abspath('../Assets/'), filename)
+        except Exception as e:
+            logger.error(f"File note found :{e}")
+
     @app.route('/', defaults=dict(filename=None))
     @app.route('/<path:filename>', methods=['GET', 'POST'])
     @cross_origin()
     def test(filename):
+        
         try:
             filename = filename or 'stage_strike_app/build/index.html'
             return send_from_directory(os.path.abspath('.'), filename, as_attachment=filename.endswith('.gz'))
@@ -487,3 +498,5 @@ class WebServer(QThread):
                               debug=False, use_reloader=False, allow_unsafe_werkzeug=True)
         except Exception as e:
             logger.error(traceback.format_exc())
+
+        
