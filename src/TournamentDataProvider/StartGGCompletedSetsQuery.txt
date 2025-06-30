@@ -1,0 +1,34 @@
+query CompletedSetsQuery($eventSlug: String!) {
+	event(slug: $eventSlug) {
+		sets(page: 1, perPage: 10, sortType: RECENT, filters: {state: 3}) {
+			nodes {
+				id
+				slots {
+					entrant {
+						id
+						name
+						initialSeedNum
+						participants {
+							id
+							player {
+								id
+								prefix
+								gamerTag
+							}
+						}
+					}
+				}
+				entrant1Score
+				entrant2Score
+				winnerId
+				fullRoundText
+				phaseGroup {
+					displayIdentifier
+					phase {
+						name
+					}
+				}
+			}
+		}
+	}
+}

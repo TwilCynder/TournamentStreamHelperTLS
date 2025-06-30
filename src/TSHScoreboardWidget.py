@@ -218,23 +218,25 @@ class TSHScoreboardWidget(QWidget):
         menu.addSection("Players")
 
         self.elements = [
-            ["Real Name", ["real_name", "real_nameLabel"]],
-            ["Twitter", ["twitter", "twitterLabel"]],
-            ["Location", ["locationLabel", "state", "country"]],
-            ["Characters", ["characters"]],
-            ["Pronouns", ["pronoun", "pronounLabel"]],
-            ["Additional information", ["custom_textbox"]],
+            ["Real Name",              ["real_name", "real_nameLabel"],       "show_name"],
+            ["Twitter",                ["twitter", "twitterLabel"],           "show_social"],
+            ["Location",               ["locationLabel", "state", "country"], "show_location"],
+            ["Characters",             ["characters"],                        "show_characters"],
+            ["Pronouns",               ["pronoun", "pronounLabel"],           "show_pronouns"],
+            ["Controller",             ["controller", "controllerLabel"],     "show_controller"],
+            ["Additional information", ["custom_textbox"],                    "show_additional"],
         ]
         self.elements[0][0] = QApplication.translate("app", "Real Name")
         self.elements[1][0] = QApplication.translate("app", "Twitter")
         self.elements[2][0] = QApplication.translate("app", "Location")
         self.elements[3][0] = QApplication.translate("app", "Characters")
         self.elements[4][0] = QApplication.translate("app", "Pronouns")
-        self.elements[5][0] = QApplication.translate("app", "Additional information")
+        self.elements[5][0] = QApplication.translate("app", "Controller")
+        self.elements[6][0] = QApplication.translate("app", "Additional information")
         for element in self.elements:
             action: QAction = self.eyeBt.menu().addAction(element[0])
             action.setCheckable(True)
-            action.setChecked(True)
+            action.setChecked(SettingsManager.Get(f"display_options.{element[2]}", True))
             action.toggled.connect(
                 lambda toggled, action=action, element=element: self.ToggleElements(action, element[1]))
 
@@ -287,7 +289,7 @@ class TSHScoreboardWidget(QWidget):
         hbox = QHBoxLayout()
         bottomOptions.layout().addLayout(hbox)
 
-        if self.scoreboardNumber <= 1:
+        if self.scoreboardNumber <= 1 and not SettingsManager.Get("general.hide_track_player", False) :
             self.btLoadPlayerSet = QPushButton("Load player set")
             self.btLoadPlayerSet.setIcon(
                 QIcon("./assets/icons/person_search.svg"))
@@ -529,19 +531,21 @@ class TSHScoreboardWidget(QWidget):
             StateManager.Set(
                 f"score.{self.scoreboardNumber}.team.{team}.logo", None)
 
-    def GenerateThumbnail(self, quiet_mode=False):
-        msgBox = QMessageBox()
-        msgBox.setWindowIcon(QIcon('assets/icons/icon.png'))
-        msgBox.setWindowTitle(QApplication.translate(
-            "thumb_app", "TSH - Thumbnail"))
+    def GenerateThumbnail(self, quiet_mode=False, disable_msgbox=False):
+        if not disable_msgbox:
+            msgBox = QMessageBox()
+            msgBox.setWindowIcon(QIcon('assets/icons/icon.png'))
+            msgBox.setWindowTitle(QApplication.translate(
+                "thumb_app", "TSH - Thumbnail"))
         try:
             thumbnailPath = thumbnail.generate(
                 settingsManager=SettingsManager, scoreboardNumber=self.scoreboardNumber)
-            msgBox.setText(QApplication.translate(
-                "thumb_app", "The thumbnail has been generated here:") + " " + thumbnailPath + "\n\n" + QApplication.translate(
-                "thumb_app", "The video title and description have also been generated."))
-            msgBox.setIcon(QMessageBox.NoIcon)
-            # msgBox.setInformativeText(thumbnailPath)
+            if not disable_msgbox:
+                msgBox.setText(QApplication.translate(
+                    "thumb_app", "The thumbnail has been generated here:") + " " + thumbnailPath + "\n\n" + QApplication.translate(
+                    "thumb_app", "The video title and description have also been generated."))
+                msgBox.setIcon(QMessageBox.NoIcon)
+                # msgBox.setInformativeText(thumbnailPath)
 
             thumbnail_settings = SettingsManager.Get("thumbnail_config")
             if not quiet_mode:
@@ -557,14 +561,18 @@ class TSHScoreboardWidget(QWidget):
                     else:
                         subprocess.Popen(["xdg-open", outThumbDir])
                 else:
-                    msgBox.exec()
+                    if not disable_msgbox:
+                        msgBox.exec()
             else:
                 return(thumbnailPath)
         except Exception as e:
-            msgBox.setText(QApplication.translate("app", "Warning"))
-            msgBox.setInformativeText(str(e))
-            msgBox.setIcon(QMessageBox.Warning)
-            msgBox.exec()
+            if not disable_msgbox:
+                msgBox.setText(QApplication.translate("app", "Warning"))
+                msgBox.setInformativeText(str(e))
+                msgBox.setIcon(QMessageBox.Warning)
+                msgBox.exec()
+            else:
+                raise e
     
     def PostToBsky(self):
         thumbnailPath = self.GenerateThumbnail(quiet_mode=True)
@@ -599,7 +607,7 @@ class TSHScoreboardWidget(QWidget):
             self.btSelectSet.setText(
                 QApplication.translate("app", "Load set from {0}").format(TSHTournamentDataProvider.instance.provider.url))
             self.btSelectSet.setEnabled(True)
-            if self.scoreboardNumber <= 1:
+            if self.scoreboardNumber <= 1 and not SettingsManager.Get("general.hide_track_player", False):
                 self.btLoadPlayerSet.setEnabled(True)
         else:
             self.btSelectSet.setText(

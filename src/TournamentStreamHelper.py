@@ -25,6 +25,7 @@ from qtpy.QtCore import *
 from packaging.version import parse
 from loguru import logger
 from pathlib import Path
+from glob import glob
 
 crashpath = Path('./logs/tsh-crash.log').resolve()
 Path.mkdir(crashpath.parent, exist_ok=True)
@@ -119,6 +120,7 @@ from .Workers import *
 from .StateManager import StateManager
 from .SettingsManager import SettingsManager
 from .Helpers.TSHCountryHelper import TSHCountryHelper
+from .Helpers.TSHControllerHelper import TSHControllerHelper
 from .TSHScoreboardManager import TSHScoreboardManager
 from .TSHThumbnailSettingsWidget import TSHThumbnailSettingsWidget
 from src.TSHAssetDownloader import TSHAssetDownloader
@@ -127,6 +129,44 @@ from .TSHScoreboardStageWidget import TSHScoreboardStageWidget
 from src.TSHWebServer import WebServer
 # autopep8: on
 
+def DownloadLayoutsOnBoot():
+    """
+    Downloads latest layouts from Github if the folder is empty
+    """
+    layouts_path = "./layout"
+    has_layouts = True
+    if os.path.isdir(layouts_path):
+        if not os.listdir(layouts_path) or len(os.listdir(layouts_path)) <= 2:
+            has_layouts = False
+    else:
+        if os.path.isfile(layouts_path):
+            os.remove(layouts_path)
+        os.mkdir(layouts_path)
+        has_layouts = False
+    if not has_layouts:
+        logger.info("Layouts were not detected, downloading from Github...")
+        try:
+            url = "https://github.com/TournamentStreamHelper/TournamentStreamHelper-layouts/archive/refs/heads/main.zip"
+            r = requests.get(url, allow_redirects=True)
+            zip_path = './layout/layout.zip.tmp'
+            with open(zip_path, 'wb') as zip_file:
+                zip_file.write(r.content)
+            try:
+                with zipfile.ZipFile(zip_path, 'r') as zip_file:
+                    zip_file.extractall('./layout')
+                list_files = glob(f"./layout/TournamentStreamHelper-layouts-main/*")
+                for file_path in list_files:
+                    if os.name == 'nt':
+                        new_file_path = file_path.replace("TournamentStreamHelper-layouts-main\\", "")
+                    else:
+                        new_file_path = file_path.replace("TournamentStreamHelper-layouts-main/", "")
+                    os.rename(file_path, new_file_path)
+                os.rmdir(f"./layout/TournamentStreamHelper-layouts-main")
+                os.remove(zip_path)
+            except Exception as e:
+                logger.error(f"Layouts could not be extracted\nError: {str(e)}")
+        except Exception as e:
+            logger.error(f"Layouts could not be downloaded\nError: {str(e)}")
 
 def generate_restart_messagebox(main_txt):
     messagebox = QMessageBox()
@@ -419,31 +459,64 @@ class Window(QMainWindow):
         hbox.addWidget(self.unsetTournamentBt)
 
         # Follow startgg user
+        if not SettingsManager.Get("general.hide_track_player", False):
+            hbox = QHBoxLayout()
+            group_box.layout().addLayout(hbox)
+
+            self.btLoadPlayerSet = QPushButton(
+                QApplication.translate("app", "Load tournament and sets from StartGG user"))
+            self.btLoadPlayerSet.setIcon(QIcon("./assets/icons/startgg.svg"))
+            self.btLoadPlayerSet.clicked.connect(self.LoadUserSetClicked)
+            self.btLoadPlayerSet.setIcon(QIcon("./assets/icons/startgg.svg"))
+            hbox.addWidget(self.btLoadPlayerSet)
+
+            TSHTournamentDataProvider.instance.signals.user_updated.connect(
+                self.UpdateUserSetButton)
+            TSHTournamentDataProvider.instance.signals.tournament_changed.connect(
+                self.UpdateUserSetButton)
+
+            self.btLoadPlayerSetOptions = QPushButton()
+            self.btLoadPlayerSetOptions.setSizePolicy(
+                QSizePolicy.Maximum, QSizePolicy.Maximum)
+            self.btLoadPlayerSetOptions.setIcon(
+                QIcon("./assets/icons/settings.svg"))
+            self.btLoadPlayerSetOptions.clicked.connect(
+                self.LoadUserSetOptionsClicked)
+            hbox.addWidget(self.btLoadPlayerSetOptions)
+
+            self.UpdateUserSetButton()
+        
+        # Completed Sets Feature
         hbox = QHBoxLayout()
         group_box.layout().addLayout(hbox)
+        self.btPullCompletedSets = QPushButton(
+            QApplication.translate("app", "Pull Latest Completed Sets from StartGG"))
+        self.btPullCompletedSets.setIcon(QIcon("./assets/icons/startgg.svg"))
+        self.btPullCompletedSets.clicked.connect(TSHTournamentDataProvider.instance.GetCompletedSets)
+        hbox.addWidget(self.btPullCompletedSets)
+        # label_margin = " "*18
+        # label = QLabel(
+        #     label_margin + QApplication.translate("app", "Time until Completed Sets refresh:") + " ")
+        # label.setSizePolicy(QSizePolicy.Policy.Fixed,
+        #                     QSizePolicy.Policy.Minimum)
+        # hbox.addWidget(label)
+        # self.labelSetsTimer = QLabel(QApplication.translate("app", "Disabled"))
+        # self.labelSetsTimer.setSizePolicy(QSizePolicy.Policy.Fixed,
+        #                     QSizePolicy.Policy.Minimum)
+        # hbox.addWidget(self.labelSetsTimer)
+        # self.btStopSetsPull = QPushButton()
+        # self.btStopSetsPull.setSizePolicy(
+        #     QSizePolicy.Maximum, QSizePolicy.Maximum)
+        # self.btStopSetsPull.setIcon(QIcon("./assets/icons/cancel.svg"))
+        # hbox.addWidget(self.btStopSetsPull)
 
-        self.btLoadPlayerSet = QPushButton(
-            QApplication.translate("app", "Load tournament and sets from StartGG user"))
-        self.btLoadPlayerSet.setIcon(QIcon("./assets/icons/startgg.svg"))
-        self.btLoadPlayerSet.clicked.connect(self.LoadUserSetClicked)
-        self.btLoadPlayerSet.setIcon(QIcon("./assets/icons/startgg.svg"))
-        hbox.addWidget(self.btLoadPlayerSet)
-
-        TSHTournamentDataProvider.instance.signals.user_updated.connect(
-            self.UpdateUserSetButton)
         TSHTournamentDataProvider.instance.signals.tournament_changed.connect(
-            self.UpdateUserSetButton)
+            self.UpdateLastSetsButton)
+        TSHTournamentDataProvider.instance.signals.completed_sets_updated.connect(
+            self.LoadCompletedSetsClicked
+        )
 
-        self.btLoadPlayerSetOptions = QPushButton()
-        self.btLoadPlayerSetOptions.setSizePolicy(
-            QSizePolicy.Maximum, QSizePolicy.Maximum)
-        self.btLoadPlayerSetOptions.setIcon(
-            QIcon("./assets/icons/settings.svg"))
-        self.btLoadPlayerSetOptions.clicked.connect(
-            self.LoadUserSetOptionsClicked)
-        hbox.addWidget(self.btLoadPlayerSetOptions)
-
-        self.UpdateUserSetButton()
+        self.UpdateLastSetsButton()
 
         # Settings
         menu_margin = " "*6
@@ -752,6 +825,9 @@ class Window(QMainWindow):
 
         TSHScoreboardManager.instance.signals.ScoreboardAmountChanged.connect(
             self.ToggleTopOption)
+        StateManager.Unset("completed_sets")
+
+        DownloadLayoutsOnBoot()
 
     def SetGame(self):
         index = next((i for i in range(self.gameSelect.model().rowCount()) if self.gameSelect.itemText(i) == TSHGameAssetManager.instance.selectedGame.get(
@@ -773,6 +849,12 @@ class Window(QMainWindow):
             self.btLoadPlayerSet.setText(
                 QApplication.translate("app", "Load tournament and sets from StartGG user"))
             self.btLoadPlayerSet.setEnabled(False)
+    
+    def UpdateLastSetsButton(self):
+        if TSHTournamentDataProvider.instance and TSHTournamentDataProvider.instance.provider and TSHTournamentDataProvider.instance.provider.name == "StartGG":
+            self.btPullCompletedSets.setEnabled(True)
+        else:
+            self.btPullCompletedSets.setEnabled(False)
 
     def LoadUserSetClicked(self):
         self.scoreboard.lastSetSelected = None
@@ -784,6 +866,9 @@ class Window(QMainWindow):
             )
             TSHTournamentDataProvider.instance.LoadUserSet(
                 self.scoreboard.GetScoreboard(1), SettingsManager.Get("StartGG_user"))
+    
+    def LoadCompletedSetsClicked(self, data):
+        StateManager.Set("completed_sets", {index+1: set for index, set in enumerate(data)})
 
     def LoadUserSetOptionsClicked(self):
         TSHTournamentDataProvider.instance.SetUserAccount(

@@ -67,5 +67,5 @@ logs/*
 Pipfile*
 env
 desktop.ini
-
-layout/*/config.json
+assets/controller/*
+assets/*_tmp
