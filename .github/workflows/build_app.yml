@@ -4,10 +4,6 @@ on:
   push:
     branches:
       - main
-      - locale/*
-      - feature/*
-      - new-features
-      - fix/*
     paths-ignore:
       - 'layout/**'
   workflow_dispatch:
