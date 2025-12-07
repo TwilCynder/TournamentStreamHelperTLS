@@ -2,6 +2,8 @@ import React from 'react';
 import TextField from "./TextField";
 import {Stack} from "@mui/material";
 import i18n from "i18next";
+import {BACKEND_PORT} from "../env";
+import {NumberInput} from "../NumberInput";
 
 /**
  * @typedef {object} SetScoreState
@@ -26,22 +28,31 @@ export default class SetScore extends React.Component {
      */
     constructor(props) {
         super(props);
+        this.state = this.stateFromProps(props);
+    }
 
-        this.best_of = (
+    /** @returns {SetScoreState} */
+    stateFromProps(props) {
+        const best_of = (
             (props.best_of !== undefined)
                 ? props.best_of
                 : null
         );
 
-        this.leftTeam = props.leftTeam;
-        this.rightTeam = props.rightTeam;
-        this.state = {
+        return {
             scoreLeft: props.leftTeam.score,
             scoreRight: props.rightTeam.score,
             match: props.match ?? "",
             phase: props.phase ?? "",
-            bestOf: this.best_of
+            bestOf: best_of
         };
+    }
+
+    componentDidUpdate(prevProps, prevState, snapshot) {
+        if (JSON.stringify(prevProps) !== JSON.stringify(this.props)) {
+            // console.log("Set score component received new props.", prevProps, this.props);
+            this.setState({...prevState, ...this.stateFromProps(this.props)});
+        }
     }
 
     /** @return {?number} */
@@ -56,13 +67,14 @@ export default class SetScore extends React.Component {
             : null;
     }
 
-    submitScore = () => {
+    submitScore = (scoreboardNumber) => {
         return (
-            fetch(`http://${window.location.hostname}:5000/score`,
+            fetch(`http://${window.location.hostname}:${BACKEND_PORT}/score`,
                 {
                     method: 'POST',
                     headers: {'content-type': 'application/json'},
                     body: JSON.stringify({
+                        scoreboard: scoreboardNumber,
                         team1score: Number.parseInt(this.state.scoreLeft),
                         team2score: Number.parseInt(this.state.scoreRight)
                     })
@@ -72,11 +84,11 @@ export default class SetScore extends React.Component {
         );
     }
 
-    submitSetInfo = () => {
+    submitSetInfo = (scoreboardNumber) => {
         return (
-            fetch(`http://${window.location.hostname}:5000/scoreboard1-set?` + new URLSearchParams({
+            fetch(`http://${window.location.hostname}:${BACKEND_PORT}/scoreboard${scoreboardNumber}-set?` + new URLSearchParams({
                 "best-of": this.state.bestOf,
-                "phase": this.props.phase,
+                "phase": this.state.phase,
                 "match": this.state.match,
             }).toString())
                 .then(resp => resp.text())
@@ -85,14 +97,7 @@ export default class SetScore extends React.Component {
     }
 
     render = () => {
-        const numInputStyles = {
-            '& input': {
-                width: 50,
-                paddingX: '5px',
-                textAlign: "center"
-            }
-        };
-
+        const formFieldWidth = 195;
         return (
             <Stack gap={4} direction={"column"} alignItems={"center"}>
                 <TextField
@@ -100,46 +105,38 @@ export default class SetScore extends React.Component {
                     value={this.state.phase}
                     variant={"outlined"}
                     onChange={(e) => {this.setState({...this.state, phase: e.target.value})}}
+                    sx={{width: formFieldWidth}}
                 />
                 <TextField
                     label={i18n.t("match")}
                     value={this.state.match}
                     variant={"outlined"}
                     onChange={(e) => {this.setState({...this.state, match: e.target.value})}}
+                    sx={{width: formFieldWidth}}
                 />
-                <TextField
+                <NumberInput
                     type={"number"}
                     label={i18n.t("best_of", {value: ""})}
                     variant="outlined"
+                    wingWidth={48}
                     value={this.state.bestOf}
-                    onChange={((e) => {this.setState({...this.state, bestOf: e.target.value})})}
-                    inputProps={{
-                        min: 0
-                    }}
+                    onChange={((_, newVal) => {this.setState({...this.state, bestOf: newVal})})}
+                    width={formFieldWidth}
+                    min={0}
                 />
-                <Stack gap={2} direction={"row"} alignItems={"baseline"}>
-                    <TextField
-                        type={"number"}
-                        variant="outlined"
+                <Stack gap={0.5} direction={"row"} alignItems={"baseline"}>
+                    <NumberInput
                         value={this.state.scoreLeft}
-                        onChange={((e) => {this.setState({...this.state, scoreLeft: e.target.value})})}
-                        sx={numInputStyles}
-                        inputProps={{
-                            max: this.maxWins(),
-                            min: 0
-                        }}
+                        onChange={((_, newVal) => {this.setState({...this.state, scoreLeft: newVal})})}
+                        min={0}
+                        max={this.maxWins()}
                     />
-                    <span>&nbsp;-&nbsp;</span>
-                    <TextField
-                        type={"number"}
-                        variant="outlined"
+                    <span>-</span>
+                    <NumberInput
                         value={this.state.scoreRight}
-                        onChange={((e) => {this.setState({...this.state, scoreRight: e.target.value})})}
-                        sx={numInputStyles}
-                        inputProps={{
-                            max: this.maxWins(),
-                            min: 0
-                        }}
+                        onChange={((_, newVal) => {this.setState({...this.state, scoreRight: newVal})})}
+                        min={0}
+                        max={this.maxWins()}
                     />
                 </Stack>
             </Stack>

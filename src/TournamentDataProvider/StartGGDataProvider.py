@@ -1,8 +1,5 @@
 from collections import Counter
 import re
-from time import sleep
-from qtpy.QtCore import *
-from qtpy.QtGui import QStandardItem, QStandardItemModel
 import requests
 import os
 import traceback
@@ -10,6 +7,7 @@ from loguru import logger
 from ..Helpers.TSHCountryHelper import TSHCountryHelper
 from ..Helpers.TSHDictHelper import deep_get
 from ..Helpers.TSHDirHelper import TSHResolve
+from ..Helpers.TSHQtHelper import invokeSlot
 from ..TSHGameAssetManager import TSHGameAssetManager
 from ..TSHPlayerDB import TSHPlayerDB
 from .TournamentDataProvider import TournamentDataProvider
@@ -18,7 +16,6 @@ from ..Helpers.TSHLocaleHelper import TSHLocaleHelper
 from ..TSHBracket import is_power_of_two
 
 from ..Workers import Worker
-import sys
 
 
 class StartGGDataProvider(TournamentDataProvider):
@@ -40,15 +37,13 @@ class StartGGDataProvider(TournamentDataProvider):
     TournamentPhaseGroupQuery = None
     TournamentStandingsQuery = None
     UserSetQuery = None
+    _request_timeout_secs = 20.0
 
     player_seeds = {}
 
-    def __init__(self, url, threadpool, parent) -> None:
-        super().__init__(url, threadpool, parent)
+    def __init__(self, url, threadpool, tshTdp) -> None:
+        super().__init__(url, threadpool, tshTdp)
         self.name = "StartGG"
-        self.getMatchThreadPool = QThreadPool()
-        self.getRecentSetsThreadPool = QThreadPool()
-        self.getStationMatchesThreadPool = QThreadPool()
 
     # Queries the provided URL until a proper 200 status code has been provided back
     #
@@ -66,6 +61,7 @@ class StartGGDataProvider(TournamentDataProvider):
             while requestCode != 200 and retries < 5:
                 data = type(
                     url,
+                    timeout=self._request_timeout_secs,
                     headers=headers,
                     json=jsonParams,
                     params=params
@@ -97,7 +93,7 @@ class StartGGDataProvider(TournamentDataProvider):
             videogame = deep_get(data, "data.event.videogame.id", None)
             if videogame:
                 self.videogame = videogame
-                self.parent.signals.game_changed.emit(videogame)
+                self.tshTdp.signals.game_changed.emit(videogame)
 
             finalData["tournamentName"] = deep_get(
                 data, "data.event.tournament.name", "")
@@ -334,12 +330,10 @@ class StartGGDataProvider(TournamentDataProvider):
 
         return finalData
 
-    def GetMatch(self, setId, progress_callback, cancel_event):
+    def GetMatch(self, setId, progress_callback=None, cancel_event=None):
         finalResult = None
 
         try:
-            pool = self.getMatchThreadPool
-
             result = {}
 
             fetchOld = Worker(self._GetMatchTasks, **{
@@ -347,29 +341,26 @@ class StartGGDataProvider(TournamentDataProvider):
                 "cancel_event": None,
                 "setId": setId
             })
-            fetchOld.signals.result.connect(
-                lambda value: result.update({"old": value}))
-            pool.start(fetchOld)
-
             fetchNew = Worker(self._GetMatchNewApi, **{
                 "progress_callback": None,
                 "cancel_event": None,
                 "setId": setId
             })
-            fetchNew.signals.result.connect(
-                lambda value: result.update({"new": value}))
-            pool.start(fetchNew)
+            self.threadpool.start(fetchOld)
+            self.threadpool.start(fetchNew)
 
-            pool.waitForDone(5000)
-            QCoreApplication.processEvents()
+            Worker.wait_for_all([fetchOld, fetchNew], self._request_timeout_secs)
+
+            result.update({"new": fetchNew.result if fetchNew.completed else {}})
+            result.update({"old": fetchOld.result if fetchOld.completed else {}})
 
             logger.debug(result)
 
             finalResult = {}
-            finalResult.update(result.get("new", {}))
-            finalResult.update(result.get("old", {}))
+            finalResult.update(result["new"])
+            finalResult.update(result["old"])
 
-            winnerProgression = result.get("old", {}).get("winnerProgression")
+            winnerProgression = result["old"].get("winnerProgression", None)
             if winnerProgression:
                 indicator = "qualifier_winners_indicator"
 
@@ -489,11 +480,8 @@ class StartGGDataProvider(TournamentDataProvider):
                     newSets.append(parsed)
 
                 if progress_callback:
-                    progress_callback.emit({
-                        "progress": page,
-                        "totalPages": totalPages,
-                        "sets": newSets
-                    })
+                    logger.info(f"progress_callback: {page}, {totalPages}")
+                    progress_callback(page, totalPages)
 
                 page += 1
                 logger.info(f"Fetching sets... {page}/{totalPages}")
@@ -1073,7 +1061,7 @@ class StartGGDataProvider(TournamentDataProvider):
                     stateData = {}
                     if countryData:
                         states = countryData.get("states")
-                        if stateCode:
+                        if states and stateCode:
                             stateData = states[stateCode]
 
                             path = f'./assets/state_flag/{countryCode}/{"_CON" if stateCode == "CON" else stateCode}.png'
@@ -1282,8 +1270,9 @@ class StartGGDataProvider(TournamentDataProvider):
             if sets and len(sets) > 0:
                 userSet = sets[0]
 
-                self.parent.SetTournament(
-                    "https://start.gg/"+deep_get(userSet, "event.slug"))
+                # This calls the slot using the queued execution mechanism without having to worry about signals.
+                # Do this because it means that SetTournament will always run in tshTdp's native thread.
+                invokeSlot(self.tshTdp.SetTournament, "https://start.gg/"+deep_get(userSet, "event.slug"))
 
                 playerId = deep_get(data, "data.user.player.id")
                 slots = userSet.get("slots", [])
@@ -1547,15 +1536,12 @@ class StartGGDataProvider(TournamentDataProvider):
             id1 = [str(id1[0]), str(id1[1])]
             id2 = [str(id2[0]), str(id2[1])]
 
-            pool = self.getRecentSetsThreadPool
-
             recentSets = []
-
-            pool.clear()
 
             logger.info("Get recent sets start")
 
             for _id1, _id2, inverted in [[id1, id2, False], [id2, id1, True]]:
+                workers = []
                 for i in range(5):
                     worker = Worker(self.GetRecentSetsWorker, **{
                         "id1": _id1,
@@ -1564,13 +1550,15 @@ class StartGGDataProvider(TournamentDataProvider):
                         "inverted": inverted,
                         "videogame": videogame
                     })
-                    worker.signals.result.connect(lambda result: [
-                        recentSets.extend(result)
-                    ])
-                    pool.start(worker)
+                    workers.append(worker)
+                    self.threadpool.start(worker)
 
-            pool.waitForDone(20000)
-            QCoreApplication.processEvents()
+            Worker.wait_for_all(workers)
+
+            for worker in workers:
+                if worker.result is not None:
+                    recentSets.extend(worker.result)
+
             byId = {_set.get("id"): _set for _set in recentSets}
             recentSets = list(byId.values())
             recentSets.sort(key=lambda s: s.get("timestamp"), reverse=True)
@@ -1907,7 +1895,7 @@ class StartGGDataProvider(TournamentDataProvider):
 
         return data
 
-    def GetMatchAndInsertInListBecauseFuckPython(self, setId, list, i, progress_callback, cancel_event):
+    def GetMatchAndInsertInList(self, setId, list, i, progress_callback, cancel_event):
         set = self.GetFutureMatch(setId, None)
 
         if set:
@@ -1917,26 +1905,50 @@ class StartGGDataProvider(TournamentDataProvider):
         sets = []
         pool = self.getStationMatchesThreadPool
         i = 0
+        workers = []
         for set in setsId:
             sets.append(None)
-            worker = Worker(self.GetMatchAndInsertInListBecauseFuckPython, **{
+            worker = Worker(self.GetMatchAndInsertInList, **{
                 "setId": set.get("id"),
                 "list": sets,
                 "i": i
             })
-
+            workers.append(worker)
             pool.start(worker)
 
             i += 1
 
-        pool.waitForDone(5000)
-        QCoreApplication.processEvents()
+        Worker.wait_for_all(workers, self._request_timeout_secs)
 
         sets_ = {}
         for index, set in enumerate(sets):
             sets_[str(index + 1)] = set
 
         return sets_
+
+    def GetRealEventURL(self, url):
+        matches = re.match(
+                ".*start.gg/admin/tournament/[^/]*/brackets/([^/]*)", url)
+        if matches: 
+            try:
+                data = self.QueryRequests(
+                        "https://www.start.gg/api/-/gql",
+                        type=requests.post,
+                        jsonParams={
+                            "operationName": "TournamentSlugQuery",
+                            "variables": {
+                                "id": matches.group(1)
+                                },
+                            "query": StartGGDataProvider.TournamentSlugQuery
+                            }
+                        )
+
+                slug = deep_get(data, "data.event.slug", None)
+                url = "https://www.start.gg/" + slug
+            except:
+                logger.error(traceback.format_exc())
+        self.url = url
+        return url
 
 sggTdpDir = TSHResolve('src/TournamentDataProvider')
 
@@ -1961,3 +1973,4 @@ StartGGDataProvider.TournamentPhasesQuery = readQueryFile(sggTdpDir, "Tournament
 StartGGDataProvider.TournamentPhaseGroupQuery = readQueryFile(sggTdpDir, "TournamentPhaseGroup")
 StartGGDataProvider.TournamentStandingsQuery = readQueryFile(sggTdpDir, "TournamentStandings")
 StartGGDataProvider.UserSetQuery = readQueryFile(sggTdpDir, "UserSet")
+StartGGDataProvider.TournamentSlugQuery = readQueryFile(sggTdpDir, "TournamentSlug")

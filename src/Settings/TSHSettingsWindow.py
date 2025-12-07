@@ -1,8 +1,8 @@
-import sys
 from qtpy.QtCore import *
 from qtpy.QtWidgets import *
 from .SettingsWidget import SettingsWidget
 from ..TSHHotkeys import TSHHotkeys
+from ..Helpers.TSHVersionHelper import add_beta_label
 
 
 class TSHSettingsWindow(QDialog):
@@ -40,6 +40,14 @@ class TSHSettingsWindow(QDialog):
 
         generalSettings.append((
             QApplication.translate(
+                "settings.general", "Webserver Port"),
+            "webserver_port",
+            "spinbox",
+            5000
+        ))
+
+        generalSettings.append((
+            QApplication.translate(
                 "settings.general", "Enable profanity filter"),
             "profanity_filter",
             "checkbox",
@@ -58,6 +66,14 @@ class TSHSettingsWindow(QDialog):
             QApplication.translate(
                 "settings.disable_autoupdate", "Disable automatic set updating for the scoreboard"),
             "disable_autoupdate",
+            "checkbox",
+            False
+        ))
+
+        generalSettings.append((
+            QApplication.translate(
+                "settings.disable_scoreupdate", "Disable automatic score updating for the scoreboard"),
+            "disable_scoreupdate",
             "checkbox",
             False
         ))
@@ -84,6 +100,47 @@ class TSHSettingsWindow(QDialog):
             "hide_track_player",
             "checkbox",
             False
+        ))
+
+        generalSettings.append((
+            QApplication.translate(
+                "settings.disable_country_file_downloading", "Disables attempting to download the country and states file (takes effect on next restart)"),
+            "disable_country_file_downloading",
+            "checkbox",
+            False
+        ))
+
+        generalSettings.append((
+            QApplication.translate(
+                "settings.disable_controller_file_downloading", "Disables attempting to download the controllers file (takes effect on next restart)"),
+            "disable_controller_file_downloading",
+            "checkbox",
+            False
+        ))
+
+
+        generalSettings.append((
+            add_beta_label(QApplication.translate(
+                "settings.disable_individual_game_tracker", "Disables the individual game tracker (takes effect on next restart)"), "game_tracker"),
+            "disable_individual_game_tracker",
+            "checkbox",
+            True
+        ))
+
+        generalSettings.append((
+            QApplication.translate(
+                "settings.team_1_default_color", "Default Color of Team 1"),
+            "team_1_default_color",
+            "color",
+            "#fe3636"
+        ))
+
+        generalSettings.append((
+            QApplication.translate(
+                "settings.team_2_default_color", "Default Color of Team 2"),
+            "team_2_default_color",
+            "color",
+            "#2e89ff"
         ))
 
         self.add_setting_widget(QApplication.translate(
@@ -185,6 +242,13 @@ class TSHSettingsWindow(QDialog):
 
         # Add Bluesky settings
         bskySettings = []
+        bskySettings.append((
+            QApplication.translate(
+                "settings.bsky", "Enable Bluesky Features"),
+            "enable_bluesky",
+            "checkbox",
+            True
+        ))
         bskySettings.append((
             QApplication.translate(
                 "settings.bsky", "Host server"),

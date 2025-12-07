@@ -1,17 +1,11 @@
 from qtpy.QtGui import *
 from qtpy.QtWidgets import *
 from qtpy.QtCore import *
-from qtpy import uic
-import json
 import traceback
 from loguru import logger
 
 from .TSHScoreboardPlayerWidget import TSHScoreboardPlayerWidget
-from .Helpers.TSHCountryHelper import TSHCountryHelper
 from .StateManager import StateManager
-from .TSHGameAssetManager import TSHGameAssetManager
-from .TSHPlayerDB import TSHPlayerDB
-from .TSHTournamentDataProvider import TSHTournamentDataProvider
 
 
 class TSHPlayerListSlotWidgetSignals(QObject):
@@ -79,6 +73,7 @@ class TSHPlayerListSlotWidget(QGroupBox):
         self.playerWidgets = []
 
     def SetPlayersPerTeam(self, number):
+        # logger.info(f"TSHPlayerListSlotWidget#SetPlayersPerTeam({number})")
         if number != len(self.playerWidgets):
             StateManager.BlockSaving()
             while len(self.playerWidgets) < number:
@@ -122,6 +117,7 @@ class TSHPlayerListSlotWidget(QGroupBox):
             self.signals.dataChanged.emit()
 
     def SetCharacterNumber(self, value):
+        # logger.info(f"TSHPlayerListSlotWidget#SetCharacterNumber({value})")
         StateManager.BlockSaving()
         for pw in self.playerWidgets:
             pw.SetCharactersPerPlayer(value)

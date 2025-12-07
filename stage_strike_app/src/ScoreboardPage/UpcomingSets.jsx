@@ -13,6 +13,7 @@ import i18n from "../i18n/config";
 import TextField from "./TextField";
 import {alpha} from "@mui/material/styles";
 import {ExpandMore} from "@mui/icons-material";
+import {BACKEND_PORT} from "../env";
 
 
 /**
@@ -49,7 +50,7 @@ export default class UpcomingSets extends React.Component {
             isLoading: true,
         });
 
-        fetch("http://" + window.location.hostname + `:5000/get-sets?_foo=${this.state.showFinished ? "&getFinished=true" : ""}&`)
+        fetch("http://" + window.location.hostname + `:${BACKEND_PORT}/get-sets?_foo=${this.state.showFinished ? "&getFinished=true" : ""}&`)
             .then((res) => res.json())
             .then(( /** {Array.<tourney_set>} */ data) => {
                 this.setState({
@@ -68,7 +69,7 @@ export default class UpcomingSets extends React.Component {
         });
 
         fetch(
-            "http://" + window.location.hostname + `:5000/scoreboard1-load-set?no-mains=true&set=${this.state.selectedSet?.id}`,
+            "http://" + window.location.hostname + `:${BACKEND_PORT}/scoreboard1-load-set?set=${this.state.selectedSet?.id}`,
         )
             .then((resp) => {resp.text()})
             .then((respText) => {
@@ -156,7 +157,7 @@ export default class UpcomingSets extends React.Component {
                             <FormGroup>
                                 <FormControlLabel
                                     control={
-                                        <Checkbox label="Show finished sets" onChange={this.showFinishedSetsChanged}  />
+                                        <Checkbox id={"show-finished-sets"} label="Show finished sets" onChange={this.showFinishedSetsChanged}  />
                                     }
                                     label={i18n.t("show_finished_sets")}
                                 />

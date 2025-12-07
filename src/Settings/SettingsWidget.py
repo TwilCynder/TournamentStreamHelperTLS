@@ -1,5 +1,5 @@
 from qtpy.QtWidgets import *
-from ..TSHHotkeys import TSHHotkeys
+from ..TSHColorButton import TSHColorButton
 from ..SettingsManager import SettingsManager
 import textwrap
 
@@ -27,6 +27,7 @@ class SettingsWidget(QWidget):
 
         resetButton = QPushButton(
             QApplication.translate("settings", "Default"))
+        resetButton.setSizePolicy(QSizePolicy.Maximum, QSizePolicy.Maximum)
 
         if type == "checkbox":
             settingWidget = QCheckBox()
@@ -37,6 +38,18 @@ class SettingsWidget(QWidget):
             resetButton.clicked.connect(
                 lambda bt=None, settingWidget=settingWidget:
                 settingWidget.setChecked(defaultValue)
+            )
+        elif type == "spinbox":
+            settingWidget = QSpinBox()
+            settingWidget.setMinimum(1)
+            settingWidget.setMaximum(99999)
+            settingWidget.setValue(SettingsManager.Get(
+                self.settingsBase+"."+setting, defaultValue))
+            settingWidget.valueChanged.connect(
+                lambda val=None: SettingsManager.Set(self.settingsBase+"."+setting, settingWidget.value()))
+            resetButton.clicked.connect(
+                lambda bt=None, settingWidget=settingWidget:
+                settingWidget.setValue(defaultValue)
             )
         elif type == "hotkey":
             settingWidget = QKeySequenceEdit()
@@ -71,6 +84,16 @@ class SettingsWidget(QWidget):
             resetButton.clicked.connect(
                 lambda bt=None, setting=setting, settingWidget=settingWidget: [
                     settingWidget.setText(defaultValue),
+                    callback()
+                ]
+            )
+        elif type == "color":
+            settingWidget = TSHColorButton(color=SettingsManager.Get(self.settingsBase+"."+setting, defaultValue), disable_right_click=True)
+            settingWidget.colorChanged.connect(
+                lambda val=None: SettingsManager.Set(self.settingsBase+"."+setting, settingWidget.color()))
+            resetButton.clicked.connect(
+                lambda bt=None, setting=setting, settingWidget=settingWidget: [
+                    settingWidget.setColor(defaultValue),
                     callback()
                 ]
             )

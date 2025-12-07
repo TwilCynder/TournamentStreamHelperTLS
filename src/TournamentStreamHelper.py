@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-
+from .Helpers import TSHQtHelper
+from .Helpers.TSHDownloadHelper import DownloadDialog
 from .Helpers.TSHLocaleHelper import TSHLocaleHelper
 from .Helpers.TSHDirHelper import TSHResolve
 import faulthandler
@@ -15,6 +16,7 @@ import traceback
 import time
 import os
 import unicodedata
+import socket
 import sys
 import atexit
 import time
@@ -38,6 +40,7 @@ if parse(qtpy.QT_VERSION).major == 6:
     QImageReader.setAllocationLimit(0)
 
 App = QApplication(sys.argv)
+TSHQtHelper.init_gui_executor()  # guaranteed to be the main thread.
 
 fmt = ("<green>{time:YYYY-MM-DD HH:mm:ss}</green> " +
        "| <level>{level}</level> | " +
@@ -47,7 +50,7 @@ fmt = ("<green>{time:YYYY-MM-DD HH:mm:ss}</green> " +
 if sys.stdout != None:
     config = {
         "handlers": [
-            {"sink": sys.stdout, "format": fmt},
+            {"sink": sys.stdout, "format": fmt, "level": "DEBUG"},
         ],
     }
     logger.configure(**config)
@@ -99,12 +102,28 @@ logger.add(
     rotation="20 MB"
 )
 
+try:
+    # Setting the icon for individual windows doesn't work on mac (and perhaps linux? unknown)
+    App.setWindowIcon(QIcon("assets/icons/icon.png"))
+except:
+    logger.opt(exception=True).warning("Could not set window icon for QApplication.")
+
+
 logger.critical("=== TSH IS STARTING ===")
 
 logger.info("QApplication successfully initialized")
 
+from contextlib import contextmanager
+@contextmanager
+def catchtime(msg = ''):
+    from time import perf_counter
+    start = perf_counter()
+    yield lambda: perf_counter() - start
+    logger.info(f'{msg} Time: {perf_counter() - start:.3f} seconds')
+
 # autopep8: off
 from .Settings.TSHSettingsWindow import TSHSettingsWindow
+from .LayoutOptions.TSHLayoutOptionsWindow import TSHLayoutOptionsWindow
 from .TSHHotkeys import TSHHotkeys
 from .TSHPlayerListWidget import TSHPlayerListWidget
 from .TSHNotesWidget import TSHNotesWidget
@@ -145,14 +164,10 @@ def DownloadLayoutsOnBoot():
         has_layouts = False
     if not has_layouts:
         logger.info("Layouts were not detected, downloading from Github...")
-        try:
-            url = "https://github.com/TournamentStreamHelper/TournamentStreamHelper-layouts/archive/refs/heads/main.zip"
-            r = requests.get(url, allow_redirects=True)
-            zip_path = './layout/layout.zip.tmp'
-            with open(zip_path, 'wb') as zip_file:
-                zip_file.write(r.content)
+
+        def extract_file(filename):
             try:
-                with zipfile.ZipFile(zip_path, 'r') as zip_file:
+                with zipfile.ZipFile(filename, 'r') as zip_file:
                     zip_file.extractall('./layout')
                 list_files = glob(f"./layout/TournamentStreamHelper-layouts-main/*")
                 for file_path in list_files:
@@ -162,11 +177,18 @@ def DownloadLayoutsOnBoot():
                         new_file_path = file_path.replace("TournamentStreamHelper-layouts-main/", "")
                     os.rename(file_path, new_file_path)
                 os.rmdir(f"./layout/TournamentStreamHelper-layouts-main")
-                os.remove(zip_path)
+                return True
             except Exception as e:
                 logger.error(f"Layouts could not be extracted\nError: {str(e)}")
-        except Exception as e:
-            logger.error(f"Layouts could not be downloaded\nError: {str(e)}")
+                return False
+
+        d = DownloadDialog(
+            url="https://github.com/TournamentStreamHelper/TournamentStreamHelper-layouts/archive/refs/heads/main.zip",
+            filename=None,
+            desc="Layouts",
+            validator=extract_file,
+            assume_size=(1024*1024*140)  # ~140MB
+        ).exec()
 
 def generate_restart_messagebox(main_txt):
     messagebox = QMessageBox()
@@ -285,6 +307,7 @@ class WindowSignals(QObject):
     DetectGame = Signal(int)
     SetupAutocomplete = Signal()
     UiMounted = Signal()
+    GameChanged = Signal()
 
 
 class Window(QMainWindow):
@@ -298,6 +321,7 @@ class Window(QMainWindow):
 
         TSHLocaleHelper.LoadLocale()
         TSHLocaleHelper.LoadRoundNames()
+        self.LoadTheme()
 
         self.signals = WindowSignals()
 
@@ -334,6 +358,15 @@ class Window(QMainWindow):
 
         self.allplayers = None
         self.local_players = None
+
+        # We don't want download dialogs to trigger the Qt app to try to quit when they close
+        # if it thinks they're the last window being closed.
+        App.setQuitOnLastWindowClosed(False)
+        # These downloads wait and call processEvents() in between downloads.
+        TSHControllerHelper.instance.init()
+        TSHCountryHelper.instance.UpdateCountriesFile()
+        DownloadLayoutsOnBoot()
+        App.setQuitOnLastWindowClosed(True)
 
         try:
             version = json.load(
@@ -406,9 +439,11 @@ class Window(QMainWindow):
         self.dockWidgets.append(commentary)
 
         self.webserver = WebServer(
-            parent=None, stageWidget=self.stageWidget, commentaryWidget=commentary)
-        StateManager.webServer = self.webserver
+            parent=self, stageWidget=self.stageWidget, commentaryWidget=commentary)
         self.webserver.start()
+        self.signals.GameChanged.connect(self.webserver.ws_program_state)
+        self.signals.GameChanged.connect(self.webserver.ws_get_characters)
+        self.stageWidget.stageStrikeLogic.signals.state_updated.connect(self.webserver.ws_ruleset)
 
         playerList = TSHPlayerListWidget()
         playerList.setWindowIcon(QIcon('assets/icons/list.svg'))
@@ -544,13 +579,12 @@ class Window(QMainWindow):
         action = self.optionsBt.menu().addAction(
             QApplication.translate("app", "Download assets"))
         action.setIcon(QIcon('assets/icons/download.svg'))
-        action.triggered.connect(TSHAssetDownloader.instance.DownloadAssets)
+        action.triggered.connect(lambda: TSHAssetDownloader.instance.DownloadAssets(self))
         self.downloadAssetsAction = action
 
         action = self.optionsBt.menu().addAction(
             QApplication.translate("app", "Light mode"))
         action.setCheckable(True)
-        self.LoadTheme()
         action.setChecked(SettingsManager.Get("light_mode", False))
         action.toggled.connect(self.ToggleLightMode)
 
@@ -567,6 +601,13 @@ class Window(QMainWindow):
         toggleWidgets.addAction(notes.toggleViewAction())
 
         self.optionsBt.menu().addSeparator()
+
+        # self.layoutOptions = TSHLayoutOptionsWindow(self)
+
+        # action = self.optionsBt.menu().addAction(
+        #     QApplication.translate("LayoutOptions", "Layout Options"))
+        # action.setIcon(QIcon('assets/icons/settings.svg'))
+        # action.triggered.connect(lambda: self.layoutOptions.show())
 
         action = self.optionsBt.menu().addAction(
             QApplication.translate("app", "Migrate Layout"))
@@ -720,6 +761,8 @@ class Window(QMainWindow):
             QDesktopServices.openUrl(QUrl(asset_url)),
             help_messagebox.exec()
         ])
+        
+        self.optionsBt.menu().addSeparator()
 
         self.settingsWindow = TSHSettingsWindow(self)
 
@@ -765,8 +808,40 @@ class Window(QMainWindow):
         TSHTournamentDataProvider.instance.signals.tournament_url_update.connect(
             self.Signal_GameChange)
 
+        label_margin = " "*5
+
+        # Modded content UI
+        self.moddedContentWidget = QWidget()
+        moddedContentLayout = QHBoxLayout()
+        self.moddedContentWidget.setLayout(moddedContentLayout)
+        self.moddedContentCheck = QCheckBox()
+        self.moddedContentWidget.setVisible(False)
+        self.moddedContentCheck.setChecked(False)
+        moddedContentCheckLabel = QLabel()
+        moddedContentCheckLabel.setText(label_margin + QApplication.translate("app", "Modded content"))
+        self.moddedContentWidget.setSizePolicy(QSizePolicy.Policy.Fixed, QSizePolicy.Policy.Minimum)
+        moddedContentLayout.addWidget(moddedContentCheckLabel)
+        moddedContentLayout.addWidget(self.moddedContentCheck)
+
+        TSHGameAssetManager.instance.signals.onLoad.connect(lambda x=None: [
+            self.moddedContentWidget.setVisible(TSHGameAssetManager.instance.has_modded_content),
+            self.moddedContentCheck.setChecked(StateManager.Get("game").get("mods_active", False))
+        ])
+
+        self.moddedContentCheck.stateChanged.connect(lambda x=None: [
+            print("Checked: "+ str(self.moddedContentCheck.isChecked())),
+            TSHGameAssetManager.instance.LoadGameAssets(self.gameSelect.currentData(), mods_active=self.moddedContentCheck.isChecked(), mods_reload_mode=True)
+        ]
+        )
+
+        self.gameSelect.activated.connect(
+            lambda x=None: self.moddedContentCheck.setChecked(False))
+        TSHTournamentDataProvider.instance.signals.tournament_changed.connect(
+            lambda x=None: self.moddedContentCheck.setChecked(False))
+
         pre_base_layout.addLayout(base_layout)
         hbox.addWidget(self.gameSelect)
+        hbox.addWidget(self.moddedContentWidget)
 
         self.scoreboardAmount = QSpinBox()
         self.scoreboardAmount.setMaximumWidth(100)
@@ -780,7 +855,6 @@ class Window(QMainWindow):
                 val)
         )
 
-        label_margin = " "*18
         label = QLabel(
             label_margin + QApplication.translate("app", "Number of Scoreboards"))
         label.setSizePolicy(QSizePolicy.Policy.Fixed,
@@ -814,11 +888,15 @@ class Window(QMainWindow):
 
         TSHCountryHelper.LoadCountries()
         self.settingsWindow.UiMounted()
+        # self.layoutOptions.UiMounted()
         TSHTournamentDataProvider.instance.UiMounted()
         TSHGameAssetManager.instance.UiMounted()
         TSHAlertNotification.instance.UiMounted()
         TSHAssetDownloader.instance.UiMounted()
         TSHHotkeys.instance.UiMounted(self)
+        TSHPlayerDB.signals.db_updated.connect(
+            self.webserver.ws_playerdb
+        )
         TSHPlayerDB.LoadDB()
 
         StateManager.ReleaseSaving()
@@ -827,14 +905,13 @@ class Window(QMainWindow):
             self.ToggleTopOption)
         StateManager.Unset("completed_sets")
 
-        DownloadLayoutsOnBoot()
-
-    def SetGame(self):
+    def SetGame(self, mods_active = False):
         index = next((i for i in range(self.gameSelect.model().rowCount()) if self.gameSelect.itemText(i) == TSHGameAssetManager.instance.selectedGame.get(
             "name") or self.gameSelect.itemText(i) == TSHGameAssetManager.instance.selectedGame.get("codename")), None)
         if index is not None:
             self.gameSelect.setCurrentIndex(index)
-    
+            self.signals.GameChanged.emit()
+
     def Signal_GameChange(self, url):
         if url == "":
             self.gameSelect.setCurrentIndex(0)
@@ -875,6 +952,7 @@ class Window(QMainWindow):
             self.scoreboard, startgg=True)
 
     def closeEvent(self, event):
+        logger.info("Shutting down...")
         self.qtSettings.setValue("geometry", self.saveGeometry())
         self.qtSettings.setValue("windowState", self.saveState())
 
@@ -889,25 +967,44 @@ class Window(QMainWindow):
         except:
             pass
 
+        # For whatever reason, the webserver thread won't respond to the quit() signal nicely.
+        # This is usually unsafe, but there's no easy way to terminate the flask server,
+        # so we hard-kill its thread as we're shutting down to prevent exit-crashes.
+        #
+        # Given that this webserver is local in scope, it's reasonable to not do any
+        # connection-draining process.
+        try:
+            web_socket_fd = os.environ.get('WERKZEUG_SOCKET_FD', None)
+            if web_socket_fd:
+                sock = socket.socket(fileno=int(web_socket_fd))
+                sock.close()
+        except Exception as e:
+            logger.warning("Error closing web socket on shutdown", exc_info=True)
+
+        self.webserver.terminate()
+        self.webserver.wait(10000)  # 10 seconds grace period.
+        super().closeEvent(event)
+
     def ReloadGames(self):
         logger.info("Reload games")
-        self.gameSelect.setModel(QStandardItemModel())
-        self.gameSelect.addItem("", 0)
-        for i, game in enumerate(TSHGameAssetManager.instance.games.items()):
-            if game[1].get("name"):
-                self.gameSelect.addItem(game[1].get(
-                    "logo", QIcon()), game[1].get("name"), i+1)
-            else:
-                self.gameSelect.addItem(
-                    game[1].get("logo", QIcon()), game[0], i+1)
-        self.gameSelect.setIconSize(QSize(64, 64))
-        self.gameSelect.setFixedHeight(32)
-        view = QListView()
-        view.setIconSize(QSize(64, 64))
-        view.setStyleSheet("QListView::item { height: 32px; }")
-        self.gameSelect.setView(view)
-        self.gameSelect.model().sort(0)
-        self.SetGame()
+        with StateManager.SaveBlock():
+            self.gameSelect.setModel(QStandardItemModel())
+            self.gameSelect.addItem("", 0)
+            for i, game in enumerate(TSHGameAssetManager.instance.games.items()):
+                if game[1].get("name"):
+                    self.gameSelect.addItem(game[1].get(
+                        "logo", QIcon()), game[1].get("name"), i+1)
+                else:
+                    self.gameSelect.addItem(
+                        game[1].get("logo", QIcon()), game[0], i+1)
+            self.gameSelect.setIconSize(QSize(64, 64))
+            self.gameSelect.setFixedHeight(32)
+            view = QListView()
+            view.setIconSize(QSize(64, 64))
+            view.setStyleSheet("QListView::item { height: 32px; }")
+            self.gameSelect.setView(view)
+            self.gameSelect.model().sort(0)
+            self.SetGame()
 
     def DetectGameFromId(self, id):
         def detect_smashgg_id_match(games, game, id):
@@ -971,7 +1068,7 @@ class Window(QMainWindow):
                         QLabel(QApplication.translate("app", "New version available:")+" "+myVersion+" → "+currVersion))
                     buttonReply.layout().addWidget(QLabel(release["body"]))
                     buttonReply.layout().addWidget(QLabel(
-                        QApplication.translate("app", "Update to latest version?")+"\n\n"+QApplication.translate("app", "NOTE: This will open a new tab in your browser and close Tournament Stream Helper.")))
+                        QApplication.translate("app", "Update to latest version?")+"\n\n"+QApplication.translate("app", "NOTE: This will open a new tab in your browser and close TournamentStreamHelper.")))
 
                     hbox = QHBoxLayout()
                     vbox.addLayout(hbox)
@@ -1009,6 +1106,7 @@ class Window(QMainWindow):
                                             break
 
                                 response = urllib.request.urlopen(dl_url)
+                                length = response.headers.get("Content-Length")
 
                                 while (True):
                                     chunk = response.read(1024*1024)
@@ -1022,12 +1120,12 @@ class Window(QMainWindow):
                                     if self.downloadDialogue.wasCanceled():
                                         return
 
-                                    progress_callback.emit(int(downloaded))
+                                    progress_callback(int(downloaded), length)
                                 downloadFile.close()
 
-                        def progress(downloaded):
+                        def progress(n, t):
                             self.downloadDialogue.setLabelText(
-                                QApplication.translate("app", "Downloading update...")+" "+str(downloaded/1024/1024)+" MB")
+                                QApplication.translate("app", "Downloading update...")+" "+str(n/1024/1024)+" MB")
 
                         def finished():
                             self.downloadDialogue.close()
@@ -1107,12 +1205,13 @@ class Window(QMainWindow):
             qdarktheme.setup_theme()
 
     def ToggleTopOption(self):
-        if TSHScoreboardManager.instance.GetTabAmount() > 1:
-            self.btLoadPlayerSet.setHidden(True)
-            self.btLoadPlayerSetOptions.setHidden(True)
-        else:
-            self.btLoadPlayerSet.setHidden(False)
-            self.btLoadPlayerSetOptions.setHidden(False)
+        if not SettingsManager.Get("general.hide_track_player", False):
+            if TSHScoreboardManager.instance.GetTabAmount() > 1:
+                self.btLoadPlayerSet.setHidden(True)
+                self.btLoadPlayerSetOptions.setHidden(True)
+            else:
+                self.btLoadPlayerSet.setHidden(False)
+                self.btLoadPlayerSetOptions.setHidden(False)
 
     def ChangeTab(self):
         tabNameWindow = QDialog(self)

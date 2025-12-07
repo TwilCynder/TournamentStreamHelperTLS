@@ -9,8 +9,96 @@ on:
   workflow_dispatch:
 
 jobs:
+  build_locale:
+    name: Generate Locale Files
+    runs-on: ubuntu-latest
+    if: ${{ github.ref == 'refs/heads/main' || startsWith( github.ref, 'refs/heads/feature/' ) || startsWith( github.ref, 'refs/heads/fix/' ) }}
+    strategy:
+      fail-fast: false
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          lfs: true
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.13"
+
+      - name: Extract branch name
+        shell: bash
+        run: echo "branch=${GITHUB_REF#refs/heads/}" >> $GITHUB_OUTPUT
+        id: extract_branch
+
+      - name: Install Python dependencies
+        run: pip install -r ./dependencies/requirements.txt pyside6
+
+      - name: Generate locale files
+        run: |
+          pyside6-lrelease -version
+          python3 ./src/i18n/gen_translation_files.py
+          python3 ./src/i18n/gen_translation_binaries.py
+
+      - name: Commit files
+        run: |
+          git config --local user.email "action@github.com"
+          git config --local user.name "GitHub Action"
+          git add ./src/i18n/*.ts ./src/i18n/*.qm
+          if ! git diff --cached --quiet; then
+            git commit -m "Update locale files" -a
+          else
+            echo "No changes to commit"
+          fi
+
+      - name: Push changes
+        uses: ad-m/github-push-action@master
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          branch: ${{ steps.extract_branch.outputs.branch }}
+
+  build_frontend:
+    name: build_frontend
+    runs-on: ubuntu-latest
+    if: ${{ github.ref == 'refs/heads/main' || startsWith( github.ref, 'refs/heads/feature/' ) || startsWith( github.ref, 'refs/heads/fix/' ) }}
+    outputs:
+      frontend-build: ${{ steps.upload-frontend.outputs.artifact-id }}
+    steps:
+    - uses: actions/checkout@v4
+      with:
+        sparse-checkout: |
+          stage_strike_app
+          assets
+
+    - name: Node setup
+      uses: actions/setup-node@v4
+      with:
+        node-version: 'lts/jod'
+
+    - name: Cache node_modules
+      uses: actions/cache@v4
+      with:
+        path: 'stage_strike_app/node_modules'
+        key: |
+          ${{ runner.os }}-node-${{ hashFiles('stage_strike_app/package-lock.json') }}
+        restore-keys: |
+          ${{ runner.os }}-node-
+
+    - name: Install frontend dependencies
+      working-directory: 'stage_strike_app'
+      run: npm install
+
+    - name: Build frontend
+      working-directory: 'stage_strike_app'
+      run: npm run build
+
+    - name: upload-frontend
+      uses: actions/upload-artifact@v4
+      with:
+        name: frontend-build
+        path: stage_strike_app/build
+
   build:
-    name: Generate Windows Release with Locale Files
+    needs: ['build_locale', 'build_frontend']
+    name: Generate Windows Release
     runs-on: ${{ matrix.os }}
     if: ${{ github.ref == 'refs/heads/main' || startsWith( github.ref, 'refs/heads/feature/' ) || startsWith( github.ref, 'refs/heads/fix/' || github.ref == 'refs/heads/time-bending-merge')}}
     strategy:
@@ -26,6 +114,11 @@ jobs:
         with:
           python-version: "3.10"
 
+      - name: Download frontend build
+        uses: actions/download-artifact@v5
+        with:
+          artifact-ids: ${{ needs.build_frontend.outputs.frontend-build }}
+
       - name: Extract branch name
         shell: bash
         run: echo "branch=${GITHUB_REF#refs/heads/}" >> $GITHUB_OUTPUT
@@ -34,14 +127,10 @@ jobs:
       - name: Install Python dependencies
         run: pip install -r .\dependencies\requirements.txt pyinstaller
 
-      - name: Generate locale files
-        run: |
-          pyside6-lrelease -version
-          python3 .\src\i18n\gen_translation_files.py
-          python3 .\src\i18n\gen_translation_binaries.py
-
       - name: Generate TSH Windows executable
         run: |
+          git pull origin main
+          git checkout main
           set PYTHONUTF8=1
           chcp 65001
           set PYTHONIOENCODING=utf-8
@@ -53,9 +142,9 @@ jobs:
         run: |
           git config --local user.email "action@github.com"
           git config --local user.name "GitHub Action"
-          git add TSH.exe .\src\i18n\*.ts
-          git add TSH.exe .\src\i18n\*.qm
-          git commit -m "Update exe and locale files" -a
+          git add TSH.exe
+          git add 'stage_strike_app/build'
+          git commit -m "Update exe and frontend" -a
 
       - name: Push changes
         uses: ad-m/github-push-action@master

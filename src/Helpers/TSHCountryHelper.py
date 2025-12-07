@@ -1,4 +1,5 @@
 import re
+import sys
 import unicodedata
 from qtpy.QtCore import *
 from qtpy.QtGui import *
@@ -9,6 +10,10 @@ import traceback
 import time
 from pathlib import Path
 
+from tqdm import tqdm
+
+from .TSHDownloadHelper import DownloadDialog, download_file
+from ..SettingsManager import SettingsManager
 from .TSHDirHelper import TSHResolve
 from .TSHDictHelper import deep_get
 from ..TournamentDataProvider import TournamentDataProvider
@@ -32,47 +37,40 @@ class TSHCountryHelper(QObject):
 
     def __init__(self) -> None:
         super().__init__()
-        self.UpdateCountriesFile()
 
     def UpdateCountriesFile(self):
-        class DownloaderThread(QThread):
-            def run(self):
-                out_file = Path('./assets/countries+states+cities.json')
+        url = 'https://raw.githubusercontent.com/dr5hn/countries-states-cities-database/refs/heads/master/json/countries%2Bstates%2Bcities.json'
+        out_file = Path('./assets/countries+states+cities.json')
 
-                if out_file.exists():
-                    modtime = out_file.stat().st_mtime
-                    # Less than 12 hours since file was written to?
-                    # Skip so there aren't redundant downloads
-                    if time.time() - modtime <= (12 * 60 * 60):
-                        logger.debug("Skipping countries file download")
-                        TSHCountryHelper.LoadCountries()
-                        return
+        if out_file.exists():
+            if SettingsManager.Get("general.disable_country_file_downloading", False):
+                logger.debug("Skipping countries file download (SETTING ENABLED)")
+                TSHCountryHelper.LoadCountries()
+                return
 
-                try:
-                    url = 'https://raw.githubusercontent.com/dr5hn/countries-states-cities-database/refs/heads/master/json/countries%2Bstates%2Bcities.json'
-                    r = requests.get(url, allow_redirects=True)
-                    tmp_file = Path('./assets/countries+states+cities.json.tmp')
+            modtime = out_file.stat().st_mtime
+            # Less than 12 hours since file was written to?
+            # Skip so there aren't redundant downloads
+            if time.time() - modtime <= (12 * 60 * 60):
+                logger.debug("Skipping countries file download")
+                TSHCountryHelper.LoadCountries()
+                return
 
-                    with tmp_file.open(mode='wb') as f:
-                        f.write(r.content)
+        def validate(filename):
+            with open(filename, mode='r', encoding='utf-8') as f:
+                orjson.loads(f.read())
+                return True
 
-                    try:
-                        # Test if downloaded JSON is valid
-                        with tmp_file.open(mode='r', encoding='utf-8') as f:
-                            orjson.loads(f.read())
+        DownloadDialog(
+            url=url,
+            filename=str(out_file),
+            desc="Countries file",
+            validator=validate,
+        ).exec()
 
-                        # Remove old file, overwrite with new one
-                        tmp_file.replace(out_file)
-
-                        logger.info("Countries file updated")
-                        TSHCountryHelper.LoadCountries()
-                    except:
-                        logger.error("Countries files download failed")
-                except Exception as e:
-                    logger.error(
-                        "Could not update countries+states+cities.json: "+str(e))
-        downloaderThread = DownloaderThread(self)
-        downloaderThread.start()
+        logger.info("Updating data_countries file...")
+        TSHCountryHelper.LoadCountries()
+        logger.info("data_countries file updated.")
 
     def remove_accents_lower(input_str):
         nfkd_form = unicodedata.normalize('NFKD', input_str)
@@ -140,16 +138,15 @@ class TSHCountryHelper(QObject):
                     }
 
                     for s in c.get("states", []):
-                        if s.get("state_code") is None:
+                        if s.get("iso2") is None:
                             continue
 
-                        scode = s.get("state_code") if not s.get("state_code").isdigit() else "".join([
-                            word[0] for word in re.split(r'\s+|-', s.get("name").strip()) if len(word) > 0])
+                        scode = s.get("iso2")
 
-                        TSHCountryHelper.countries[c["iso2"]]["states"][s["state_code"]] = {
+                        TSHCountryHelper.countries[c["iso2"]]["states"][s["iso2"]] = {
                             "name": s.get("name"),
                             "code": scode,
-                            "original_code": s.get("state_code"),
+                            "original_code": s.get("iso2"),
                             "latitude": s.get("latitude"),
                             "longitude": s.get("longitude"),
                         }
@@ -183,8 +180,7 @@ class TSHCountryHelper(QObject):
                         city_name = TSHCountryHelper.remove_accents_lower(
                             c["name"])
                         if city_name not in TSHCountryHelper.cities[country["iso2"]]:
-                            TSHCountryHelper.cities[country["iso2"]
-                                                    ][city_name] = state["state_code"]
+                            TSHCountryHelper.cities[country["iso2"]][city_name] = state["iso2"]
 
             TSHCountryHelper.signals.countriesUpdated.emit()
 
@@ -261,6 +257,29 @@ class TSHCountryHelper(QObject):
                 return state
 
         return None
+
+
+    def GetStates(country_code: str):
+        """Returns the states for a country code, or None if the country cannot be found"""
+
+        country_data = TSHCountryHelper.countries.get(country_code)
+        if country_data:
+            return country_data.get("states") or {}
+
+        return None
+
+    def GetCities(country_code: str, state_code: str):
+        """Returns the cities for a country+state code, or None if the state can't be found"""
+
+        states = TSHCountryHelper.get_states(country_code)
+        if not states:
+            return None
+
+        state = states.get(state_code, None)
+        if not state:
+            return None
+
+        return state.cities
 
 
 TSHCountryHelper.instance = TSHCountryHelper()
