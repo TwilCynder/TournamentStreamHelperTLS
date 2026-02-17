@@ -699,3 +699,13 @@ class WebServer(QThread):
                               debug=False, use_reloader=False, allow_unsafe_werkzeug=True)
         except Exception as e:
             logger.error(traceback.format_exc())
+
+    @app.route('/Assets/<path:filename>')
+    def assets(filename):
+        logger.info("----------- ASSETS REQUEST ----------")
+        logger.info(filename)
+        logger.info(os.path.abspath('..'))
+        try:
+            return send_from_directory(os.path.abspath('../Assets/'), filename)
+        except Exception as e:
+            logger.error(f"File note found :{e}")
