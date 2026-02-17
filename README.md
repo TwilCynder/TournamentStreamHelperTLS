@@ -1,6 +1,6 @@
 # TournamentStreamHelper
 
-A Stream helper for fighting game tournaments!
+A Stream helper for fighting game tournaments! Forked from [the original repository by joaorb64](https://github.com/joaorb64/TournamentStreamHelper)
 
 <a href="https://discord.gg/X9Sp2FkcHF">
         <img src="https://img.shields.io/discord/1012284618457759755?color=5865F2&label=TSH%20-%20Tournament%20Stream%20Helper&logo=discord&logoColor=white"
