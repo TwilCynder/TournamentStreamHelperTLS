@@ -3,13 +3,13 @@ from qtpy.QtGui import *
 from qtpy.QtWidgets import *
 from qtpy.QtCore import *
 
+from src.Helpers.TSHQtHelper import assert_gui_thread, gui_thread_sync
 from src.TSHGameAssetManager import TSHGameAssetManager
 from src.Workers import Worker
 
 import requests
 import shutil
 import py7zr
-import urllib
 import orjson
 import os
 from loguru import logger
@@ -67,7 +67,8 @@ class TSHAssetDownloader(QObject):
         thread = AssetUpdatesThread(self)
         thread.start()
 
-    def DownloadAssets(self):
+    @assert_gui_thread
+    def DownloadAssets(self, main_window):
         assets = self.DownloadAssetsFetch()
 
         if assets is None:
@@ -76,11 +77,26 @@ class TSHAssetDownloader(QObject):
         self.preDownloadDialogue = QDialog()
         self.preDownloadDialogue.setWindowTitle(
             QApplication.translate("app", "Download assets"))
+
+        # We set the dialog to non-modal and do enable/disable semantics manually. This
+        # is because on Mac, a window modal is a weird embedded sheet thing that you
+        # have to close with escape. The previous method of using an ApplicationModal
+        # actually prevents any other modal from being active. (hence the name, it's a
+        # modal blocks out the whole application, rather than just its parent widget)
+        # This causes issues with the download sub-modal that we will want to open later.
+        #
+        # Note that window modality and window flag: dialog are not the same. Window flag
+        # dialog ensures that the window pops up floating and is decorated like a dialog.
         self.preDownloadDialogue.setWindowModality(
-            Qt.WindowModality.ApplicationModal)
+            Qt.WindowModality.NonModal)
+        self.preDownloadDialogue.setWindowFlags(Qt.WindowType.Dialog)
         self.preDownloadDialogue.setLayout(QVBoxLayout())
         self.preDownloadDialogue.resize(1400, 500)
+        self.preDownloadDialogue.finished.connect(lambda: main_window.setEnabled(True))
         self.preDownloadDialogue.show()
+
+        if main_window is not None:
+            main_window.setEnabled(False)
 
         self.select = QComboBox()
         selectProxy = QSortFilterProxyModel()
@@ -144,13 +160,17 @@ class TSHAssetDownloader(QObject):
 
         self.select.model().sort(0)
 
+        @assert_gui_thread
         def ReloadGameAssets(index=None):
             nonlocal self
 
             index = self.select.currentData()
 
-            if index == None:
+            if index is None:
                 index = self.select.currentIndex()
+
+            if index < 0 or index >= len(assets):
+                return
 
             model.clear()
             header_labels = [
@@ -180,9 +200,12 @@ class TSHAssetDownloader(QObject):
             header_labels[10] = QApplication.translate("app", "Credits")
 
             model.setHorizontalHeaderLabels(header_labels)
-            if downloadList and not downloadList.isColumnHidden(0):
-                downloadList.hideColumn(0)
-            downloadList.hideColumn(1)
+            try:
+                if downloadList and not downloadList.isColumnHidden(0):
+                    downloadList.hideColumn(0)
+                downloadList.hideColumn(1)
+            except RuntimeError:
+                pass
             downloadList.horizontalHeader().setStretchLastSection(True)
             downloadList.setWordWrap(True)
             downloadList.resizeColumnsToContents()
@@ -285,6 +308,7 @@ class TSHAssetDownloader(QObject):
 
         btUpdateAll.clicked.connect(TSHAssetDownloader.UpdateAllAssets)
 
+        @assert_gui_thread
         def DownloadStart():
             nonlocal self
 
@@ -295,7 +319,11 @@ class TSHAssetDownloader(QObject):
             game = downloadList.model().index(row, 0).data()
             key = downloadList.model().index(row, 1).data()
 
-            filesToDownload = assets[game]["assets"][key]["files"]
+            try:
+                filesToDownload = assets[game]["assets"][key]["files"]
+            except KeyError:
+                logger.error(f"Asset data not found for game={game!r} key={key!r}")
+                return
 
             for f in filesToDownload:
                 filesToDownload[f]["path"] = "https://github.com/joaorb64/StreamHelperAssets/releases/latest/download/" + \
@@ -312,13 +340,17 @@ class TSHAssetDownloader(QObject):
             self.downloadDialogue.setWindowModality(
                 Qt.WindowModality.WindowModal)
             self.downloadDialogue.show()
+            self.downloadDialogue.setAutoClose(False)
+            self.downloadDialogue.setAutoReset(False)
+            self.preDownloadDialogue.setEnabled(False)
             worker = Worker(self.DownloadAssetsWorker, *
                             [[list(filesToDownload.values())]])
             worker.signals.progress.connect(self.DownloadAssetsProgress)
             worker.signals.finished.connect(self.DownloadAssetsFinished)
+            worker.signals.error.connect(self.DownloadAssetsFailed)
             self.threadpool.start(worker)
 
-        btOk.clicked.connect(DownloadStart)
+        btOk.clicked.connect(lambda: DownloadStart())
 
     def DownloadAssetsFetch(self):
         assets = None
@@ -336,23 +368,26 @@ class TSHAssetDownloader(QObject):
     def DownloadGameIcon(self, game_code, index, progress_callback, cancel_event):
         try:
             # Try getting logo_small
-            response = urllib.request.urlopen(
+            response = requests.get(
                 f"https://raw.githubusercontent.com/joaorb64/StreamHelperAssets/main/games/{game_code}/base_files/logo_small.png")
-            data = response.read()
+            response.raise_for_status()
+            data = response.content
             return ([index, data])
         except Exception as e1:
             logger.error(traceback.format_exc())
             try:
                 # Try getting logo
-                response = urllib.request.urlopen(
+                response = requests.get(
                     f"https://raw.githubusercontent.com/joaorb64/StreamHelperAssets/main/games/{game_code}/base_files/logo.png")
-                data = response.read()
+                response.raise_for_status()
+                data = response.content
                 return ([index, data])
             except Exception as e2:
                 # All options failed
                 logger.error(traceback.format_exc())
                 return (None)
 
+    @assert_gui_thread
     def DownloadGameIconComplete(self, result):
         try:
             if result is not None:
@@ -377,14 +412,19 @@ class TSHAssetDownloader(QObject):
             for f in fileList:
                 with open("user_data/games/"+f["name"], 'wb') as downloadFile:
                     logger.info("Downloading "+f["name"])
-                    progress_callback.emit(QApplication.translate(
-                        "app", "Downloading {0}... ({1}/{2})").format(f["name"], i+1, len(files)))
 
-                    response = urllib.request.urlopen(f["path"])
+                    # Queue to slot so we're not modifying the GUI from
+                    # a worker thread.
+                    gui_thread_sync(self.DownloadAssetsSetLabelText)(
+                        QApplication.translate(
+                            "app",
+                            "Downloading {0}... ({1}/{2})").format(f['name'], i+1, len(files))
+                    )
 
-                    while (True):
-                        chunk = response.read(1024*1024)
+                    response = requests.get(f["path"], stream=True)
+                    response.raise_for_status()
 
+                    for chunk in response.iter_content(chunk_size=1024*1024):
                         if not chunk:
                             break
 
@@ -394,11 +434,21 @@ class TSHAssetDownloader(QObject):
                         if self.downloadDialogue.wasCanceled():
                             return
 
-                        progress_callback.emit(
-                            min(int(downloaded/totalSize*100), 99))
+                        progress_callback(downloaded, totalSize)
                     downloadFile.close()
 
                     logger.info("Download OK")
+
+            @gui_thread_sync
+            def update_gui():
+                self.DownloadAssetsSetLabelText(
+                    QApplication.translate(
+                        "app",
+                        "Extracting... ({0}/{1})"
+                    ).format(i+1, len(files))
+                )
+                self.downloadDialogue.setRange(0, 0)
+            update_gui()
 
             is7z = ".7z" in fileList[0]["name"]
 
@@ -422,7 +472,7 @@ class TSHAssetDownloader(QObject):
                 for f in fileList:
                     os.remove("./user_data/games/"+f["name"])
             else:
-                for f in files:
+                for f in fileList:
                     if os.path.isfile(f["extractpath"]+"/"+f["name"]):
                         os.remove(f["extractpath"]+"/"+f["name"])
                     shutil.move("./user_data/games/" +
@@ -430,26 +480,47 @@ class TSHAssetDownloader(QObject):
 
             logger.info("Extract OK")
 
-        progress_callback.emit(100)
+        progress_callback(totalSize, totalSize)
 
         logger.info("All OK")
 
-    def DownloadAssetsProgress(self, n):
-        if type(n) == int:
-            self.downloadDialogue.setValue(n)
+    @Slot(str)
+    @assert_gui_thread
+    def DownloadAssetsSetLabelText(self, s):
+        self.downloadDialogue.setLabelText(s)
 
-            if n == 100:
-                self.downloadDialogue.setMaximum(0)
-                self.downloadDialogue.setValue(0)
-                self.downloadDialogue.close()
-        else:
-            self.downloadDialogue.setLabelText(n)
+    @Slot(int, int)
+    @assert_gui_thread
+    def DownloadAssetsProgress(self, n, t):
+        self.downloadDialogue.setValue(n)
+        self.downloadDialogue.setMaximum(t)
 
-    def DownloadAssetsFinished(self):
+        if n >= t:
+            self.downloadDialogue.setMaximum(t)
+            self.downloadDialogue.setValue(t)
+
+    @assert_gui_thread
+    def DownloadAssetsFailed(self, error):
+        _, value, tb = error
+        logger.error(f"Asset download failed: {tb}")
         self.downloadDialogue.close()
+        if hasattr(self, 'preDownloadDialogue'):
+            self.preDownloadDialogue.setEnabled(True)
+            self.preDownloadDialogue.setFocus()
+        messagebox = QMessageBox()
+        messagebox.setText(
+            QApplication.translate("app", "Download failed:") + "\n" + str(value))
+        messagebox.exec()
+
+    @assert_gui_thread
+    def DownloadAssetsFinished(self):
         TSHGameAssetManager.instance.LoadGames()
         TSHAssetDownloader.instance.CheckAssetUpdates()
+        self.downloadDialogue.close()
+        self.preDownloadDialogue.setEnabled(True)
+        self.preDownloadDialogue.setFocus()
 
+    @assert_gui_thread
     def UpdateAllAssets(self):
         def f(assets):
             TSHAssetDownloader.instance.signals.AssetUpdates.disconnect(f)
@@ -458,6 +529,9 @@ class TSHAssetDownloader(QObject):
 
             for game, _assets in assets.items():
                 for asset in _assets:
+                    if "files" not in asset:
+                        logger.warning(f"Asset entry for game={game!r} missing 'files' key, skipping")
+                        continue
                     filesToDownload = list(asset["files"].values())
                     for fileToDownload in filesToDownload:
                         fileToDownload["path"] = f'https://github.com/joaorb64/StreamHelperAssets/releases/latest/download/{fileToDownload["name"]}'
@@ -474,12 +548,14 @@ class TSHAssetDownloader(QObject):
             TSHAssetDownloader.instance.downloadDialogue.setWindowModality(
                 Qt.WindowModality.WindowModal)
             TSHAssetDownloader.instance.downloadDialogue.show()
+            TSHAssetDownloader.instance.downloadDialogue.setFocus()
             worker = Worker(
                 TSHAssetDownloader.instance.DownloadAssetsWorker, *[allFilesToDownload])
-            worker.signals.progress.connect(
-                TSHAssetDownloader.instance.DownloadAssetsProgress)
+            worker.signals.progress.connect(TSHAssetDownloader.instance.DownloadAssetsProgress)
             worker.signals.finished.connect(
                 TSHAssetDownloader.instance.DownloadAssetsFinished)
+            worker.signals.error.connect(
+                TSHAssetDownloader.instance.DownloadAssetsFailed)
             TSHAssetDownloader.instance.threadpool.start(worker)
 
         TSHAssetDownloader.instance.signals.AssetUpdates.connect(f)

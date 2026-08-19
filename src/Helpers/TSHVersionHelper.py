@@ -17,7 +17,20 @@ def get_beta_status(feature):
 
 def add_beta_label(text, feature):
     if get_beta_status(feature):
-        beta_label = "[" + str(QApplication.translate("app", "beta")).upper() + "] "
-        return(beta_label + text)
+        beta_label = str(QApplication.translate("punctuation", "[")) + str(QApplication.translate("app", "beta")).upper() + str(QApplication.translate("punctuation", "]"))
+        if str(QApplication.translate("punctuation", "]")) == "]":
+            return(beta_label + " " + text)
+        else:
+            return(beta_label + text)
     else:
         return(text)
+    
+def get_supported_providers():
+    try:
+        versions = json.load(
+            open(TSHResolve('./assets/versions.json'), encoding='utf-8'))
+    except Exception as e:
+        logger.error("Local version file not found")
+        versions = {}
+    
+    return(versions.get("supported_providers", []))

@@ -4,16 +4,20 @@ from loguru import logger
 import random
 from urllib.parse import quote as urlencode
 
+from qtpy.QtCore import QObject
 
-class TournamentDataProvider:
-    def __init__(self, url, threadpool, parent) -> None:
+
+class TournamentDataProvider(QObject):
+    def __init__(self, url, threadpool, tshTdp) -> None:
+        super().__init__(None)
+
         self.name = ""
         self.url = url
         self.entrants = []
         self.tournamentData = {}
         self.threadpool = threadpool
         self.videogame = None
-        self.parent = parent
+        self.tshTdp = tshTdp
 
     def GetIconURL(self):
         pass
@@ -36,7 +40,11 @@ class TournamentDataProvider:
     def GetStreamQueue(self, streamName=None, progress_callback=None, cancel_event=None):
         pass
 
-    def GetStreamMatchId(self, streamName):
+    def GetStreamMatchId(self, station):
+        # ``station`` is the dict produced by GetStations, but for backward
+        # compatibility implementations should also accept a bare identifier
+        # string (the legacy form). Providers without per-capacity slots may
+        # ignore station["slot"] entirely.
         pass
 
     def GetStationMatchId(self, stationId):
@@ -75,6 +83,13 @@ class TournamentDataProvider:
     # give me a list of objects that contain a "id" property
     def GetFutureMatchesList(self, sets: object, progress_callback=None, cancel_event=None):
         pass
+
+    def EnrichPlayerData(self, playerData):
+        # Hook for providers to lazily fill in fields when a player is
+        # loaded into a slot (called from TSHScoreboardPlayerWidget.SetData
+        # post-DB-merge). Default no-op; ParryGG overrides to fetch mains
+        # from a linked start.gg account.
+        return playerData
 
     def ConvertStreamUrl(self, stream):
         if "twitch.tv" in stream:

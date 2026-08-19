@@ -1,7 +1,11 @@
 {
-    "program": "5.967",
+    "program": "5.973",
     "beta_features": [
         "web_score",
-        "game_tracker"
+        "team_battle"
+    ],
+    "supported_providers": [
+        "StartGG",
+        "[BETA] ParryGG"
     ]
 }

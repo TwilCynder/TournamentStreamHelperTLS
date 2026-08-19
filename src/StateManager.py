@@ -33,6 +33,12 @@ class StateManager:
     threads = []
     loop = None
 
+    # State paths whose subtrees are excluded from the out/ file export.
+    # Use this for large lookup tables that are only useful as JSON (e.g. game.stages).
+    EXPORT_EXCLUDED_PREFIXES = (
+        "root['game']['stages']",
+    )
+
     @contextlib.contextmanager
     def SaveBlock():
         StateManager.BlockSaving()
@@ -43,13 +49,13 @@ class StateManager:
 
     def BlockSaving():
         StateManager.saveBlocked += 1
-        logger.warning(
-            "Initial Block - Current Blocking Status: " + str(StateManager.saveBlocked))
+        if SettingsManager.Get("general.statemanager_logging", False):
+            logger.debug("Initial Block - Current Blocking Status: " + str(StateManager.saveBlocked))
 
     def ReleaseSaving():
         StateManager.saveBlocked -= 1
-        logger.warning(
-            "Release Block - Current Blocking Status: " + str(StateManager.saveBlocked))
+        if SettingsManager.Get("general.statemanager_logging", False):
+            logger.debug("Release Block - Current Blocking Status: " + str(StateManager.saveBlocked))
         if StateManager.saveBlocked == 0:
             StateManager.SaveState()
 
@@ -59,12 +65,26 @@ class StateManager:
                 StateManager.threads = []
 
                 def ExportAll(ref_diff):
-                    with open("./out/program_state.json", 'wb', buffering=8192) as file:
-                        # logger.info("SaveState")
-                        StateManager.state.update({"timestamp": time.time()})
-                        file.write(orjson.dumps(
-                            StateManager.state, option=orjson.OPT_NON_STR_KEYS | orjson.OPT_INDENT_2))
-                        StateManager.state.pop("timestamp")
+                    StateManager.state.update({"timestamp": time.time()})
+                    try:
+                        encoded = orjson.dumps(
+                            StateManager.state, option=orjson.OPT_NON_STR_KEYS | orjson.OPT_INDENT_2)
+
+                        # Write to a temp file then atomically replace, so a concurrent
+                        # reader never sees a truncated file. On Windows the replace can
+                        # fail if the browser has the destination open; fall back to a
+                        # direct write in that case.
+                        tmp_path = "./out/program_state.json.tmp"
+                        with open(tmp_path, 'wb') as file:
+                            file.write(encoded)
+                        try:
+                            os.replace(tmp_path, "./out/program_state.json")
+                        except PermissionError:
+                            os.remove(tmp_path)
+                            with open("./out/program_state.json", 'wb') as file:
+                                file.write(encoded)
+                    finally:
+                        StateManager.state.pop("timestamp", None)
 
                     if not SettingsManager.Get("general.disable_export", False):
                         StateManager.ExportText(
@@ -78,7 +98,7 @@ class StateManager:
                     StateManager.lastSavedState,
                     StateManager.state,
                     exclude_types=[type(None)],
-                    include_paths=StateManager.changedKeys,
+                    include_paths=list(set(StateManager.changedKeys)),
                     verbose_level=2, # Necessary to see values of added items.
                 )
                 delta = Delta(diff).to_flat_dicts()
@@ -172,6 +192,9 @@ class StateManager:
         # logger.info(mergedDiffs)
 
         for changeKey, change in mergedDiffs:
+            if any(changeKey.startswith(p) for p in StateManager.EXPORT_EXCLUDED_PREFIXES):
+                continue
+
             # Remove "root[" from start and separate keys
             filename = "/".join(changeKey[5:].replace(
                 "'", "").replace("]", "").replace("/", "_").split("["))
@@ -188,6 +211,9 @@ class StateManager:
         removedKeys = diff.get("dictionary_item_removed", {})
 
         for key in removedKeys:
+            if any(key.startswith(p) for p in StateManager.EXPORT_EXCLUDED_PREFIXES):
+                continue
+
             item = extract(oldState, key)
 
             # Remove "root[" from start and separate keys
@@ -201,6 +227,9 @@ class StateManager:
         addedKeys = diff.get("dictionary_item_added", {})
 
         for key in addedKeys:
+            if any(key.startswith(p) for p in StateManager.EXPORT_EXCLUDED_PREFIXES):
+                continue
+
             try:
                 item = extract(StateManager.state, key)
 
@@ -219,6 +248,11 @@ class StateManager:
                 logger.error(traceback.format_exc())
 
     def CreateFilesDict(path, di):
+        parts = [p for p in path.split("/") if p]
+        state_key = "root" + "".join(f"['{p}']" for p in parts)
+        if any(state_key.startswith(p) for p in StateManager.EXPORT_EXCLUDED_PREFIXES):
+            return
+
         pathdirs = "/".join(path.split("/")[0:-1])
 
         if not os.path.isdir("./out/"+pathdirs):
@@ -285,6 +319,11 @@ class StateManager:
                     file.write(str(di))
 
     def RemoveFilesDict(path, di):
+        parts = [p for p in path.split("/") if p]
+        state_key = "root" + "".join(f"['{p}']" for p in parts)
+        if any(state_key.startswith(p) for p in StateManager.EXPORT_EXCLUDED_PREFIXES):
+            return
+
         pathdirs = "/".join(path.split("/")[0:-1])
 
         if type(di) == dict:

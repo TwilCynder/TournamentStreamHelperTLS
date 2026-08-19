@@ -87,9 +87,9 @@ class TSHPlayerListSlotWidget(QGroupBox):
                 index = len(self.playerWidgets)-1
 
                 p.btMoveUp.clicked.connect(lambda x=None, index=index, p=p: p.SwapWith(
-                    self.playerWidgets[index-1 if index > 0 else 0]))
+                    self.playerWidgets[max(0, self.playerWidgets.index(p) - 1)]))
                 p.btMoveDown.clicked.connect(lambda x=None, index=index, p=p: p.SwapWith(
-                    self.playerWidgets[index+1 if index < len(self.playerWidgets) - 1 else index]))
+                    self.playerWidgets[min(len(self.playerWidgets) - 1, self.playerWidgets.index(p) + 1)]))
 
                 p.instanceSignals.dataChanged.connect(
                     self.ChildDataChangedEmit)
@@ -132,10 +132,17 @@ class TSHPlayerListSlotWidget(QGroupBox):
         else:
             self.slotName.setText("")
             self.slotName.editingFinished.emit()
+            
+        StateManager.Set(f"{self.base}.slot.{self.index}.wins", data.get("wins"))
+        StateManager.Set(f"{self.base}.slot.{self.index}.loses", data.get("losses"))
+        StateManager.Set(f"{self.base}.slot.{self.index}.winPercentage", data.get("winPercentage"))
 
         for i, pw in enumerate(self.playerWidgets):
             if data.get("players"):
                 try:
+                    data.get("players")[i]["wins"] = data.get("wins")
+                    data.get("players")[i]["losses"] = data.get("losses")
+                    data.get("players")[i]["winPercentage"] = data.get("winPercentage")
                     pw.SetData(data.get("players")[i])
                 except:
                     pw.Clear()

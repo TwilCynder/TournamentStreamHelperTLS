@@ -64,3 +64,4 @@ assets/controller/*
 assets/*_tmp
 layout_*
 layout
+venv

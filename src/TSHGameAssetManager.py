@@ -30,6 +30,7 @@ class TSHGameAssetManager(QObject):
         self.games = {}
         self.characters = {}
         self.variants = {}
+        self.colors = []
         self.selectedGame = {}
         self.stockIcons = {}
         self.startgg_id_to_character = {}
@@ -37,6 +38,7 @@ class TSHGameAssetManager(QObject):
         self.characterModel = QStandardItemModel()
         self.skinModels = {}
         self.variantModel = QStandardItemModel()
+        self.colorModel = QStandardItemModel()
         self.stageModel = QStandardItemModel()
         self.stageModelWithBlank = QStandardItemModel()
 
@@ -99,28 +101,13 @@ class TSHGameAssetManager(QObject):
                                 self.parent().games[game] = orjson.loads(f.read())
 
                             # Try logo_small, if it doesn't exist use logo
+                            # Store path only — QPixmap/QIcon must be created on the main thread
                             if os.path.isfile("./user_data/games/"+game+"/base_files/logo_small.png"):
-                                self.parent().games[game]["logo"] = QIcon(
-                                    QPixmap(
-                                        QImage("./user_data/games/"+game+"/base_files/logo_small.png").scaled(
-                                            64,
-                                            64,
-                                            Qt.AspectRatioMode.KeepAspectRatio,
-                                            Qt.TransformationMode.SmoothTransformation
-                                        )
-                                    )
-                                )
+                                self.parent().games[game]["logo_path"] = \
+                                    "./user_data/games/"+game+"/base_files/logo_small.png"
                             elif os.path.isfile("./user_data/games/"+game+"/base_files/logo.png"):
-                                self.parent().games[game]["logo"] = QIcon(
-                                    QPixmap(
-                                        QImage("./user_data/games/"+game+"/base_files/logo.png").scaled(
-                                            64,
-                                            64,
-                                            Qt.AspectRatioMode.KeepAspectRatio,
-                                            Qt.TransformationMode.SmoothTransformation
-                                        )
-                                    )
-                                )
+                                self.parent().games[game]["logo_path"] = \
+                                    "./user_data/games/"+game+"/base_files/logo.png"
 
                             self.parent().games[game]["assets"] = {}
                             self.parent(
@@ -140,7 +127,7 @@ class TSHGameAssetManager(QObject):
                                             self.parent().games[game]["assets"][dir] = \
                                                 orjson.loads(f.read())
                                     else:
-                                        logger.error(
+                                        logger.warning(
                                             "No config file for "+game+" - "+dir)
 
                             # Load translated names
@@ -186,25 +173,25 @@ class TSHGameAssetManager(QObject):
             if detect_smashgg_id_match(game, gameid):
                 self.LoadGameAssets(i+1)
                 break
-
-    def SetGameFromChallongeId(self, gameid):
-        def detect_challonge_id_match(game, id):
-            result = str(game.get("challonge_game_id", "")) == str(id)
+    
+    def SetGameFromIGDBId(self, igdb_id):
+        def detect_igdb_id_match(game, igdb_id):
+            result = str(game.get("igdb_game_id", "")) == str(igdb_id)
             if not result:
                 alternates = game.get("alternate_versions", [])
-                alternates_ids = []
+                alternate_ids = []
                 for alternate in alternates:
-                    if alternate.get("challonge_game_id"):
-                        alternates_ids.append(
-                            str(alternate.get("challonge_game_id")))
-                result = str(id) in alternates_ids
+                    if alternate.get("igdb_game_id"):
+                        alternate_ids.append(
+                            str(alternate.get("igdb_game_id")))
+                result = str(igdb_id) in alternate_ids
             return (result)
 
         if len(self.games.keys()) == 0:
             return
 
         for i, game in enumerate(self.games.values()):
-            if detect_challonge_id_match(game, gameid):
+            if detect_igdb_id_match(game, igdb_id):
                 self.LoadGameAssets(i+1)
                 break
 
@@ -215,17 +202,31 @@ class TSHGameAssetManager(QObject):
             os.mkdir(css_dir_path)
 
         # Empty dir and remove all CSS
-        list_current_files = glob.glob(f"{css_dir_path}/*.css")
+        try:
+            list_current_files = glob.glob(f"{css_dir_path}/*.css")
+        except OSError as e:
+            logger.error(f"Error listing CSS files in {css_dir_path}: {e}")
+            list_current_files = []
         for file_path in list_current_files:
-            os.remove(file_path)
-        
+            try:
+                os.remove(file_path)
+            except OSError as e:
+                logger.error(f"Error removing CSS file {file_path}: {e}")
+
         # Copy game CSS files
         game_css_path = f"./user_data/games/{game}/base_files/css"
         if os.path.isdir(game_css_path):
-            list_game_css_files = glob.glob(f"{game_css_path}/*.css")
+            try:
+                list_game_css_files = glob.glob(f"{game_css_path}/*.css")
+            except OSError as e:
+                logger.error(f"Error listing CSS files in {game_css_path}: {e}")
+                list_game_css_files = []
             for file_path in list_game_css_files:
                 logger.info("Copying CSS file: "+file_path)
-                shutil.copy(file_path, css_dir_path)
+                try:
+                    shutil.copy(file_path, css_dir_path)
+                except OSError as e:
+                    logger.error(f"Error copying CSS file {file_path}: {e}")
 
         logger.info("Game CSS file copy complete")
 
@@ -267,6 +268,7 @@ class TSHGameAssetManager(QObject):
                     if gameObj != None:
                         self.parent().characters = gameObj.get("character_to_codename", {})
                         self.parent().variants = gameObj.get("variant_to_codename", {})
+                        self.parent().colors = gameObj.get("preset_colors", [])
 
                         assetsKey = ""
                         if len(list(gameObj.get("assets", {}).keys())) > 0:
@@ -288,13 +290,13 @@ class TSHGameAssetManager(QObject):
                         for c in self.parent().characters.keys():
                             self.parent().stockIcons[c] = {}
 
+                            pattern = re.compile(f'({assetsObj.get("prefix", "")})({self.parent().characters[c].get("codename")})({assetsObj.get("postfix", "")})([0-9]*)\\.([A-Za-z0-9]+)')
                             filteredFiles = \
-                                [f for f in files if f.startswith(assetsObj.get(
-                                    "prefix", "")+self.parent().characters[c].get("codename")+assetsObj.get("postfix", ""))]
+                                [f for f in files if pattern.match(f)]
 
                             if len(filteredFiles) == 0:
-                                self.parent().stockIcons[c][0] = QImage(
-                                    './assets/icons/cancel.svg')
+                                # Store path only — QImage must be created on the main thread
+                                self.parent().stockIcons[c][0] = './assets/icons/cancel.svg'
 
                             for i, f in enumerate(filteredFiles):
                                 numberStart = f.rfind(
@@ -306,14 +308,9 @@ class TSHGameAssetManager(QObject):
                                 except:
                                     logger.error(f)
                                     pass
-                                try:
-                                    self.parent().stockIcons[c][number] = QImage(
-                                        './user_data/games/'+game+'/'+assetsKey+'/'+f).scaledToWidth(
-                                            32,
-                                            Qt.TransformationMode.SmoothTransformation
-                                    )
-                                except:
-                                    logger.error(traceback.format_exc())
+                                # Store path only — QImage must be created on the main thread
+                                self.parent().stockIcons[c][number] = \
+                                    './user_data/games/'+game+'/'+assetsKey+'/'+f
 
                         logger.info("Loaded stock icons")
 
@@ -332,9 +329,9 @@ class TSHGameAssetManager(QObject):
                                 files = sorted(os.listdir(
                                     './user_data/games/'+game+'/'+assetsKey))
 
+                                pattern = re.compile(f'({asset.get("prefix", "")})({self.parent().characters[c].get("codename")})({asset.get("postfix", "")})([0-9]*)\\.([A-Za-z0-9]+)')
                                 filteredFiles = \
-                                    [f for f in files if f.startswith(asset.get(
-                                        "prefix", "")+self.parent().characters[c].get("codename")+asset.get("postfix", ""))]
+                                    [f for f in files if pattern.match(f)]
 
                                 for f in filteredFiles:
                                     numberStart = f.rfind(
@@ -502,22 +499,64 @@ class TSHGameAssetManager(QObject):
                         except:
                             logger.error(traceback.format_exc())
 
+                        # Load translations for colors
+                        try:
+                            for c in range(len(self.parent().colors)):
+                                display_name = self.parent().colors[c].get("name")
+                                export_name = self.parent().colors[c].get("name")
+                                en_name = self.parent().colors[c].get("name")
+
+                                if self.parent().colors[c].get("locale"):
+                                    locale = TSHLocaleHelper.programLocale
+                                    if locale.replace("-", "_") in self.parent().colors[c]["locale"]:
+                                        display_name = self.parent().colors[
+                                            c]["locale"][locale.replace("-", "_")]
+                                    elif re.split("-|_", locale)[0] in self.parent().colors[c]["locale"]:
+                                        display_name = self.parent().colors[
+                                            c]["locale"][re.split("-|_", locale)[0]]
+                                    elif TSHLocaleHelper.GetRemaps(TSHLocaleHelper.programLocale) in self.parent().colors[c]["locale"]:
+                                        display_name = self.parent().colors[c]["locale"][TSHLocaleHelper.GetRemaps(
+                                            TSHLocaleHelper.programLocale)]
+
+                                    locale = TSHLocaleHelper.exportLocale
+                                    if locale.replace("-", "_") in self.parent().colors[c]["locale"]:
+                                        export_name = self.parent().colors[
+                                            c]["locale"][locale.replace("-", "_")]
+                                    elif re.split("-|_", locale)[0] in self.parent().colors[c]["locale"]:
+                                        export_name = self.parent().colors[
+                                            c]["locale"][re.split("-|_", locale)[0]]
+                                    elif TSHLocaleHelper.GetRemaps(TSHLocaleHelper.exportLocale) in self.parent().colors[c]["locale"]:
+                                        export_name = self.parent().colors[c]["locale"][TSHLocaleHelper.GetRemaps(
+                                            TSHLocaleHelper.exportLocale)]
+
+                                self.parent(
+                                ).colors[c]["display_name"] = display_name
+                                self.parent(
+                                ).colors[c]["export_name"] = export_name
+                                self.parent(
+                                ).colors[c]["en_name"] = en_name
+                        except:
+                            logger.error(traceback.format_exc())
+
                     with StateManager.SaveBlock():
                         StateManager.Set(f"game", {
                             "name": self.parent().selectedGame.get("name"),
                             "smashgg_id": self.parent().selectedGame.get("smashgg_game_id"),
                             "codename": self.parent().selectedGame.get("codename"),
-                            "logo": self.parent().selectedGame.get("path", "")+"/base_files/logo.png",
+                            "logo": self.parent().selectedGame.get("logo_path") or self.parent().selectedGame.get("path", "")+"/base_files/logo.png",
                             "defaults": self.parent().selectedGame.get("defaults"),
                             "mods_active": self.mods_active,
                             "has_stages": bool(self.parent().selectedGame.get("stage_to_codename")),
-                            "has_variants": bool(self.parent().selectedGame.get("variant_to_codename"))
+                            "has_variants": bool(self.parent().selectedGame.get("variant_to_codename")),
+                            "has_colors": bool(self.parent().selectedGame.get("preset_colors")),
+                            "igdb_id": self.parent().selectedGame.get("igdb_game_id")
                         })
 
                         self.parent().has_modded_content = False
                         self.parent().UpdateCharacterModel(self.mods_active)
                         self.parent().UpdateSkinModel()
-                        self.parent().UpdateVariantModel()
+                        self.parent().UpdateVariantModel(self.mods_active)
+                        self.parent().UpdateColorModel()
                         self.parent().UpdateStageModel(self.mods_active)
 
                         StateManager.Set(f"game.has_modded_content", self.parent().has_modded_content)
@@ -561,6 +600,7 @@ class TSHGameAssetManager(QObject):
                     if gameObj != None:
                         self.parent.characters = gameObj.get("character_to_codename", {})
                         self.parent.variants = gameObj.get("variant_to_codename", {})
+                        self.parent.colors = gameObj.get("preset_colors", {})
 
                         assetsKey = ""
                         if len(list(gameObj.get("assets", {}).keys())) > 0:
@@ -582,13 +622,13 @@ class TSHGameAssetManager(QObject):
                         for c in self.parent.characters.keys():
                             self.parent.stockIcons[c] = {}
 
+                            pattern = re.compile(f'({assetsObj.get("prefix", "")})({self.parent().characters[c].get("codename")})({assetsObj.get("postfix", "")})([0-9]*)\\.([A-Za-z0-9]+)')
                             filteredFiles = \
-                                [f for f in files if f.startswith(assetsObj.get(
-                                    "prefix", "")+self.parent.characters[c].get("codename")+assetsObj.get("postfix", ""))]
+                                [f for f in files if pattern.match(f)]
 
                             if len(filteredFiles) == 0:
-                                self.parent.stockIcons[c][0] = QImage(
-                                    './assets/icons/cancel.svg')
+                                # Store path only — QImage must be created on the main thread
+                                self.parent.stockIcons[c][0] = './assets/icons/cancel.svg'
 
                             for i, f in enumerate(filteredFiles):
                                 numberStart = f.rfind(
@@ -600,14 +640,9 @@ class TSHGameAssetManager(QObject):
                                 except:
                                     logger.error(f)
                                     pass
-                                try:
-                                    self.parent.stockIcons[c][number] = QImage(
-                                        './user_data/games/'+game+'/'+assetsKey+'/'+f).scaledToWidth(
-                                            32,
-                                            Qt.TransformationMode.SmoothTransformation
-                                    )
-                                except:
-                                    logger.error(traceback.format_exc())
+                                # Store path only — QImage must be created on the main thread
+                                self.parent.stockIcons[c][number] = \
+                                    './user_data/games/'+game+'/'+assetsKey+'/'+f
 
                         logger.info("Loaded stock icons")
 
@@ -626,9 +661,9 @@ class TSHGameAssetManager(QObject):
                                 files = sorted(os.listdir(
                                     './user_data/games/'+game+'/'+assetsKey))
 
+                                pattern = re.compile(f'({asset.get("prefix", "")})({self.parent().characters[c].get("codename")})({asset.get("postfix", "")})([0-9]*)\\.([A-Za-z0-9]+)')
                                 filteredFiles = \
-                                    [f for f in files if f.startswith(asset.get(
-                                        "prefix", "")+self.parent.characters[c].get("codename")+asset.get("postfix", ""))]
+                                    [f for f in files if pattern.match(f)]
 
                                 for f in filteredFiles:
                                     numberStart = f.rfind(
@@ -790,21 +825,60 @@ class TSHGameAssetManager(QObject):
                         except:
                             logger.error(traceback.format_exc())
 
+                        # Load translations for colors
+                        try:
+                            for c in self.parent.colors.keys():
+                                display_name = c
+                                export_name = c
+                                en_name = c
+
+                                if self.parent.colors[c].get("locale"):
+                                    locale = TSHLocaleHelper.programLocale
+                                    if locale.replace("-", "_") in self.parent.colors[c]["locale"]:
+                                        display_name = self.parent.colors[
+                                            c]["locale"][locale.replace("-", "_")]
+                                    elif re.split("-|_", locale)[0] in self.parent.colors[c]["locale"]:
+                                        display_name = self.parent.colors[
+                                            c]["locale"][re.split("-|_", locale)[0]]
+                                    elif TSHLocaleHelper.GetRemaps(TSHLocaleHelper.programLocale) in self.parent.colors[c]["locale"]:
+                                        display_name = self.parent.colors[c]["locale"][TSHLocaleHelper.GetRemaps(
+                                            TSHLocaleHelper.programLocale)]
+
+                                    locale = TSHLocaleHelper.exportLocale
+                                    if locale.replace("-", "_") in self.parent.colors[c]["locale"]:
+                                        export_name = self.parent.colors[
+                                            c]["locale"][locale.replace("-", "_")]
+                                    elif re.split("-|_", locale)[0] in self.parent.colors[c]["locale"]:
+                                        export_name = self.parent.colors[
+                                            c]["locale"][re.split("-|_", locale)[0]]
+                                    elif TSHLocaleHelper.GetRemaps(TSHLocaleHelper.exportLocale) in self.parent.colors[c]["locale"]:
+                                        export_name = self.parent.colors[c]["locale"][TSHLocaleHelper.GetRemaps(
+                                            TSHLocaleHelper.exportLocale)]
+
+                                self.parent.colors[c]["display_name"] = display_name
+                                self.parent.colors[c]["export_name"] = export_name
+                                self.parent.colors[c]["en_name"] = en_name
+                        except:
+                            logger.error(traceback.format_exc())
+
                     StateManager.Set(f"game", {
                         "name": self.parent.selectedGame.get("name"),
                         "smashgg_id": self.parent.selectedGame.get("smashgg_game_id"),
                         "codename": self.parent.selectedGame.get("codename"),
-                        "logo": self.parent.selectedGame.get("path", "")+"/base_files/logo.png",
+                        "logo": self.parent.selectedGame.get("logo_path") or self.parent.selectedGame.get("path", "")+"/base_files/logo.png",
                         "defaults": self.parent.selectedGame.get("defaults"),
                         "mods_active": mods_active,
                         "has_stages": bool(self.parent.selectedGame.get("stage_to_codename")),
-                        "has_variants": bool(self.parent.selectedGame.get("variant_to_codename"))
+                        "has_variants": bool(self.parent.selectedGame.get("variant_to_codename")),
+                        "has_colors": bool(self.parent.selectedGame.get("preset_colors")),
+                        "igdb_id": self.parent.selectedGame.get("igdb_game_id")
                     })
 
                     self.parent.has_modded_content = False
                     self.parent.UpdateCharacterModel(mods_active)
                     self.parent.UpdateSkinModel()
-                    self.parent.UpdateVariantModel()
+                    self.parent.UpdateVariantModel(mods_active)
+                    self.parent.UpdateColorModel()
                     self.parent.UpdateStageModel(mods_active)
 
                     StateManager.Set(f"game.has_modded_content", self.parent.has_modded_content)
@@ -907,8 +981,11 @@ class TSHGameAssetManager(QObject):
                     "display_name") != stage[1].get("en_name") else stage[1].get("display_name"))
                 item_with_blank.setData(stage[1], Qt.ItemDataRole.UserRole)
 
+                availability = stage[1].get("igdb_playable_list", [])
+                igdb_id = self.selectedGame.get("igdb_game_id")
                 if stage[1].get("modded"):
-                    self.has_modded_content = True
+                    if not availability or igdb_id in availability:
+                        self.has_modded_content = True
 
                 if (not mods_active) and stage[1].get("modded"):
                     item.setEnabled(False)
@@ -916,8 +993,14 @@ class TSHGameAssetManager(QObject):
                     item_with_blank.setEnabled(False)
                     item_with_blank.setSelectable(False)
                 else:
-                    self.stageModel.appendRow(item)
-                    self.stageModelWithBlank.appendRow(item_with_blank)
+                    if availability and igdb_id not in availability:
+                        item.setEnabled(False)
+                        item.setSelectable(False)
+                        item_with_blank.setEnabled(False)
+                        item_with_blank.setSelectable(False)
+                    else:
+                        self.stageModel.appendRow(item)
+                        self.stageModelWithBlank.appendRow(item_with_blank)
 
                 worker = Worker(self.LoadStageImage, *[stage[1], item])
                 worker_blank = Worker(self.LoadStageImage, *[stage[1], item_with_blank])
@@ -926,6 +1009,11 @@ class TSHGameAssetManager(QObject):
                 self.threadpool.start(worker)
                 self.threadpool.start(worker_blank)
             self.stageModelWithBlank.sort(0)
+            StateManager.Set("game.stages", {
+                v.get("codename"): v
+                for v in self.stages.values()
+                if v.get("codename")
+            })
         except:
             logger.error(traceback.format_exc())
 
@@ -968,8 +1056,6 @@ class TSHGameAssetManager(QObject):
             return (None)
 
     def UpdateCharacterModel(self, mods_active = True):
-        # TODO: Make modded content disabled by default
-        # TODO: Add checkbox on game bar to enable / disable modded content
         try:
             self.characterModel = QStandardItemModel()
 
@@ -982,7 +1068,8 @@ class TSHGameAssetManager(QObject):
                 item.setData(c, Qt.ItemDataRole.EditRole)
                 logger.info(c)
                 item.setIcon(
-                    QIcon(QPixmap.fromImage(self.stockIcons[c][0]))
+                    QIcon(QPixmap.fromImage(QImage(self.stockIcons[c][0]).scaledToWidth(
+                        32, Qt.TransformationMode.FastTransformation)))
                 )
 
                 data = {
@@ -999,20 +1086,65 @@ class TSHGameAssetManager(QObject):
 
                 item.setData(data, Qt.ItemDataRole.UserRole)
 
+                availability = self.characters[c].get("igdb_playable_list", [])
+                igdb_id = self.selectedGame.get("igdb_game_id")
                 if data.get("modded"):
-                    self.has_modded_content = True
+                    if not availability or igdb_id in availability:
+                        self.has_modded_content = True
 
                 if (not mods_active) and data.get("modded"):
                     item.setEnabled(False)
                     item.setSelectable(False)
                 else:
-                    self.characterModel.appendRow(item)
+                    if availability and igdb_id not in availability:
+                        item.setEnabled(False)
+                        item.setSelectable(False)
+                    else:
+                        self.characterModel.appendRow(item)
 
             self.characterModel.sort(0)
         except:
             logger.error(traceback.format_exc())
 
-    def UpdateVariantModel(self):
+    def UpdateColorModel(self):
+        try:
+            self.colorModel = QStandardItemModel()
+
+            # Add one empty
+            item = QStandardItem("")
+            self.colorModel.appendRow(item)
+
+            for c in range(len(self.colors)):
+                name = self.colors[c].get("name")
+                item = QStandardItem()
+                item.setData(name, Qt.ItemDataRole.EditRole)
+                logger.info(name)
+
+                data = {
+                    "name": self.colors[c].get("export_name"),
+                    "en_name": c,
+                    "display_name": self.colors[c].get("display_name"),
+                    "value": self.colors[c].get("value"),
+                    "force_opponent": self.colors[c].get("force_opponent")
+                }
+
+                icon = QPixmap(100,100)
+                icon.fill(QColor("#" + self.colors[c].get("value")))
+                item.setIcon(QIcon(icon))
+
+
+                if self.colors[c].get("display_name") != name:
+                    item.setData(
+                        f'{self.colors[c].get("display_name")} / {name}', Qt.ItemDataRole.EditRole)
+
+                item.setData(data, Qt.ItemDataRole.UserRole)
+                self.colorModel.appendRow(item)
+
+        except:
+            logger.error(traceback.format_exc())
+
+
+    def UpdateVariantModel(self, mods_active=True):
         try:
             self.variantModel = QStandardItemModel()
 
@@ -1029,9 +1161,9 @@ class TSHGameAssetManager(QObject):
                     "name": self.variants[c].get("export_name"),
                     "en_name": c,
                     "display_name": self.variants[c].get("display_name"),
-                    "codename": self.variants[c].get("codename")
+                    "codename": self.variants[c].get("codename"),
+                    "modded": self.variants[c].get("modded", False)
                 }
-
                 
                 data["icon_path"] = self.GetVariantIconPath(data["codename"])
                 data["image_size"] = self.GetVariantIconSize(data["codename"])
@@ -1046,8 +1178,23 @@ class TSHGameAssetManager(QObject):
                     item.setData(
                         f'{self.variants[c].get("display_name")} / {c}', Qt.ItemDataRole.EditRole)
 
+                availability = self.variants[c].get("igdb_playable_list", [])
+                igdb_id = self.selectedGame.get("igdb_game_id")
+                if data.get("modded"):
+                    if not availability or igdb_id in availability:
+                        self.has_modded_content = True
+
                 item.setData(data, Qt.ItemDataRole.UserRole)
-                self.variantModel.appendRow(item)
+                if (not mods_active) and data.get("modded"):
+                    item.setEnabled(False)
+                    item.setSelectable(False)
+                else:
+                    if availability and igdb_id not in availability:
+                        item.setEnabled(False)
+                        item.setSelectable(False)
+                    else:
+                        self.variantModel.appendRow(item)
+
 
             self.variantModel.sort(0)
         except:
@@ -1055,6 +1202,8 @@ class TSHGameAssetManager(QObject):
 
     def GetVariantIconPath(self, variant_codename):
         game_codename = self.selectedGame.get("codename")
+        if "__alt_" in game_codename:
+            game_codename = game_codename.split("__alt_")[0]
         icon_path, asset_root_path = "", "./user_data/games"
         icon_config_path = f"{asset_root_path}/{game_codename}/variant_icon/config.json"
         if os.path.isfile(icon_config_path):
@@ -1346,14 +1495,15 @@ class TSHGameAssetManager(QObject):
 
                     baseName = asset.get(
                         "prefix", "")+characterCodename+asset.get("postfix", "")
+                    pattern = f"({baseName})([0-9]*)\\.([A-Za-z0-9])"
 
                     skinFileList = [f for f in os.listdir(
-                        assetPath) if f.startswith(baseName)]
+                        assetPath) if re.match(pattern, f)]
 
                     skinFiles = {}
 
                     for f in skinFileList:
-                        skinId = f[len(baseName):].rsplit(".", 1)[0]
+                        skinId = re.search(pattern, f).group(2)
                         if skinId == "":
                             skinId = 0
                         else:
@@ -1502,6 +1652,26 @@ class TSHGameAssetManager(QObject):
         stage = next((s for s in self.stages.items() if str(
             s[1].get("smashgg_id")) == str(smashgg_id)), None)
         return stage
+
+    def GetCharacterFromParryGGSlug(self, parrygg_slug: str):
+        # parry.gg identifies a character by a URL-friendly slug (e.g.
+        # "doctor-mario"); the game asset pack stores that slug on each
+        # character as `parrygg_slug`. Mirrors GetCharacterFromStartGGId:
+        # returns the (key, character_dict) tuple or None.
+        if not parrygg_slug:
+            return None
+        character = next((c for c in self.characters.items() if c[1].get(
+            "parrygg_slug") == parrygg_slug), None)
+        if character is None:
+            # Distinguish "no character matched this slug" from "no character
+            # in this game defines parrygg_slug at all" (i.e. the asset pack
+            # predates the parrygg_slug prop) to make tracing easier.
+            with_prop = sum(1 for c in self.characters.values() if c.get("parrygg_slug"))
+            logger.debug(
+                f"GetCharacterFromParryGGSlug: no match for slug '{parrygg_slug}'; "
+                f"{with_prop}/{len(self.characters)} characters in the loaded game define 'parrygg_slug'"
+            )
+        return character
 
 
 if not os.path.exists("./user_data/games"):

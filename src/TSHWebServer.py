@@ -13,9 +13,10 @@ from flask_cors import CORS, cross_origin
 from flask_socketio import SocketIO, emit
 import orjson
 from loguru import logger
+import socket
 
 from .StateManager import StateManager
-from .TSHWebServerActions import WebServerActions
+from .TSHWebServerActions import WebServerActions, ScoreboardNotAvailable
 from .TSHScoreboardManager import TSHScoreboardManager
 from .TSHCommentaryWidget import TSHCommentaryWidget
 from .SettingsManager import SettingsManager
@@ -65,7 +66,18 @@ class WebServer(QThread):
         StateManager.signals.state_big_change.connect(WebServer.ws_program_state)
 
         self.host_name = "0.0.0.0"
-        self.port = SettingsManager.Get("general.webserver_port", 5000)
+        self.port = SettingsManager.Get("general.webserver_port", 5500)
+
+    @staticmethod
+    @app.before_request
+    def log_request():
+        logger.info(f"[FLASK] → {request.method} {request.path} from {request.remote_addr}")
+
+    @staticmethod
+    @app.after_request
+    def log_response(response):
+        logger.info(f"[FLASK] ← {request.method} {request.path} [{response.status_code}]")
+        return response
 
     @app.route('/program-state')
     def program_state():
@@ -73,7 +85,8 @@ class WebServer(QThread):
 
     @socketio.on('program-state-update')
     def ws_program_state_update(message):
-        WebServer.ws_emit('program_state_update', {})
+        # Manual trigger to push full state to all clients
+        WebServer.ws_program_state()
 
     def on_program_state_update(changes):
         if len(changes) > 0:
@@ -94,6 +107,10 @@ class WebServer(QThread):
     @socketio.on('program_state')
     def ws_program_state(message=None):
         WebServer.ws_emit('program_state', WebServer.actions.program_state())
+
+    @app.errorhandler(ScoreboardNotAvailable)
+    def handle_scoreboard_not_available(e):
+        return str(e), 503
 
     @socketio.on_error_default
     def ws_on_error(e):
@@ -646,7 +663,8 @@ class WebServer(QThread):
 
     @socketio.on('set_tournament')
     def ws_set_tournament(message):
-        WebServer.ws_emit('set_tournament', WebServer.actions.load_tournament(request.args.get('url')))
+        info = orjson.loads(message) if isinstance(message, (str, bytes)) else message
+        WebServer.ws_emit('set_tournament', WebServer.actions.load_tournament(info.get('url')))
 
     @app.route('/states')
     def get_states():
@@ -662,6 +680,21 @@ class WebServer(QThread):
         args = orjson.loads(message)
         return WebServer.actions.get_states(args.get('countryCode', ''))
 
+
+    # Set the current ingame stage (selectedStage in stage_strike state)
+    @app.post('/scoreboard<scoreboardNumber>-set-current-stage')
+    def set_current_stage(scoreboardNumber):
+        data = request.get_json()
+        return WebServer.actions.set_current_stage(scoreboardNumber, data.get("codename"))
+
+    @socketio.on('set_current_stage')
+    def ws_set_current_stage(message):
+        if isinstance(message, (str, bytes)):
+            data = orjson.loads(message)
+        else:
+            data = message
+        WebServer.ws_emit('set_current_stage', WebServer.actions.set_current_stage(
+            data.get("scoreboardNumber", "1"), data.get("codename")))
 
     @app.route('/')
     @app.route('/scoreboard')
@@ -682,19 +715,24 @@ class WebServer(QThread):
             if filename.lower().endswith('.png'):
                 mimetype = "image/apng"
 
+            ext = filename.rsplit('.', 1)[-1].lower()
+            cache_duration = 0 if ext in ('html', 'js', 'css', 'json') else 86400
+
             return send_from_directory(
                 os.path.abspath('.'),
                 filename,
                 as_attachment=filename.endswith('.gz'),
                 mimetype=mimetype,
-                max_age=86400
+                max_age=cache_duration
             )
 
         except Exception as e:
             logger.error(f"File not found: {e}")
+            return "File not found", 404
 
     def run(self):
         try:
+            logger.info(f'Starting TSH Web Server at {self.GetIP()}:{self.port}')
             self.socketio.run(app=self.app, host=self.host_name, port=self.port,
                               debug=False, use_reloader=False, allow_unsafe_werkzeug=True)
         except Exception as e:
@@ -709,3 +747,15 @@ class WebServer(QThread):
             return send_from_directory(os.path.abspath('../Assets/'), filename)
         except Exception as e:
             logger.error(f"File note found :{e}")
+    
+    def GetIP(self):
+        s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+        try:
+            # doesn't even have to be reachable
+            s.connect(('10.255.255.255', 1))
+            IP = s.getsockname()[0]
+        except Exception:
+            IP = '127.0.0.1'
+        finally:
+            s.close()
+        return IP

@@ -2,7 +2,7 @@ import React from "react";
 import {Checkbox, FormControlLabel, FormGroup, Paper, Stack} from "@mui/material";
 import Player from "./Player";
 import {Box} from "@mui/system";
-import {BACKEND_PORT} from "../env";
+import {BACKEND_PORT, PROTOCOL} from "../env";
 
 export default React.forwardRef(
     /**
@@ -56,20 +56,19 @@ export default React.forwardRef(
         return Promise.all(
             [
                 (
-                    fetch(`http://${window.location.hostname}:${BACKEND_PORT}/scoreboard${scoreboardNumber}-set?` + new URLSearchParams({
+                    fetch(`${PROTOCOL}//${window.location.hostname}:${BACKEND_PORT}/scoreboard${scoreboardNumber}-set?` + new URLSearchParams({
                         losers: state.inLosers,
-                        team: teamId
+                        team: tshTeamId
                     }).toString())
                         .then(resp => resp.text())
                         .then((d) => console.log("Submit set info: ", d))
                 ),
                 ...Object.entries(teamData.player).map(([teamKey, playerData]) => {
                     const body = {...playerData};
-                    body[`team${teamId}losers`] = state.inLosers.toString();
                     console.log("team update payload", body);
 
                     return fetch(
-                        `http://${window.location.hostname}:${BACKEND_PORT}`
+                        `${PROTOCOL}//${window.location.hostname}:${BACKEND_PORT}`
                         + `/scoreboard${scoreboardNumber}-update-team-${tshTeamId}-${teamKey}`,
                         {
                             method: 'POST',
@@ -115,6 +114,7 @@ export default React.forwardRef(
                     control={
                         <Checkbox
                             id={teamId + "-losers"}
+                            checked={state.inLosers}
                             onChange={
                                 (e) => {
                                     setState(s => ({...s, inLosers: e.target.checked}))

@@ -11,6 +11,12 @@ from src.StateManager import StateManager
 from .TSHDictHelper import deep_clone
 from .TSHDirHelper import TSHResolve
 
+# Import romanizers
+import cutlet
+from pypinyin import pinyin
+import koroman
+from arabic_buckwalter_transliteration.transliteration import arabic_to_buckwalter
+
 
 class TSHLocaleHelperSignals(QObject):
     localeChanged = Signal()
@@ -106,6 +112,24 @@ class TSHLocaleHelper(QObject):
     def GetCountryContinent(countryCode2: str):
         return TSHLocaleHelper.countryToContinent.get(countryCode2.upper(), "")
 
+    def RomanizeTextFromCountry(text, countryCode2: str):
+        romanized_text = text
+        if romanized_text:
+            languages = TSHLocaleHelper.GetCountrySpokenLanguages(countryCode2)
+            if "ja" in languages:
+                katsu = cutlet.Cutlet()
+                romanized_text = katsu.romaji(text)
+            elif "zh" in languages:
+                pinyin_text = pinyin(text)
+                romanized_text = ""
+                for pinyin_character in pinyin_text:
+                    romanized_text = romanized_text + pinyin_character[0]
+            elif "ko" in languages:
+                romanized_text = koroman.romanize(text)
+            elif "ar" in languages:
+                romanized_text = arabic_to_buckwalter(text)
+        return(romanized_text)
+
     def LoadRoundNames():
         # Load default round names and translation
         try:
@@ -159,7 +183,57 @@ class TSHLocaleHelper(QObject):
                 logger.info("Loaded remap: " + str(remap))
                 return remap
         return None
+    
+    def LoadPhaseNamesToWidget(widget):
+        for key in dict(sorted(TSHLocaleHelper.phaseNames.items(), key=lambda item: item[1])).keys():
+            phaseString = TSHLocaleHelper.phaseNames[key]
 
+            if "{0}" in phaseString:
+                if "top" not in key:
+                    for letter in ["A", "B", "C", "D"]:
+                        if widget.findText(phaseString.format(letter)) < 0:
+                            widget.addItem(phaseString.format(letter))
+            else:
+                if widget.findText(phaseString) < 0:
+                    widget.addItem(phaseString)
+    
+    def LoadMatchNamesToWidget(widget):
+        for key in dict(sorted(TSHLocaleHelper.matchNames.items(), key=lambda item: item[1])).keys():
+            matchString = TSHLocaleHelper.matchNames[key]
+            try:
+                if "{0}" in matchString and ("qualifier" in key):
+                    # Generate preset qualifier names
+                    couples = [
+                        (TSHLocaleHelper.phaseNames.get("top_n").format(8), TSHLocaleHelper.matchNames.get("qualifier_winners_indicator")),
+                        (TSHLocaleHelper.phaseNames.get("top_n").format(16), TSHLocaleHelper.matchNames.get("qualifier_winners_indicator")),
+                        (TSHLocaleHelper.phaseNames.get("top_n").format(32), TSHLocaleHelper.matchNames.get("qualifier_winners_indicator")),
+                        (TSHLocaleHelper.phaseNames.get("top_n").format(6), TSHLocaleHelper.matchNames.get("qualifier_losers_indicator")),
+                        (TSHLocaleHelper.phaseNames.get("top_n").format(8), TSHLocaleHelper.matchNames.get("qualifier_losers_indicator")),
+                        (TSHLocaleHelper.phaseNames.get("top_n").format(12), TSHLocaleHelper.matchNames.get("qualifier_losers_indicator")),
+                        (TSHLocaleHelper.phaseNames.get("top_n").format(16), TSHLocaleHelper.matchNames.get("qualifier_losers_indicator")),
+                        (TSHLocaleHelper.phaseNames.get("top_n").format(24), TSHLocaleHelper.matchNames.get("qualifier_losers_indicator")),
+                        (TSHLocaleHelper.phaseNames.get("top_n").format(32), TSHLocaleHelper.matchNames.get("qualifier_losers_indicator"))
+                    ]
 
+                    for couple in couples:
+                        # logger.info(couple)
+                        widget.addItem(matchString.format(*couple))
+                elif "{0}" in matchString and ("qualifier" not in key):
+                    for number in range(5):
+                        if key == "best_of":
+                            if widget.findText(matchString.format(str(2*number+1))) < 0:
+                                widget.addItem(matchString.format(str(2*number+1)))
+                        else:
+                            if widget.findText(matchString.format(str(number+1))) < 0:
+                                widget.addItem(matchString.format(str(number+1)))
+                elif "indicator" in key:
+                    pass
+                else:
+                    if widget.findText(matchString) < 0:
+                        widget.addItem(matchString)
+            except:
+                logger.error(
+                    f"Unable to generate match strings for {matchString}")
+    
 TSHLocaleHelper.LoadLanguages()
 TSHLocaleHelper.LoadCountryToLanguage()

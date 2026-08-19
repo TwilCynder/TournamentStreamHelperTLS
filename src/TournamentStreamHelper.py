@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-
+from .Helpers import TSHQtHelper
+from .Helpers.TSHDownloadHelper import DownloadDialog
 from .Helpers.TSHLocaleHelper import TSHLocaleHelper
 from .Helpers.TSHDirHelper import TSHResolve
 import faulthandler
@@ -8,7 +9,6 @@ import shutil
 import zipfile
 import qdarktheme
 import requests
-import urllib
 import json
 import orjson
 import traceback
@@ -27,6 +27,7 @@ from packaging.version import parse
 from loguru import logger
 from pathlib import Path
 from glob import glob
+from .Helpers.TSHVersionHelper import add_beta_label
 
 crashpath = Path('./logs/tsh-crash.log').resolve()
 Path.mkdir(crashpath.parent, exist_ok=True)
@@ -39,6 +40,7 @@ if parse(qtpy.QT_VERSION).major == 6:
     QImageReader.setAllocationLimit(0)
 
 App = QApplication(sys.argv)
+TSHQtHelper.init_gui_executor()  # guaranteed to be the main thread.
 
 fmt = ("<green>{time:YYYY-MM-DD HH:mm:ss}</green> " +
        "| <level>{level}</level> | " +
@@ -126,11 +128,13 @@ from .TSHHotkeys import TSHHotkeys
 from .TSHPlayerListWidget import TSHPlayerListWidget
 from .TSHNotesWidget import TSHNotesWidget
 from .TSHCommentaryWidget import TSHCommentaryWidget
+from .TSHTeamBattleWidget import TSHTeamBattleWidget
 from .TSHGameAssetManager import TSHGameAssetManager
 from .TSHBracketWidget import TSHBracketWidget
 from .TSHTournamentInfoWidget import TSHTournamentInfoWidget
 from .TSHTournamentDataProvider import TSHTournamentDataProvider
 from .TournamentDataProvider.StartGGDataProvider import StartGGDataProvider
+from .TournamentDataProvider.ParryGGDataProvider import ParryGGDataProvider
 from .TSHAlertNotification import TSHAlertNotification
 from .TSHPlayerDB import TSHPlayerDB
 from .Workers import *
@@ -139,7 +143,6 @@ from .SettingsManager import SettingsManager
 from .Helpers.TSHCountryHelper import TSHCountryHelper
 from .Helpers.TSHControllerHelper import TSHControllerHelper
 from .TSHScoreboardManager import TSHScoreboardManager
-from .TSHThumbnailSettingsWidget import TSHThumbnailSettingsWidget
 from src.TSHAssetDownloader import TSHAssetDownloader
 from src.TSHAboutWidget import TSHAboutWidget
 from .TSHScoreboardStageWidget import TSHScoreboardStageWidget
@@ -162,14 +165,10 @@ def DownloadLayoutsOnBoot():
         has_layouts = False
     if not has_layouts:
         logger.info("Layouts were not detected, downloading from Github...")
-        try:
-            url = "https://github.com/TournamentStreamHelper/TournamentStreamHelper-layouts/archive/refs/heads/main.zip"
-            r = requests.get(url, allow_redirects=True)
-            zip_path = './layout/layout.zip.tmp'
-            with open(zip_path, 'wb') as zip_file:
-                zip_file.write(r.content)
+
+        def extract_file(filename):
             try:
-                with zipfile.ZipFile(zip_path, 'r') as zip_file:
+                with zipfile.ZipFile(filename, 'r') as zip_file:
                     zip_file.extractall('./layout')
                 list_files = glob(f"./layout/TournamentStreamHelper-layouts-main/*")
                 for file_path in list_files:
@@ -177,13 +176,20 @@ def DownloadLayoutsOnBoot():
                         new_file_path = file_path.replace("TournamentStreamHelper-layouts-main\\", "")
                     else:
                         new_file_path = file_path.replace("TournamentStreamHelper-layouts-main/", "")
-                    os.rename(file_path, new_file_path)
-                os.rmdir(f"./layout/TournamentStreamHelper-layouts-main")
-                os.remove(zip_path)
+                    shutil.move(file_path, new_file_path)
+                shutil.rmtree(f"./layout/TournamentStreamHelper-layouts-main", ignore_errors=True)
+                return True
             except Exception as e:
                 logger.error(f"Layouts could not be extracted\nError: {str(e)}")
-        except Exception as e:
-            logger.error(f"Layouts could not be downloaded\nError: {str(e)}")
+                return False
+
+        d = DownloadDialog(
+            url="https://github.com/TournamentStreamHelper/TournamentStreamHelper-layouts/archive/refs/heads/main.zip",
+            filename=None,
+            desc=str(QApplication.translate("app", "Layouts")),
+            validator=extract_file,
+            assume_size=(1024*1024*140)  # ~140MB
+        ).exec()
 
 def generate_restart_messagebox(main_txt):
     messagebox = QMessageBox()
@@ -316,6 +322,7 @@ class Window(QMainWindow):
 
         TSHLocaleHelper.LoadLocale()
         TSHLocaleHelper.LoadRoundNames()
+        self.LoadTheme()
 
         self.signals = WindowSignals()
 
@@ -353,6 +360,15 @@ class Window(QMainWindow):
         self.allplayers = None
         self.local_players = None
 
+        # We don't want download dialogs to trigger the Qt app to try to quit when they close
+        # if it thinks they're the last window being closed.
+        App.setQuitOnLastWindowClosed(False)
+        # These downloads wait and call processEvents() in between downloads.
+        TSHControllerHelper.instance.init()
+        TSHCountryHelper.instance.UpdateCountriesFile()
+        DownloadLayoutsOnBoot()
+        App.setQuitOnLastWindowClosed(True)
+
         try:
             version = json.load(
                 open(TSHResolve('./assets/versions.json'), encoding='utf-8')).get("program", "?")
@@ -377,12 +393,14 @@ class Window(QMainWindow):
 
         self.dockWidgets = []
 
-        thumbnailSetting = TSHThumbnailSettingsWidget()
-        thumbnailSetting.setObjectName(
-            QApplication.translate("app", "Thumbnail Settings"))
-        self.addDockWidget(
-            Qt.DockWidgetArea.BottomDockWidgetArea, thumbnailSetting)
-        self.dockWidgets.append(thumbnailSetting)
+        if not SettingsManager.Get("general.disable_thumbnail_widget", False):
+            from .TSHThumbnailSettingsWidget import TSHThumbnailSettingsWidget
+            thumbnailSetting = TSHThumbnailSettingsWidget()
+            thumbnailSetting.setObjectName(
+                QApplication.translate("app", "Thumbnail Settings"))
+            self.addDockWidget(
+                Qt.DockWidgetArea.BottomDockWidgetArea, thumbnailSetting)
+            self.dockWidgets.append(thumbnailSetting)
 
         bracket = TSHBracketWidget()
         bracket.setWindowIcon(QIcon('assets/icons/info.svg'))
@@ -399,6 +417,14 @@ class Window(QMainWindow):
         self.addDockWidget(
             Qt.DockWidgetArea.BottomDockWidgetArea, tournamentInfo)
         self.dockWidgets.append(tournamentInfo)
+
+        teamBattle = TSHTeamBattleWidget()
+        teamBattle.setWindowIcon(QIcon('assets/icons/info.svg'))
+        teamBattle.setObjectName(
+            add_beta_label(QApplication.translate("app", "Crew/Team Battle"), "team_battle"))
+        self.addDockWidget(
+            Qt.DockWidgetArea.BottomDockWidgetArea, teamBattle)
+        self.dockWidgets.append(teamBattle)
 
         self.scoreboard = TSHScoreboardManager.instance
         self.scoreboard.setWindowIcon(QIcon('assets/icons/list.svg'))
@@ -444,7 +470,9 @@ class Window(QMainWindow):
         self.tabifyDockWidget(self.scoreboard, self.stageWidget)
         self.tabifyDockWidget(self.scoreboard, commentary)
         self.tabifyDockWidget(self.scoreboard, tournamentInfo)
-        self.tabifyDockWidget(self.scoreboard, thumbnailSetting)
+        self.tabifyDockWidget(self.scoreboard, teamBattle)
+        if not SettingsManager.Get("general.disable_thumbnail_widget", False):
+            self.tabifyDockWidget(self.scoreboard, thumbnailSetting)
         self.tabifyDockWidget(self.scoreboard, playerList)
         self.tabifyDockWidget(self.scoreboard, bracket)
         self.tabifyDockWidget(self.scoreboard, notes)
@@ -564,13 +592,12 @@ class Window(QMainWindow):
         action = self.optionsBt.menu().addAction(
             QApplication.translate("app", "Download assets"))
         action.setIcon(QIcon('assets/icons/download.svg'))
-        action.triggered.connect(TSHAssetDownloader.instance.DownloadAssets)
+        action.triggered.connect(lambda: TSHAssetDownloader.instance.DownloadAssets(self))
         self.downloadAssetsAction = action
 
         action = self.optionsBt.menu().addAction(
             QApplication.translate("app", "Light mode"))
         action.setCheckable(True)
-        self.LoadTheme()
         action.setChecked(SettingsManager.Get("light_mode", False))
         action.toggled.connect(self.ToggleLightMode)
 
@@ -580,8 +607,10 @@ class Window(QMainWindow):
         toggleWidgets.addAction(self.scoreboard.toggleViewAction())
         toggleWidgets.addAction(self.stageWidget.toggleViewAction())
         toggleWidgets.addAction(commentary.toggleViewAction())
-        toggleWidgets.addAction(thumbnailSetting.toggleViewAction())
+        if not SettingsManager.Get("general.disable_thumbnail_widget", False):
+            toggleWidgets.addAction(thumbnailSetting.toggleViewAction())
         toggleWidgets.addAction(tournamentInfo.toggleViewAction())
+        # toggleWidgets.addAction(teamBattle.toggleViewAction())
         toggleWidgets.addAction(playerList.toggleViewAction())
         toggleWidgets.addAction(bracket.toggleViewAction())
         toggleWidgets.addAction(notes.toggleViewAction())
@@ -891,8 +920,6 @@ class Window(QMainWindow):
             self.ToggleTopOption)
         StateManager.Unset("completed_sets")
 
-        DownloadLayoutsOnBoot()
-
     def SetGame(self, mods_active = False):
         index = next((i for i in range(self.gameSelect.model().rowCount()) if self.gameSelect.itemText(i) == TSHGameAssetManager.instance.selectedGame.get(
             "name") or self.gameSelect.itemText(i) == TSHGameAssetManager.instance.selectedGame.get("codename")), None)
@@ -905,39 +932,100 @@ class Window(QMainWindow):
             self.gameSelect.setCurrentIndex(0)
             TSHGameAssetManager.instance.selectedGame = {}
 
+    # Pick which (provider_name, user_value) pair to expose. The active
+    # provider always determines which provider's button is shown — even if
+    # its <name>_user setting is empty — so the user sees the right label
+    # for the current tournament and can click the gear to configure it.
+    # If no tournament is loaded, fall back to whichever provider has a user
+    # configured (StartGG preferred for back-compat with prior behavior).
+    @staticmethod
+    def _resolve_user_set_provider():
+        active = TSHTournamentDataProvider.instance.provider if TSHTournamentDataProvider.instance else None
+        active_name = active.name if active else None
+        if active_name in ("StartGG", "ParryGG"):
+            return active_name, SettingsManager.Get(active_name + "_user")
+        for name in ("StartGG", "ParryGG"):
+            user = SettingsManager.Get(name + "_user")
+            if user:
+                return name, user
+        return "StartGG", None
+
     def UpdateUserSetButton(self):
-        if SettingsManager.Get("StartGG_user"):
+        provider_name, user_value = self._resolve_user_set_provider()
+        if provider_name == "ParryGG":
+            label = QApplication.translate("app", "Load tournament and sets from ParryGG user")
+            self.btLoadPlayerSet.setIcon(QIcon("./assets/icons/parrygg.png"))
+        else:
+            label = QApplication.translate("app", "Load tournament and sets from StartGG user")
+            self.btLoadPlayerSet.setIcon(QIcon("./assets/icons/startgg.svg"))
+        if user_value:
             self.btLoadPlayerSet.setText(
-                QApplication.translate("app", "Load tournament and sets from StartGG user")+" "+QApplication.translate("punctuation", "(")+f"{SettingsManager.Get('StartGG_user')}"+QApplication.translate("punctuation", ")"))
+                label + " "
+                + QApplication.translate("punctuation", "(")
+                + user_value
+                + QApplication.translate("punctuation", ")"))
             self.btLoadPlayerSet.setEnabled(True)
         else:
-            self.btLoadPlayerSet.setText(
-                QApplication.translate("app", "Load tournament and sets from StartGG user"))
+            self.btLoadPlayerSet.setText(label)
             self.btLoadPlayerSet.setEnabled(False)
     
     def UpdateLastSetsButton(self):
-        if TSHTournamentDataProvider.instance and TSHTournamentDataProvider.instance.provider and TSHTournamentDataProvider.instance.provider.name == "StartGG":
-            self.btPullCompletedSets.setEnabled(True)
+        provider = TSHTournamentDataProvider.instance.provider if TSHTournamentDataProvider.instance else None
+        provider_name = provider.name if provider else None
+
+        # Both providers implement GetCompletedSets — enable for either.
+        self.btPullCompletedSets.setEnabled(provider_name in ("StartGG", "ParryGG"))
+
+        if provider_name == "StartGG":
+            self.btPullCompletedSets.setText(
+                QApplication.translate("app", "Pull Latest Completed Sets from StartGG"))
+            self.btPullCompletedSets.setIcon(QIcon("./assets/icons/startgg.svg"))
+        elif provider_name == "ParryGG":
+            self.btPullCompletedSets.setText(
+                QApplication.translate("app", "Pull Latest Completed Sets from ParryGG"))
+            self.btPullCompletedSets.setIcon(QIcon("./assets/icons/parrygg.png"))
         else:
-            self.btPullCompletedSets.setEnabled(False)
+            self.btPullCompletedSets.setText(
+                QApplication.translate("app", "Pull Latest Completed Sets from StartGG"))
+            self.btPullCompletedSets.setIcon(QIcon("./assets/icons/startgg.svg"))
 
     def LoadUserSetClicked(self):
         self.scoreboard.lastSetSelected = None
-        if SettingsManager.Get("StartGG_user"):
+        provider_name, user_value = self._resolve_user_set_provider()
+        if not user_value:
+            return
+
+        # Construct a placeholder-URL provider so the GetUserMatchId flow can
+        # run before any tournament is selected — the resulting match's
+        # hierarchy provides the real tournament URL via invokeSlot.
+        if provider_name == "StartGG":
             TSHTournamentDataProvider.instance.provider = StartGGDataProvider(
                 "start.gg/",
                 TSHTournamentDataProvider.instance.threadPool,
-                TSHTournamentDataProvider.instance
+                TSHTournamentDataProvider.instance,
             )
-            TSHTournamentDataProvider.instance.LoadUserSet(
-                self.scoreboard.GetScoreboard(1), SettingsManager.Get("StartGG_user"))
+        else:  # ParryGG — profile-path URL short-circuits _get_slugs_and_ids
+            TSHTournamentDataProvider.instance.provider = ParryGGDataProvider(
+                "https://parry.gg/profile/_user_lookup",
+                TSHTournamentDataProvider.instance.threadPool,
+                TSHTournamentDataProvider.instance,
+                SettingsManager.Get("api_keys.parrygg"),
+            )
+
+        sb = self.scoreboard.GetScoreboard(1)
+        if sb is not None:
+            TSHTournamentDataProvider.instance.LoadUserSet(sb, user_value)
     
     def LoadCompletedSetsClicked(self, data):
         StateManager.Set("completed_sets", {index+1: set for index, set in enumerate(data)})
 
     def LoadUserSetOptionsClicked(self):
+        provider_name, _ = self._resolve_user_set_provider()
         TSHTournamentDataProvider.instance.SetUserAccount(
-            self.scoreboard, startgg=True)
+            self.scoreboard,
+            startgg=(provider_name == "StartGG"),
+            parrygg=(provider_name == "ParryGG"),
+        )
 
     def closeEvent(self, event):
         logger.info("Shutting down...")
@@ -971,6 +1059,11 @@ class Window(QMainWindow):
 
         self.webserver.terminate()
         self.webserver.wait(10000)  # 10 seconds grace period.
+
+        for window in QApplication.allWindows():
+            if window != self:
+                window.close()
+
         super().closeEvent(event)
 
     def ReloadGames(self):
@@ -979,12 +1072,21 @@ class Window(QMainWindow):
             self.gameSelect.setModel(QStandardItemModel())
             self.gameSelect.addItem("", 0)
             for i, game in enumerate(TSHGameAssetManager.instance.games.items()):
-                if game[1].get("name"):
-                    self.gameSelect.addItem(game[1].get(
-                        "logo", QIcon()), game[1].get("name"), i+1)
+                logo_path = game[1].get("logo_path")
+                if logo_path:
+                    icon = QIcon(QPixmap(
+                        QImage(logo_path).scaled(
+                            64, 64,
+                            Qt.AspectRatioMode.KeepAspectRatio,
+                            Qt.TransformationMode.SmoothTransformation
+                        )
+                    ))
                 else:
-                    self.gameSelect.addItem(
-                        game[1].get("logo", QIcon()), game[0], i+1)
+                    icon = QIcon()
+                if game[1].get("name"):
+                    self.gameSelect.addItem(icon, game[1].get("name"), i+1)
+                else:
+                    self.gameSelect.addItem(icon, game[0], i+1)
             self.gameSelect.setIconSize(QSize(64, 64))
             self.gameSelect.setFixedHeight(32)
             view = QListView()
@@ -1069,61 +1171,6 @@ class Window(QMainWindow):
                     hbox.addWidget(btCancel)
 
                     buttonReply.show()
-
-                    def Update_Old(): # Deprecated
-                        db = QFontDatabase()
-                        db.removeAllApplicationFonts()
-                        QFontDatabase.removeAllApplicationFonts()
-                        self.downloadDialogue = QProgressDialog(
-                            QApplication.translate("app", "Downloading update..."), QApplication.translate("app", "Cancel"), 0, 0, self)
-                        self.downloadDialogue.setWindowModality(
-                            Qt.WindowModality.WindowModal)
-                        self.downloadDialogue.show()
-
-                        def worker(progress_callback, cancel_event):
-                            with open("./update.zip", 'wb') as downloadFile:
-                                downloaded = 0
-
-                                dl_url = release["zipball_url"]
-
-                                if os.name == 'nt':
-                                    assets = release["assets"] if "assets" in release else []
-                                    for i in range(len(assets)):
-                                        if assets[i]["name"] == "release.zip":
-                                            dl_url = assets[i]["url"]
-                                            break
-
-                                response = urllib.request.urlopen(dl_url)
-
-                                while (True):
-                                    chunk = response.read(1024*1024)
-
-                                    if not chunk:
-                                        break
-
-                                    downloaded += len(chunk)
-                                    downloadFile.write(chunk)
-
-                                    if self.downloadDialogue.wasCanceled():
-                                        return
-
-                                    progress_callback.emit(int(downloaded))
-                                downloadFile.close()
-
-                        def progress(downloaded):
-                            self.downloadDialogue.setLabelText(
-                                QApplication.translate("app", "Downloading update...")+" "+str(downloaded/1024/1024)+" MB")
-
-                        def finished():
-                            self.downloadDialogue.close()
-
-                            # Update procedure
-                            UpdateProcedure()
-
-                        worker = Worker(worker)
-                        worker.signals.progress.connect(progress)
-                        worker.signals.finished.connect(finished)
-                        self.threadpool.start(worker)
 
                     def Update(): # Opens the releases page in the web browser
                         latest_release_url = "https://github.com/joaorb64/TournamentStreamHelper/releases/latest"

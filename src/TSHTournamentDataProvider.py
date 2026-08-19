@@ -7,12 +7,12 @@ from .SettingsManager import SettingsManager
 from .StateManager import StateManager
 from .TSHGameAssetManager import TSHGameAssetManager
 from .TournamentDataProvider.TournamentDataProvider import TournamentDataProvider
-from .TournamentDataProvider.ChallongeDataProvider import ChallongeDataProvider
 from .TournamentDataProvider.StartGGDataProvider import StartGGDataProvider
+from .TournamentDataProvider.ParryGGDataProvider import ParryGGDataProvider
+from .Helpers.TSHVersionHelper import get_supported_providers
 from loguru import logger
 
 from .Workers import Worker
-
 
 class TSHTournamentDataProviderSignals(QObject):
     tournament_changed = Signal()
@@ -31,10 +31,11 @@ class TSHTournamentDataProviderSignals(QObject):
     tournament_url_update = Signal(str)
 
 
-class TSHTournamentDataProvider:
+class TSHTournamentDataProvider(QObject):
     instance: "TSHTournamentDataProvider" = None
 
     def __init__(self) -> None:
+        super().__init__(None)
         self.provider: TournamentDataProvider = None
         self.signals: TSHTournamentDataProviderSignals = TSHTournamentDataProviderSignals()
         self.entrantsModel: QStandardItemModel = None
@@ -62,12 +63,14 @@ class TSHTournamentDataProvider:
         if "start.gg" in self.provider.url:
             TSHGameAssetManager.instance.SetGameFromStartGGId(
                 self.provider.videogame)
-        elif "challonge.com" in self.provider.url:
-            TSHGameAssetManager.instance.SetGameFromChallongeId(
+        elif "parry.gg" in self.provider.url:
+            TSHGameAssetManager.instance.SetGameFromIGDBId(
                 self.provider.videogame)
         else:
             logger.error("Unsupported provider...")
 
+    @Slot(str, bool)
+    @Slot(str)
     def SetTournament(self, url, initialLoading=False):
         if self.provider and self.provider.url == url:
             return
@@ -75,9 +78,29 @@ class TSHTournamentDataProvider:
         if url is not None and "start.gg" in url:
             TSHTournamentDataProvider.instance.provider = StartGGDataProvider(
                 url, self.threadPool, self)
-        elif url is not None and "challonge.com" in url:
-            TSHTournamentDataProvider.instance.provider = ChallongeDataProvider(
-                url, self.threadPool, self)
+            url = TSHTournamentDataProvider.instance.provider.GetRealEventURL(url)
+        elif url is not None and "parry.gg" in url:
+            if not SettingsManager.Get("api_keys.parrygg"):
+                logger.error("ParryGG API key not set")
+
+                messagebox = QMessageBox()
+                messagebox.setWindowTitle(
+                    QApplication.translate("app", "Error"))
+                messagebox.setTextFormat(Qt.RichText)
+                messagebox.setText(
+                    QApplication.translate("app", "Parry.gg API key has not been set. Please configure it in Settings > API Keys.") + "<br><br>" +
+                    QApplication.translate("app", "API keys can be created at: ") + 
+                    '<a href="https://parry.gg/api-keys">parry.gg/api-keys</a>')
+                messagebox.exec()
+
+                TSHTournamentDataProvider.instance.provider = None
+            else:
+                try:
+                    TSHTournamentDataProvider.instance.provider = ParryGGDataProvider(
+                        url, self.threadPool, self, SettingsManager.Get("api_keys.parrygg"))
+                except Exception as e:
+                    logger.error(f"Failed to initialize ParryGG provider: {e}")
+                    TSHTournamentDataProvider.instance.provider = None
         else:
             logger.error("Unsupported provider...")
             TSHTournamentDataProvider.instance.provider = None
@@ -107,8 +130,8 @@ class TSHTournamentDataProvider:
         if url is not None and "start.gg" in url:
             TSHTournamentDataProvider.instance.provider = StartGGDataProvider(
                 url, self.threadPool, self)
-        elif url is not None and "challonge.com" in url:
-            TSHTournamentDataProvider.instance.provider = ChallongeDataProvider(
+        elif url is not None and "parry.gg" in url:
+            TSHTournamentDataProvider.instance.provider = ParryGGDataProvider(
                 url, self.threadPool, self)
         else:
             logger.error("Unsupported provider...")
@@ -136,15 +159,17 @@ class TSHTournamentDataProvider:
         inp.setLayout(layout)
 
         inp.layout().addWidget(QLabel(
-            QApplication.translate("app", "Paste the tournament URL.")+"\n" + QApplication.translate(
-                "app", "For StartGG, the link must contain the /event/ part")
+            QApplication.translate("app", "Paste the tournament URL.")+ "\n" + QApplication.translate("app", "For StartGG, the link must contain the /event/ part") + "\n" + QApplication.translate("app", "Supported providers:") + " " + ", ".join(get_supported_providers())
+
         ))
 
         lineEdit = QLineEdit()
-        okButton = QPushButton("OK")
+        okButton = QPushButton(QApplication.translate("app", "OK"))
         validators = [
             QRegularExpression("start.gg/tournament/[^/]+/event[s]?/[^/]+"),
-            QRegularExpression("challonge.com/.+")
+            QRegularExpression("start.gg/admin/tournament/[^/]+/brackets/[^/]+"),
+            
+            QRegularExpression("parry.gg/[^/]+/[^/]+")
         ]
 
         def validateText():
@@ -177,11 +202,16 @@ class TSHTournamentDataProvider:
 
                     # Some URLs in startgg have eventS but the API doesn't work with that format
                     url = url.replace("/events/", "/event/")
-            if "challonge" in url:
+
+            elif "parry.gg" in url:
+                # Remove the "_manage" part of admin urls first
+                url = url.replace("/_manage", "")
+
                 matches = re.match(
-                    "(.*challonge.com/[^/]*/[^/]*)", url)
+                    "(.*parry.gg/[^/]*/[^/]*)", url)
+
                 if matches:
-                    url = matches.group(0)
+                    url = matches.group()
 
             SettingsManager.Set("TOURNAMENT_URL", url)
             TSHTournamentDataProvider.instance.SetTournament(
@@ -190,33 +220,38 @@ class TSHTournamentDataProvider:
         inp.deleteLater()
 
     def SetTwitchUsername(self, window):
-        text, okPressed = QInputDialog.getText(
-            window, QApplication.translate("app", "Set Twitch username"), QApplication.translate("app", "Twitch Username:")+" ", QLineEdit.Normal, "")
-        if okPressed:
-            SettingsManager.Set("twitch_username", text)
-            TSHTournamentDataProvider.instance.signals.twitch_username_updated.emit()
+        input_dialog = QInputDialog(window)
+        input_dialog.setWindowTitle(QApplication.translate("app", "Set Twitch username"))
+        input_dialog.setLabelText(QApplication.translate("app", "Twitch Username:")+" ")
+        input_dialog.setCancelButtonText(QApplication.translate("app", "Cancel"))
+        input_dialog.setOkButtonText(QApplication.translate("app", "OK"))
 
-    def SetUserAccount(self, window, startgg=False):
-        providerName = "StartGG"
-        window_text = ""
+        if input_dialog.exec_() == QDialog.Accepted:
+            SettingsManager.Set("twitch_username", input_dialog.textValue())
+            TSHTournamentDataProvider.instance.signals.user_updated.emit()
 
+    def SetUserAccount(self, window, startgg=False, parrygg=False):
         if (self.provider and self.provider.url and "start.gg" in self.provider.url) or startgg:
+            providerName = "StartGG"
             window_text = QApplication.translate(
                 "app", "Paste the URL to the player's StartGG profile")
-        elif self.provider and self.provider.url and "challonge" in self.provider.url:
+        elif (self.provider and self.provider.url and "parry.gg" in self.provider.url) or parrygg:
+            providerName = "ParryGG"
             window_text = QApplication.translate(
-                "app", "Insert the player's name in bracket")
-            providerName = self.provider.name
+                "app", "Paste the URL to the player's ParryGG profile")
         else:
             logger.error(QApplication.translate(
                 "app", "Invalid tournament data provider"))
             return
 
-        text, okPressed = QInputDialog.getText(
-            window, QApplication.translate("app", "Set player"), window_text, QLineEdit.Normal, "")
+        input_dialog = QInputDialog(window)
+        input_dialog.setWindowTitle(QApplication.translate("app", "Set player"))
+        input_dialog.setLabelText(window_text)
+        input_dialog.setCancelButtonText(QApplication.translate("app", "Cancel"))
+        input_dialog.setOkButtonText(QApplication.translate("app", "OK"))
 
-        if okPressed:
-            SettingsManager.Set(providerName+"_user", text)
+        if input_dialog.exec_() == QDialog.Accepted:
+            SettingsManager.Set(providerName+"_user", input_dialog.textValue())
             TSHTournamentDataProvider.instance.signals.user_updated.emit()
 
     def GetTournamentData(self, initialLoading=False):
@@ -254,15 +289,23 @@ class TSHTournamentDataProvider:
         worker = Worker(self.provider.GetMatches, **
                         {"getFinished": showFinished})
         worker.signals.result.connect(lambda data: [
-            logger.info(data),
-            self.signals.get_sets_finished.emit(data)
+            # logger.info(data),
+            self.signals.get_sets_finished.emit(data),
+            self.signals.sets_data_updated.emit({
+                "progress": 0,
+                "totalPages": 0,
+                "sets": data
+            })
         ])
-        worker.signals.progress.connect(lambda data: [
-            logger.info(f"SetDataUpdated: {data}"),
-            self.signals.sets_data_updated.emit(data)
+        worker.signals.progress.connect(lambda n, t: [
+            logger.info(f"SetDataUpdated: {n}/{t}"),
+            self.signals.sets_data_updated.emit({
+                "progress": n,
+                "totalPages":t,
+                "sets": []
+            })
         ])
         self.setLoadingWorker = worker
-
         self.threadPool.start(worker)
 
     def LoadStations(self):
@@ -285,24 +328,33 @@ class TSHTournamentDataProvider:
         stationSet = None
 
         if mainWindow.lastStationSelected.get("type") == "stream":
+            # Pass the full station dict so providers that need extra context
+            # (e.g. parry's per-capacity slot index) can read it. Providers that
+            # only care about the identifier string accept either form.
             stationSet = TSHTournamentDataProvider.instance.provider.GetStreamMatchId(
-                mainWindow.lastStationSelected.get("identifier"))
-        else:
-            stationSets = TSHTournamentDataProvider.instance.provider.GetStationMatchsId(
-                mainWindow.lastStationSelected.get("id")
-            )
+                mainWindow.lastStationSelected)
 
-            if stationSets is not None and len(stationSets) > 0:
+        # Populate the upcoming-matches queue for both stream and station
+        # selections. Providers that don't have a queue for the given id
+        # return [] (e.g. start.gg returns [] when called with a stream id).
+        stationSets = TSHTournamentDataProvider.instance.provider.GetStationMatchsId(
+            mainWindow.lastStationSelected.get("id")
+        )
+
+        if stationSets is not None and len(stationSets) > 0:
+            # Station mode: use queue head as the active set when no
+            # stream-mode set was loaded above.
+            if stationSet is None:
                 stationSet = stationSets[0]
 
-                queueCache = mainWindow.stationQueueCache
-                logger.info(queueCache.queue)
-                logger.info(stationSets)
-                if queueCache and not queueCache.CheckQueue(stationSets):
-                    queueCache.UpdateQueue(stationSets)
+            queueCache = mainWindow.stationQueueCache
+            logger.info(queueCache.queue)
+            logger.info(stationSets)
+            if queueCache and not queueCache.CheckQueue(stationSets):
+                queueCache.UpdateQueue(stationSets)
 
-                    TSHTournamentDataProvider.instance.GetStationMatches(
-                        stationSets, mainWindow)
+                TSHTournamentDataProvider.instance.GetStationMatches(
+                    stationSets, mainWindow)
 
         if not stationSet:
             stationSet = {}
